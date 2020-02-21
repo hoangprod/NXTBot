@@ -1,0 +1,11 @@
+.vs/
+*.obj
+*.pdb
+*.idb
+*.inf
+*.cer
+*.ipdb
+*.iobj
+*.log
+*.tlog
+*.cat
