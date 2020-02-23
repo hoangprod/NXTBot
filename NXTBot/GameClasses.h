@@ -15,7 +15,9 @@ public:
 class EntityObj
 {
 public:
-	char pad_0008[264]; //0x0008
+	char pad_0008[48]; //0x0008
+	void* camera; //0x0038
+	char pad_0040[208]; //0x0040
 	uint32_t EntityId; //0x0110
 	char pad_0114[4]; //0x0114
 	char* Name; //0x0118
@@ -161,6 +163,30 @@ public:
 	void* dispatcherFunc; //0x0010
 }; //Size: 0x0018
 
+class ContainerObj
+{
+public:
+	char pad_0000[8]; //0x0000
+	uint32_t ContainerId; //0x0008
+	char pad_000C[4]; //0x000C
+	void* ContainerContent; //0x0010
+	char pad_0018[16]; //0x0018
+}; //Size: 0x0028
+
+
+enum class ContainerType : uint32_t {
+	Backpack = 93,
+	Bank = 95,
+	CoinPouch = 623
+};
+
+enum EntityType {
+	Object = 0,
+	NPC = 1,
+	Player = 2,
+	GroundItem = 3,
+	Object2 = 12
+};
 
 #pragma pack(push)
 struct dataStruct {
@@ -174,5 +200,10 @@ typedef UINT_PTR* (__fastcall* fn_GetLocalPlayer)(UINT_PTR* PlayerEntityList);
 typedef DWORD* (__fastcall* fn_OnCursorDoAction) (UINT_PTR a1, ActionPtr actionPtr, float* postion);
 typedef UINT_PTR(__fastcall* fn_CursorWorldContextMenu) (UINT_PTR* GameContext, int a2, int a3, int a4, int a5);
 typedef bool(__fastcall* fn_OnDispatchNetMessage)(UINT_PTR* a1, UINT_PTR* a2);
-
+typedef float*(__fastcall* fn_GetWOrldTranslation)(UINT_PTR* camera);
 typedef void(__fastcall* fn_GUIManagerRender)(UINT_PTR* a1);
+
+
+typedef UINT_PTR*(__fastcall* fn_GetContainerPtr)(UINT_PTR* ContainerManager, uint32_t containerId, uint8_t idk);
+
+#define ReadPtrOffset(address, x) ((uint64_t)address == 0 || ((uint64_t)address % sizeof(uint64_t)) != 0) ? throw InvalidPointerException(std::to_string((uint64_t)address) + " in " __FUNCTION__ + ", " + __FILE__" at line " + std::to_string(__LINE__)) : *(uint64_t*)((uint64_t)address + x)

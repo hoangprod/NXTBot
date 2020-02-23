@@ -16,6 +16,11 @@
 #include <vector>
 #include <stdio.h>
 #include <detours.h>
+#include <string>
 #include <gl\glut.h>
+
+
+
+#include "Exception.h"
 
 #endif //PCH_H

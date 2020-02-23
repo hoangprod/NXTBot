@@ -34,4 +34,6 @@ bool GAction::Walk(Tile2D tile)
 
 	typedef void(__cdecl* _MoveTo)(uint64_t **_this, void* dataPtr);
 	reinterpret_cast<_MoveTo>(func_ptr)(handler, &dt);
+
+	return true;
 }

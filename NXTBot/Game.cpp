@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "GameClasses.h"
 #include "Patterns.h"
+#include "ItemDef.h"
 #include "Game.h"
 
 extern UINT_PTR* g_GameContext;
@@ -41,7 +42,8 @@ uint32_t RS::GetPlayerEntityCount()
 	if (!PlayerListWrapper)
 		return 0;
 
-	UINT_PTR result = PlayerListWrapper[2056] - PlayerListWrapper[2055] >> 2;
+	//UINT_PTR result = PlayerListWrapper[2056] - PlayerListWrapper[2055] >> 2;
+	UINT_PTR result = ReadPtrOffset(PlayerListWrapper, Patterns.Offset_EntityArrayList + 8) - ReadPtrOffset(PlayerListWrapper, Patterns.Offset_EntityArrayList) >> 2;
 
 	return result;
 }
@@ -56,7 +58,7 @@ EntityObj* RS::GetLocalPlayer()
 	if (!g_gameContextDef)
 		return 0;
 
-	UINT_PTR* PlayerObj = *(UINT_PTR**)(g_gameContextDef + 0x1780);
+	UINT_PTR* PlayerObj = *(UINT_PTR**)(g_gameContextDef + Patterns.Offset_PlayerContext);
 
 	if (!PlayerObj)
 		return 0;
@@ -78,9 +80,12 @@ PlayerListWrapper* RS::GetPlayerListWrapper()
 
 PlayerObjWrapper* RS::GetPlayerObjWrapperByIndex(uint32_t Index)
 {
-	auto PlayerListWrapper = (UINT_PTR*)GetPlayerListWrapper();
+	UINT_PTR* PlayerListWrapper = (UINT_PTR*)GetPlayerListWrapper();
 
-	int EntityIdx = *(int*)(PlayerListWrapper[2055] + 4 * (UINT_PTR)Index);
+	int EntityIdx = *(int*)(ReadPtrOffset(PlayerListWrapper, Patterns.Offset_EntityArrayList) + 4 * (UINT_PTR)Index);
+
+	if (!PlayerListWrapper)
+		return 0;
 
 	PlayerObjWrapper* PlayerObjWrap = *(PlayerObjWrapper**)(PlayerListWrapper[2] + 8 * (UINT_PTR)EntityIdx);
 
@@ -109,7 +114,7 @@ EntityObjWrap* RS::GetEntityWrapByIndex(uint32_t Index)
 
 	UINT_PTR entityList = *(UINT_PTR*)(EntityPtr + 0x20);
 
-	int EntityOffset = *(int*)(EntityPtr + 4 * (UINT_PTR)Index + 0xA0b0) % (unsigned __int64) * (unsigned int*)(EntityPtr + 0x28);
+	int EntityOffset = *(int*)(EntityPtr + 4 * (UINT_PTR)Index + Patterns.Offset_EntityOffsetList) % (unsigned __int64) * (unsigned int*)(EntityPtr + 0x28);
 
 	EntityObjWrap* entitywrap = *(EntityObjWrap**)(entityList + 8 * (UINT_PTR)EntityOffset);
 
@@ -134,6 +139,16 @@ Tile2D RS::GetMouseIntersectWorldPos()
 	return *(Tile2D*)Patterns.Addr_MouseIntersectWorld;
 }
 
+Tile2D RS::GetEntityTilePos(EntityObj* entity)
+{
+	if (!entity)
+		return Tile2D();
+
+	float * pos = (float*)entity->GetPos();
+
+	return WorldToTilePos(pos[0], pos[2]);
+}
+
 Tile2D RS::GetLocalPlayerTilePos()
 {
 	auto PlayerWorldPos = GetLocalPlayerPos();
@@ -155,6 +170,11 @@ float* RS::GetLocalPlayerPos()
 	return (float*)lp->GetPos();
 }
 
+float RS::GetDistance(Tile2D from, Tile2D to)
+{
+	return sqrtf(pow(((int64_t)from.x - (int64_t)to.x), 2) + pow(((int64_t)from.y - (int64_t)to.y), 2));
+}
+
 void RS::LoopEntityList()
 {
 	auto Count = GetEntityCount();
@@ -169,8 +189,12 @@ void RS::LoopEntityList()
 		if (!entity || *(UINT_PTR*)entity == 0)
 			continue;
 
-		if(strlen(entity->Name) > 0)
-			printf("[+] %s with ID %d\n", entity->Name, entity->EntityId);
+		if (strlen(entity->Name) > 0)
+		{
+			printf("[+] %s with ID %d - %p\n", entity->Name, entity->EntityId, entity);
+			auto npcdef = NpcDef(entity);
+			npcdef.printOptions();
+		}
 	}
 }
 
@@ -189,8 +213,45 @@ void RS::LoopPlayerEntityList()
 			continue;
 
 		if (strlen(entity->Name) > 0)
-			printf("[%d] %s with ID %d\n",i, entity->Name, entity->EntityId);
+		{
+			printf("[%d] %s with ID %d\n", i, entity->Name, entity->EntityId);
+
+		}
 	}
+}
+
+EntityObj* RS::GetClosestPlayer()
+{
+	auto Count = GetPlayerEntityCount();
+	auto localPlayer = GetLocalPlayer();
+	EntityObj* ret = 0;
+	float closest = 99999.0f;
+	if (!Count)
+		return 0;
+	auto localPlayerTile = GetLocalPlayerTilePos();
+	for (int i = 0; i < Count + 10; i++)
+	{
+		auto entity = GetPlayerObjByIndex(i);
+
+		if (!entity || *(UINT_PTR*)entity == 0)
+			continue;
+
+		if (strlen(entity->Name) > 0 && entity->EntityId != localPlayer->EntityId)
+		{
+			float distance = GetDistance(localPlayerTile, GetEntityTilePos(entity));
+
+			if (distance < closest)
+			{
+				closest = distance;
+				ret = entity;
+			}
+		}
+	}
+
+	if (ret && strlen(ret->Name) > 0)
+		printf("%s with ID %d and distance %f\n", ret->Name, ret->EntityId, closest);
+
+	return ret;
 }
 
 Tile2D RS::WorldToTilePos(const int32_t wX, const int32_t wY) {
