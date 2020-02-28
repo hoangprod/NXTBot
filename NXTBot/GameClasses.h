@@ -12,16 +12,19 @@ public:
 	char pad_02F4[336]; //0x02F4
 }; //Size: 0x0444
 
+
 class EntityObj
 {
 public:
 	char pad_0008[48]; //0x0008
 	void* camera; //0x0038
-	char pad_0040[208]; //0x0040
+	uint32_t EntityType; //0x0040
+	char pad_0044[204]; //0x0044
 	uint32_t EntityId; //0x0110
 	char pad_0114[4]; //0x0114
-	char* Name; //0x0118
-	char pad_0120[808]; //0x0120
+	char* Name; //0x0118 C2A0 for space
+	char pad_0120[4910]; //0x0120
+
 
 	virtual void Function0();
 	virtual void Function1();
@@ -71,13 +74,15 @@ class GameContext
 {
 public:
 	char pad_0000[4536]; //0x0000
-	class EntityPtr* EntityPtr; //0x11B8
+
+	// NPC Related
+	class NpcEntityPtr* EntityPtr; //0x11B8
 	char pad_11C0[24]; //0x11C0
 	class PlayerListWrapper* PlayerListWrapper; //0x11D8
 	char pad_11E0[24]; //0x11E0
 }; //Size: 0x11F8
 
-class EntityPtr
+class NpcEntityPtr
 {
 public:
 	char pad_0000[48]; //0x0000
@@ -173,11 +178,55 @@ public:
 	char pad_0018[16]; //0x0018
 }; //Size: 0x0028
 
+class FullObjectClass
+{
+public:
+	char pad_0008[104]; //0x0008
+	uint32_t N00005788; //0x0070
+	uint32_t N0000581B; //0x0074
+	char pad_0078[40]; //0x0078
+	void* NameStart; //0x00A0
+	void* NameEnd; //0x00A8
+	char pad_00B0[16]; //0x00B0
+	char* Name; //0x00C0
+	char pad_00C8[280]; //0x00C8
+	int Id; //0x01E0
+	int Quantity; //0x01E4
+	char pad_01E8[600]; //0x01E8
+
+	virtual void Function0();
+	virtual void Function1();
+	virtual void Function2();
+	virtual void Function3();
+	virtual void Function4();
+	virtual void Function5();
+	virtual void Function6();
+	virtual void Function7();
+	virtual void Function8();
+	virtual void Function9();
+	virtual void Function10();
+	virtual uint32_t GetId(UINT_PTR* itemPtr_1);
+	virtual void Function12();
+	virtual uint32_t GetQuantity();
+	virtual void Function14();
+	virtual void Function15();
+	virtual void Function16();
+	virtual void Function17();
+}; //Size: 0x0440
+
+
 
 enum class ContainerType : uint32_t {
+	Trade = 90,
 	Backpack = 93,
+	Equipment = 94,
 	Bank = 95,
-	CoinPouch = 623
+	Familiar = 530,
+	ShopSell = 397, // 732
+	ShopBuy = 508,
+	AreaLoot = 773,
+	CoinPouch = 623,
+	DeathReclaim = 676,
 };
 
 enum EntityType {
@@ -206,4 +255,4 @@ typedef void(__fastcall* fn_GUIManagerRender)(UINT_PTR* a1);
 
 typedef UINT_PTR*(__fastcall* fn_GetContainerPtr)(UINT_PTR* ContainerManager, uint32_t containerId, uint8_t idk);
 
-#define ReadPtrOffset(address, x) ((uint64_t)address == 0 || ((uint64_t)address % sizeof(uint64_t)) != 0) ? throw InvalidPointerException(std::to_string((uint64_t)address) + " in " __FUNCTION__ + ", " + __FILE__" at line " + std::to_string(__LINE__)) : *(uint64_t*)((uint64_t)address + x)
+#define ReadPtrOffset(address, x) ((uint64_t)address == 0 || ((uint64_t)address % sizeof(uint64_t)) != 0) ? (0) : *(uint64_t*)((uint64_t)address + x)

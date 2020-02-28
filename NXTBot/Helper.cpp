@@ -269,6 +269,11 @@ void* DetourFunction64(void* pSource, void* pDestination, int dwLen)
 
 	void* pTrampoline = VirtualAlloc(0, dwLen + sizeof(stub), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
+	// Need this
+	if (!pTrampoline)
+		return 0;
+	// Need this ^^
+
 	DWORD dwOld = 0;
 	VirtualProtect(pSource, dwLen, PAGE_EXECUTE_READWRITE, &dwOld);
 

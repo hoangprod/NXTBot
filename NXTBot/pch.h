@@ -17,9 +17,10 @@
 #include <stdio.h>
 #include <detours.h>
 #include <string>
+#include <mutex>
+
+#include "glew/GL/glew.h"
 #include <gl\glut.h>
-
-
 
 #include "Exception.h"
 

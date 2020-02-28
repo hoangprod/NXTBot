@@ -5,10 +5,10 @@
 #include "GameClasses.h"
 #include "EventHandler.h"
 #include "Game.h"
-#include "Action.h"
 #include "Inventory.h"
 #include "ItemDef.h"
-#include "JagexList.h"
+#include "Render.h"
+#include "Matrix.h"
 #include "Helper.h"
 
 Detour64 detours;
@@ -24,21 +24,16 @@ fn_GetLocalPlayer o_GetLocalPlayer;
 fn_OnCursorDoAction o_OnCursorDoAction;
 fn_CursorWorldContextMenu o_CursorWorldConextMenu;
 fn_OnDispatchNetMessage o_OnDispatchNetMessage;
-fn_GetWOrldTranslation o_GetWOrldTranslation = (fn_GetWOrldTranslation)0x7ff64e1b3320;
 fn_GUIManagerRender o_Render;
-
 
 bool h_OnDispatchNetMessage(UINT_PTR* a1, UINT_PTR* a2)
 {
-
 	return o_OnDispatchNetMessage(a1, a2);
 }
 
 
 DWORD* h_OnCursorDoAction(UINT_PTR a1, ActionPtr actionPtr, float* position)
 {
-	//printf("[+] click at (%.1f, %.1f)\n", position[0], position[1]);
-
 	auto action = actionPtr.Action;
 	auto dispatcher = action->Dispatcher;
 	auto dispatcherInstance = dispatcher->DispatcherInstance;
@@ -61,33 +56,9 @@ UINT_PTR h_CursorWorldContextMenu(UINT_PTR* GameContext, int a2, int a3, int a4,
 }
 
 
-Vec2 Get_ScreenDimension()
-{
-	GLint m_viewport[4];
-
-	glGetIntegerv(GL_VIEWPORT, m_viewport);
-
-	Vec2 dim;
-	dim.x = m_viewport[2];
-	dim.y = m_viewport[3];
-
-	return dim;
-}
-
-
-
 bool h_wglSwapBuffers(HDC hDc)
 {
-
-	auto test = o_wglSwapBuffers(hDc);
-	glDisable(GL_TEXTURE_2D);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 0.0f, 0.0f); // RGB value
-	glVertex2f(0, 0); // Line Origin (top left)
-	glVertex2f(800, 600); // Line end
-	glEnd();
-	glEnable(GL_TEXTURE_2D);
-	return test;
+	return o_wglSwapBuffers(hDc);
 }
 
 
@@ -119,7 +90,6 @@ bool __stdcall Unload()
 	if (detours.Clearhook())
 	{
 		o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", o_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
-		//hook_function((PVOID&)o_wglSwapBuffers, (PBYTE)h_wglSwapBuffers, false);
 
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)OriginalWndProcHandler);
 
@@ -128,6 +98,8 @@ bool __stdcall Unload()
 
 	return false;
 }
+
+
 
 LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -140,13 +112,13 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		if (wParam == VK_INSERT)
 		{
-			 RS::LoopEntityList();
 		}
 		if (wParam == VK_NUMPAD0)
 		{
 			auto test = RS::GetClosestPlayer();
-			float* result = o_GetWOrldTranslation((UINT_PTR*)test->camera);
-			printf("%f %f %f\n", result[0], result[1], result[2]);
+
+			if (!test)
+				return 0;
 		}
 		if (wParam == VK_NUMPAD1)
 		{
@@ -154,16 +126,17 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		if (wParam == VK_NUMPAD2)
 		{
-			auto inventory = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack));
-			auto bank = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Bank));
-			auto coin = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::CoinPouch));
-			printf("inventory: %p %p %p\n", inventory, bank, coin);
+			RS::GetClosestMonster();
+		}
+		if (wParam == VK_NUMPAD3)
+		{
+
 		}
 		if (wParam == VK_OEM_3)
 		{
 			UINT_PTR* PlayerObj = *(UINT_PTR**)(g_GameContext[1] + 0x1780);
 			auto player = o_GetLocalPlayer(PlayerObj);
-			printf("Found %p players and %d entities %s.\n", RS::GetLocalPlayer(), RS::GetEntityCount(), RS::GetLocalPlayer()->Name);
+			printf("Found local player players %p and %d entities %s.\n", RS::GetLocalPlayer(), RS::GetEntityCount(), RS::GetLocalPlayer()->Name);
 			
 		}
 
@@ -207,6 +180,10 @@ bool hooks()
 	o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)Patterns.Func_OnDispatchMessage;
 
 	o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)detours.Hook(o_OnDispatchNetMessage, h_OnDispatchNetMessage, 18);
+
+	//o_Yeet = (fn_Yeet)0x7FF6E48B96A0;
+
+	//o_Yeet = (fn_Yeet)detours.Hook(o_Yeet, h_Yeet, 14);
 
 	o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", h_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
 

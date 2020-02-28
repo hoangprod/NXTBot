@@ -31,7 +31,7 @@ void NpcDef::printOptions()
 
 	for (Option i : stored_options)
 	{
-		printf("[%d] Character %s have option %s\n", i.index, name().data(), i.text.data());
+		printf("[%d] %s have option %s\n", i.index, name().data(), i.text.data());
 	}
 }
 

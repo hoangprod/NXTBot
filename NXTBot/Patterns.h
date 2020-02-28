@@ -11,6 +11,14 @@ struct Addr {
 	UINT_PTR Offset_PlayerContext;
 	UINT_PTR Offset_EntityOffsetList;
 	UINT_PTR Offset_EntityArrayList;
+	UINT_PTR Offset_Health;
+
+	UINT_PTR Offset_AnimationId;  //aa0
+	UINT_PTR Offset_AnimationClass;  //380
+	UINT_PTR Offset_AnimationSpotId; // 768
+	UINT_PTR Offset_GameState;
+	UINT_PTR Offset_TargetedEntity;
+	UINT_PTR Offset_IsCurrentlyTargeting;
 
 	UINT_PTR Func_OnCursorDoAction;
 	UINT_PTR Func_OnCursorWorldContextMenu;
