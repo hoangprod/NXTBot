@@ -42,9 +42,6 @@
     <ClInclude Include="Enums.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Draw.h">
-      <Filter>Hide</Filter>
-    </ClInclude>
     <ClInclude Include="GameClasses.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -91,9 +88,6 @@
     </ClCompile>
     <ClCompile Include="Patterns.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Draw.cpp">
-      <Filter>Hide</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp">
       <Filter>Source Files</Filter>

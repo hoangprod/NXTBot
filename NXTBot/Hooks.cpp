@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Hooks.h"
 #include "Patterns.h"
-#include "Draw.h"
 #include "GameClasses.h"
 #include "EventHandler.h"
 #include "Game.h"
@@ -13,7 +12,6 @@
 
 Detour64 detours;
 HWND hWnd;
-Draw draw;
 extern Addr Patterns;
 bool g_HijackCtrl = false;
 UINT_PTR* g_GameContext = 0;
@@ -62,27 +60,6 @@ bool h_wglSwapBuffers(HDC hDc)
 }
 
 
-BOOL hook_function(PVOID& t1, PBYTE t2, bool hook, const char* s = NULL)
-{
-	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
-	if (hook)
-		DetourAttach(&t1, t2);
-	else
-		DetourDetach(&t1, t2);
-	if (DetourTransactionCommit() != NO_ERROR) {
-#ifdef _DEBUG
-		printf("[Hook] - Failed to hook %s.\n", s);
-#endif
-		return false;
-	}
-	else {
-#ifdef _DEBUG
-		printf("[Hook] - Successfully hooked %s.\n", s);
-#endif
-		return true;
-	}
-}
 
 
 bool __stdcall Unload()
