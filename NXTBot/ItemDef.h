@@ -10,6 +10,7 @@ public:
 
 	std::vector<Option> stored_options;
 
+	bool HaveOption(const char* option);
 	void SetBase(UINT_PTR* base);
 	void printOptions();
 	const uint32_t id();

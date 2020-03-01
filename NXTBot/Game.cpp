@@ -265,8 +265,13 @@ std::vector<EntityObj*> RS::GetInCombatNPCwithMe()
 		{
 			Entity ent = Entity(entity);
 
-			if (ent.CurrentTarget() == player->EntityId && ent.Id() != 4297) // Hardcode Myrtle
-				AttackingNPCs.push_back(entity);
+			if (ent.CurrentTarget() == player->EntityId)
+			{
+				auto npcdef = NpcDef(entity);
+				
+				if(npcdef.HaveOption("Attack"))
+					AttackingNPCs.push_back(entity);
+			}
 
 		}
 	}

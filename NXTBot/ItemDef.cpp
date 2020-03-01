@@ -18,6 +18,21 @@ NpcDef::NpcDef(EntityObj* base)
 	_base = optionBase;
 }
 
+bool NpcDef::HaveOption(const char* option)
+{
+	if (stored_options.size() == 0)
+		if (options().size() == 0)
+			return false;
+
+	for (Option i : stored_options)
+	{
+		if (i.text == option)
+			return true;
+	}
+
+	return false;
+}
+
 void NpcDef::SetBase(UINT_PTR* base)
 {
 	_base = base;

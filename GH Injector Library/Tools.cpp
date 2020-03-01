@@ -53,8 +53,8 @@ bool GetOwnModulePath(wchar_t * pOut, size_t BufferCchSize)
 	BOOL bRet = Module32FirstW(hSnap, &ME32);
 	while (bRet)
 	{
-		if (ME32.hModule == g_hInjMod)
-			break;
+		//if (ME32.hModule == g_hInjMod)
+		//	break;
 		bRet = Module32NextW(hSnap, &ME32);
 	}
 
