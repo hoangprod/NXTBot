@@ -2,7 +2,6 @@
 
 struct Addr {
 	UINT_PTR Addr_MouseIntersectWorld;
-
 	UINT_PTR Addr_MoveActionHandler;
 	UINT_PTR Addr_InventoryActionHandler;
 
@@ -19,12 +18,19 @@ struct Addr {
 	UINT_PTR Offset_GameState;
 	UINT_PTR Offset_TargetedEntity;
 	UINT_PTR Offset_IsCurrentlyTargeting;
+	UINT_PTR Offset_TileList;
+	UINT_PTR Offset_LootObject;
+	UINT_PTR Offset_Widget;
 
 	UINT_PTR Func_OnCursorDoAction;
 	UINT_PTR Func_OnCursorWorldContextMenu;
 	UINT_PTR Func_GetLocalPlayer;
 	UINT_PTR Func_OnDispatchMessage;
 	UINT_PTR Func_GetContainer;
+
+
+	// These are MANUAL updates because real updates is bullshit.
+	UINT_PTR Addr_AttackActionHandler;
 
 };
 

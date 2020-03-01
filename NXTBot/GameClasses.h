@@ -38,36 +38,7 @@ public:
 	virtual void Function9();
 	virtual void Function10();
 	virtual float* GetPos();
-	virtual void Function12();
-	virtual void Function13();
-	virtual void Function14();
-	virtual void Function15();
-	virtual void Function16();
-	virtual void Function17();
-	virtual void Function18();
-	virtual void Function19();
-	virtual void Function20();
-	virtual void Function21();
-	virtual void Function22();
-	virtual void Function23();
-	virtual void Function24();
-	virtual void Function25();
-	virtual void Function26();
-	virtual void Function27();
-	virtual void Function28();
-	virtual void Function29();
-	virtual void Function30();
-	virtual void Function31();
-	virtual void Function32();
-	virtual void Function33();
-	virtual void Function34();
-	virtual void Function35();
-	virtual void Function36();
-	virtual void Function37();
-	virtual void Function38();
-	virtual void Function39();
-	virtual void Function40();
-	virtual void Function41();
+
 }; //Size: 0x0448
 
 class GameContext
@@ -116,6 +87,8 @@ public:
 class Tile2D
 {
 public:
+	Tile2D() :x(0), y(0) {};
+	Tile2D(int32_t _x, int32_t _y) : x(_x), y(_y) {};
 	int32_t x; //0x0000
 	int32_t y; //0x0004
 }; //Size: 0x0008
@@ -168,13 +141,21 @@ public:
 	void* dispatcherFunc; //0x0010
 }; //Size: 0x0018
 
+class FakeItem
+{
+public:
+	int ItemId; //0x0000
+	uint32_t ItemQuantity; //0x0004
+}; //Size: 0x0008
+
+
 class ContainerObj
 {
 public:
 	char pad_0000[8]; //0x0000
 	uint32_t ContainerId; //0x0008
 	char pad_000C[4]; //0x000C
-	void* ContainerContent; //0x0010
+	FakeItem* ContainerContent; //0x0010
 	char pad_0018[16]; //0x0018
 }; //Size: 0x0028
 
@@ -214,7 +195,63 @@ public:
 	virtual void Function17();
 }; //Size: 0x0440
 
+class TileList
+{
+public:
+	char pad_0000[48]; //0x0000
+	class TileInfo* LastTile; //0x0030
+	class TileInfo* NextTile; //0x0038
+	char pad_0040[16]; //0x0040
+	uint32_t LootTileCount; //0x0050
+}; //Size: 0x0054
 
+class TileInfo
+{
+public:
+	char pad_0000[32]; //0x0000
+	int32_t Plane; //0x0020
+	int32_t TileX; //0x0024
+	int32_t TileY; //0x0028
+	char pad_002C[12]; //0x002C
+	class LootInfo* LootInfo; //0x0038
+}; //Size: 0x0040
+
+
+class LootInfo
+{
+public:
+	char pad_0000[264]; //0x0000
+	class FakeItem* LootArray; //0x0108
+	void* LastLootPtr; //0x0110
+}; //Size: 0x0118
+
+class Tile3D
+{
+public:
+	Tile3D() :x(0), y(0), plane(0){};
+	Tile3D(int32_t _plane, int32_t _x, int32_t _y) : plane(_plane), x(_x), y(_y) {};
+	int32_t plane;
+	int32_t x; //0x0000
+	int32_t y; //0x0004
+}; //Size: 0x0008
+
+class FakeItemEX
+{
+public:
+	FakeItemEX() { ItemId = -1; };
+	FakeItemEX(uint32_t id, uint32_t quantity, uint32_t _x, uint32_t _y, uint32_t plane)
+	{
+		ItemId = id;
+		ItemQuantity = quantity;
+		Pos.x = _x;
+		Pos.y = _y;
+		Pos.plane = plane;
+	};
+
+	int ItemId; //0x0000
+	uint32_t ItemQuantity; //0x0004
+	Tile3D Pos;
+}; //Size: 0x0008
 
 enum class ContainerType : uint32_t {
 	Trade = 90,
@@ -232,10 +269,21 @@ enum class ContainerType : uint32_t {
 enum EntityType {
 	Object = 0,
 	NPC = 1,
-	Player = 2,
+	Players = 2,
 	GroundItem = 3,
 	Object2 = 12
 };
+
+enum class GameState {
+	LoginScreen = 10,
+	Lobby = 20,
+	Ingame = 30,
+	Disconnected = 40,
+	Reconnecting = 35,
+	PleaseWait = 37,
+	Unknown = 666
+};
+
 
 #pragma pack(push)
 struct dataStruct {
@@ -252,7 +300,13 @@ typedef bool(__fastcall* fn_OnDispatchNetMessage)(UINT_PTR* a1, UINT_PTR* a2);
 typedef float*(__fastcall* fn_GetWOrldTranslation)(UINT_PTR* camera);
 typedef void(__fastcall* fn_GUIManagerRender)(UINT_PTR* a1);
 
-
 typedef UINT_PTR*(__fastcall* fn_GetContainerPtr)(UINT_PTR* ContainerManager, uint32_t containerId, uint8_t idk);
 
 #define ReadPtrOffset(address, x) ((uint64_t)address == 0 || ((uint64_t)address % sizeof(uint64_t)) != 0) ? (0) : *(uint64_t*)((uint64_t)address + x)
+
+
+
+#define BANK_GROUP 0x5c5
+#define CONVERSATION_CHILD 0x5C502B2
+#define DEPOSIT_CHILD 0x5C502A5
+

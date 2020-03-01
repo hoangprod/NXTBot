@@ -3,9 +3,11 @@
 #include "Patterns.h"
 #include "Inventory.h"
 #include "Game.h"
+#include "Helper.h"
 #include "PlayableEntity.h"
 
 extern UINT_PTR* g_GameContext;
+extern UINT_PTR g_Module;
 extern Addr Patterns;
 
 bool Player::Move(Tile2D tile)
@@ -42,7 +44,25 @@ bool Player::Move(Tile2D tile)
 
 bool Player::Attack(uint32_t Entity)
 {
-	return false;
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = Entity;
+	*reinterpret_cast<int*>(&data[0x54]) = 0;
+	*reinterpret_cast<int*>(&data[0x58]) = 0;
+
+	uint64_t func_ptr = g_Module + 0x094A90;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _Attack)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_Attack>(func_ptr)(g_GameContext, &dt);
+
+	return true;
 }
 
 bool Player::Talk(uint32_t Entity)
@@ -55,9 +75,149 @@ bool Player::Bank(uint32_t Entity)
 	return false;
 }
 
-bool Player::Loot(uint32_t ObjectId)
+bool Player::Loot(FakeItemEX ObjectId)
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = ObjectId.ItemId;
+	*reinterpret_cast<int*>(&data[0x54]) = ObjectId.Pos.x;
+	*reinterpret_cast<int*>(&data[0x58]) = ObjectId.Pos.y;
+
+	uint64_t func_ptr = g_Module + 0x94b90;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _Loot)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_Loot>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Player::LootAllConfirm()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = 1;
+	*reinterpret_cast<int*>(&data[0x54]) = -1;
+	*reinterpret_cast<int*>(&data[0x58]) = 0x6560015;
+
+	uint64_t func_ptr = g_Module + 0x94940;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Player::DepositActionNPC()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = 4297; // Hardcoded for Wizard Myrtle
+
+	uint64_t func_ptr = g_Module + 0x94ab0;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef uintptr_t(__cdecl* _InteractionDepositNPC)(uint64_t* _this, void* dataPtr);
+	auto test = reinterpret_cast<_InteractionDepositNPC>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Player::ConfirmChat()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = 0;
+	*reinterpret_cast<int*>(&data[0x54]) = -1;
+	*reinterpret_cast<int*>(&data[0x58]) = 0x4A0000F; // Hardcoded
+
+	uint64_t func_ptr = g_Module + 0x94930;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef uintptr_t(__cdecl* _InteractionDepositNPC)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_InteractionDepositNPC>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Player::DepositAll()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = 1;
+	*reinterpret_cast<int*>(&data[0x54]) = -1;
+	*reinterpret_cast<int*>(&data[0x58]) = 0xb0005; // Hardcoded
+
+	uint64_t func_ptr = g_Module + 0x94940;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef uintptr_t(__cdecl* _BankDepositAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_BankDepositAll>(func_ptr)(g_GameContext, &dt);
+	return true;
+}
+
+bool Player::inCombat()
+{
+	if (MovingState() == -1 && bTargeting() && CurrentTarget() != -1 && RS::GetInCombatNPCwithMe().size() > 0)
+		return true;
+	return false;
+}
+
+bool Player::isMoving()
+{
+	auto movingState = MovingState();
+
+	if (movingState == 1 || movingState == 2)
+		return true;
+
+	return false;
+}
+
+bool Player::isNextTo(uint32_t Entity)
 {
 	return false;
+}
+
+void Player::Test()
+{
+	printf("===== Performing test =====\n");
+	printf("Moving state: %d\n", MovingState());
+	printf("Id: %d   Type: %d\n", Id(), GetType());
+	printf("Targeting %d   CurrentTarget: %d\n", bTargeting(), CurrentTarget());
+	printf("Current Ani: %d  SpotAni: %d\n", CurrentAnimation(), CurrentSpotAnimation());
+	printf("Tile Pos: %d %d\n", GetTilePosition().x, GetTilePosition().y);
+	printf("GetName: %s\n", GetName().data());
 }
 
 int Entity::MovingState()
@@ -142,12 +302,12 @@ uint32_t Entity::GetType()
 	return entity->EntityType;
 }
 
-uint32_t Entity::bTargeting()
+bool Entity::bTargeting()
 {
 	if (!_base)
 		return 0;
 
-	return *(int*)((UINT_PTR)_base + Patterns.Offset_IsCurrentlyTargeting);
+	return *(int*)((UINT_PTR)_base + Patterns.Offset_IsCurrentlyTargeting) == 1;
 }
 
 uint32_t Entity::CurrentTarget()

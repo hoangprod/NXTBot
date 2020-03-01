@@ -6,6 +6,43 @@
 extern UINT_PTR* g_GameContext;
 extern Addr Patterns;
 
+uint32_t Inventory::GetFreeSlot()
+{
+	return 28 - GetInventoryItems().size();
+}
+
+std::vector<FakeItem> Inventory::GetInventoryItems()
+{
+	std::vector<FakeItem> Result;
+
+	auto inventory = GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack));
+
+	if (!inventory || inventory->ContainerContent == 0)
+	{
+		return Result;
+	}
+
+	for (int i = 0; i < 28; i++)
+	{
+		FakeItem item = inventory->ContainerContent[i];
+
+		if (item.ItemId != -1)
+			Result.push_back(item);
+	}
+
+	return Result;
+}
+
+bool Inventory::isBankOpened()
+{
+	return GetContainerObj(static_cast<uint32_t>(ContainerType::Bank));
+}
+
+bool Inventory::isInventoryFull()
+{
+	return GetFreeSlot() == 0;
+}
+
 ContainerObj* Inventory::GetContainerObj(uint32_t containerId)
 {
 	auto gContext = g_GameContext[1];

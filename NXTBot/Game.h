@@ -12,6 +12,9 @@ struct RS {
 ;	static EntityObjWrap* GetEntityWrapByIndex(uint32_t Index);
 	static EntityObj* GetEntityObjByIndex(uint32_t Index);
 
+	static GameState GetGameState();
+	static BOOL IsInGame();
+	static std::string GetGameStateStr();
 
 	static Tile2D GetMouseIntersectWorldPos();
 	static Tile2D GetEntityTilePos(EntityObj* entity);
@@ -21,11 +24,19 @@ struct RS {
 
 
 	static float GetDistance(Tile2D from, Tile2D to);
+	static float GetDistanceFromEntity(uint32_t EntityId);
+	static std::vector<EntityObj*> GetInCombatNPCwithMe();
 	static std::vector<EntityObj*> GetNPCEntityList();
 	static std::vector<EntityObj*> GetPlayerEntityList();
 	static EntityObj* GetClosestPlayer();
 	static EntityObj* GetClosestMonster();
+	static EntityObj* GetEntityObjectByEntityId(uint32_t EntityId);
+	static EntityObj* GetMonsterWithinRadius(Tile2D from, float MaxDistance);
+	static EntityObj* GetClosestMonsterWithinRadius(Tile2D from, float MaxDistance);
 
 	static Tile2D WorldToTilePos(const int32_t wX, const int32_t wY);
+
+	static std::string ItemIdToString(uint32_t itemId);
+	static std::string ItemNameToId(std::string itemName);
 };
 

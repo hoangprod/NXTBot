@@ -22,6 +22,7 @@
 #include "glew/GL/glew.h"
 #include <gl\glut.h>
 
+#include "json.hpp"
 #include "Exception.h"
 
 #endif //PCH_H

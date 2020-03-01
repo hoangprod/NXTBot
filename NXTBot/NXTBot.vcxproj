@@ -113,6 +113,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ExceptionHandling>Async</ExceptionHandling>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,6 +154,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ExceptionHandling>Async</ExceptionHandling>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -164,8 +166,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Enums.h" />
-    <ClInclude Include="EventHandler.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
@@ -174,17 +174,20 @@
     <ClInclude Include="Hooks.h" />
     <ClInclude Include="Inventory.h" />
     <ClInclude Include="ItemDef.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Patterns.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlayableEntity.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="Scan.h" />
+    <ClInclude Include="Tile.h" />
     <ClInclude Include="VMT.h" />
+    <ClInclude Include="Widgets.h" />
+    <ClInclude Include="Wisp.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="EventHandler.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameClasses.cpp" />
     <ClCompile Include="Helper.cpp" />
@@ -202,6 +205,9 @@
     <ClCompile Include="PlayableEntity.cpp" />
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="Scan.cpp" />
+    <ClCompile Include="Tile.cpp" />
+    <ClCompile Include="Widgets.cpp" />
+    <ClCompile Include="Wisp.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

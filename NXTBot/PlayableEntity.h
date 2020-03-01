@@ -3,7 +3,9 @@
 class Entity
 {
 public:
+	Entity() { _base = 0; };
 	Entity(UINT_PTR* base) { _base = base; };
+	Entity(EntityObj* base) { _base = (UINT_PTR*)base; };
 
 	int MovingState();
 	int NPCCurHealth();
@@ -11,11 +13,11 @@ public:
 
 	uint32_t Id();
 	uint32_t GetType();
-	uint32_t bTargeting();
 	uint32_t CurrentTarget();
 	uint32_t CurrentAnimation();
 	uint32_t CurrentSpotAnimation();
 
+	bool bTargeting();
 	float* GetPosition();
 	Tile2D GetTilePosition();
 	std::string GetName();
@@ -24,12 +26,28 @@ public:
 };
 
 
-class Player : Entity
+class Player : public Entity
 {
 public:
+	Player(UINT_PTR* player) { _base = player; };
+	Player(EntityObj* player) { _base = (UINT_PTR*)player; };
+
 	bool Move(Tile2D tile);
 	bool Attack(uint32_t Entity);
 	bool Talk(uint32_t Entity);
 	bool Bank(uint32_t Entity);
-	bool Loot(uint32_t ObjectId);
+	bool Loot(FakeItemEX lootItem);
+
+
+	bool LootAllConfirm();
+	bool DepositActionNPC();
+	bool ConfirmChat();
+	bool DepositAll();
+	
+	
+	bool inCombat();
+	bool isMoving();
+	bool isNextTo(uint32_t Entity);
+
+	void Test();
 };

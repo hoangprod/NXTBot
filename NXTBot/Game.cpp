@@ -2,6 +2,7 @@
 #include "GameClasses.h"
 #include "Patterns.h"
 #include "ItemDef.h"
+#include "PlayableEntity.h"
 #include "Game.h"
 
 extern UINT_PTR* g_GameContext;
@@ -83,6 +84,9 @@ PlayerObjWrapper* RS::GetPlayerObjWrapperByIndex(uint32_t Index)
 {
 	UINT_PTR* PlayerListWrapper = (UINT_PTR*)GetPlayerListWrapper();
 
+	if (!PlayerListWrapper)
+		return 0;
+
 	int EntityIdx = *(int*)(ReadPtrOffset(PlayerListWrapper, Patterns.Offset_EntityArrayList) + 4 * (UINT_PTR)Index);
 
 	if (!PlayerListWrapper)
@@ -133,6 +137,55 @@ EntityObj* RS::GetEntityObjByIndex(uint32_t Index)
 		return 0;
 
 	return EntityPtrWrap->EntityObj;
+}
+
+GameState RS::GetGameState()
+{
+	GameContext* context = RS::GetGameContext();
+
+	if (!context)
+		return GameState::Unknown;
+
+	return *(GameState*)(((UINT_PTR)context) + Patterns.Offset_GameState);
+}
+
+BOOL RS::IsInGame()
+{
+	return GetGameState() == GameState::Ingame;
+}
+
+std::string RS::GetGameStateStr()
+{
+	GameState state = RS::GetGameState();
+
+	switch (state)
+	{
+	case GameState::LoginScreen:
+		return "Login Screen";
+		break;
+	case GameState::Lobby:
+		return "Lobby";
+		break;
+	case GameState::Ingame:
+		return "Ingame";
+		break;
+	case GameState::Disconnected:
+		return "Disconnected";
+		break;
+	case GameState::Reconnecting:
+		return "Reconnecting";
+		break;
+	case GameState::PleaseWait:
+		return "Please Wait";
+		break;
+	case GameState::Unknown:
+		return "Invalid Context";
+		break;
+	default:
+		return "Unknown";
+		break;
+	}
+
 }
 
 
@@ -187,6 +240,40 @@ float RS::GetDistance(Tile2D from, Tile2D to)
 	return sqrtf(pow(((int64_t)from.x - (int64_t)to.x), 2) + pow(((int64_t)from.y - (int64_t)to.y), 2));
 }
 
+float RS::GetDistanceFromEntity(uint32_t EntityId)
+{
+	auto Entity = GetEntityObjectByEntityId(EntityId);
+
+	if(!Entity)
+		return -1.0f;
+}
+
+std::vector<EntityObj*> RS::GetInCombatNPCwithMe()
+{
+	EntityObj* player = GetLocalPlayer();
+
+	std::vector<EntityObj*> EntityList = RS::GetNPCEntityList();
+
+	std::vector<EntityObj*> AttackingNPCs;
+
+	if (!player || EntityList.size() <= 0)
+		return AttackingNPCs;
+
+	for (auto entity : EntityList)
+	{
+		if (entity)
+		{
+			Entity ent = Entity(entity);
+
+			if (ent.CurrentTarget() == player->EntityId && ent.Id() != 4297) // Hardcode Myrtle
+				AttackingNPCs.push_back(entity);
+
+		}
+	}
+
+	return AttackingNPCs;
+}
+
 std::vector<EntityObj*> RS::GetNPCEntityList()
 {
 	auto Count = GetEntityCount();
@@ -198,7 +285,7 @@ std::vector<EntityObj*> RS::GetNPCEntityList()
 
 	EntityList.reserve(Count + 10);
 
-	for (int i = 0; i < Count + 10; i++)
+	for (uint32_t i = 0; i < Count + 10; i++)
 	{
 		auto entity = GetEntityObjByIndex(i);
 
@@ -208,8 +295,6 @@ std::vector<EntityObj*> RS::GetNPCEntityList()
 		if (strlen(entity->Name) > 0)
 		{
 			EntityList.push_back(entity);
-			// auto npcdef = NpcDef(entity);
-			// npcdef.printOptions();
 		}
 	}
 
@@ -256,7 +341,7 @@ EntityObj* RS::GetClosestPlayer()
 	auto player = GetLocalPlayer();
 
 	auto localPlayerTile = GetLocalPlayerTilePos();
-	for (int i = 0; i < Count + 20; i++)
+	for (uint32_t i = 0; i < Count + 20; i++)
 	{
 
 		auto entity = GetPlayerObjByIndex(i);
@@ -264,9 +349,6 @@ EntityObj* RS::GetClosestPlayer()
 		if (!entity || *(UINT_PTR*)entity == 0)
 			continue;
 
-
-		if (player->EntityType == GroundItem)
-			printf("wtf\n");
 
 		if (strlen(entity->Name) > 0 && entity->EntityId != player->EntityId)
 		{
@@ -299,7 +381,7 @@ EntityObj* RS::GetClosestMonster()
 
 	auto localPlayerTile = GetLocalPlayerTilePos();
 
-	for (int i = 0; i < Count + 20; i++)
+	for (uint32_t i = 0; i < Count + 20; i++)
 	{
 		auto entity = GetEntityObjByIndex(i);
 
@@ -310,6 +392,83 @@ EntityObj* RS::GetClosestMonster()
 		float distance = GetDistance(localPlayerTile, GetEntityTilePos(entity));
 
 		if (distance < closest)
+		{
+			closest = distance;
+			ret = entity;
+		}
+	}
+
+	if (ret && strlen(ret->Name) > 0)
+		return ret;
+
+	return 0;
+}
+
+EntityObj* RS::GetEntityObjectByEntityId(uint32_t EntityId)
+{
+	auto Entities = GetNPCEntityList();
+
+	for (auto ent : Entities)
+	{
+		if (ent->EntityId == EntityId)
+		{
+			return ent;
+		}
+	}
+
+	return nullptr;
+}
+
+EntityObj* RS::GetMonsterWithinRadius(Tile2D from, float MaxDistance)
+{
+	auto Count = GetEntityCount();
+
+	if (!Count)
+		return 0;
+
+	for (uint32_t i = 0; i < Count + 20; i++)
+	{
+		auto entity = GetEntityObjByIndex(i);
+
+		auto ent = Entity(entity);
+
+		if (!entity || *(UINT_PTR*)entity == 0 || entity->EntityType != 1 || ent.NPCCurHealth() == 0)
+			continue;
+
+		float distance = GetDistance(from, GetEntityTilePos(entity));
+
+		if (distance < MaxDistance)
+		{
+			if (entity && strlen(entity->Name) > 0)
+				return entity;
+		}
+	}
+
+	return 0;
+}
+
+EntityObj* RS::GetClosestMonsterWithinRadius(Tile2D from, float MaxDistance)
+{
+	auto Count = GetEntityCount();
+
+	EntityObj* ret = 0;
+
+	float closest = 99999.0f;
+
+	if (!Count)
+		return 0;
+
+	for (uint32_t i = 0; i < Count + 20; i++)
+	{
+		auto entity = GetEntityObjByIndex(i);
+
+
+		if (!entity || *(UINT_PTR*)entity == 0 || entity->EntityType != 1)
+			continue;
+
+		float distance = GetDistance(from, GetEntityTilePos(entity));
+
+		if (distance < MaxDistance && distance < closest)
 		{
 			closest = distance;
 			ret = entity;
