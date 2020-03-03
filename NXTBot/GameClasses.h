@@ -307,6 +307,6 @@ typedef UINT_PTR*(__fastcall* fn_GetContainerPtr)(UINT_PTR* ContainerManager, ui
 
 
 #define BANK_GROUP 0x5c5
-#define CONVERSATION_CHILD 0x5C502B2
-#define DEPOSIT_CHILD 0x5C502A5
-
+#define CONVERSATION_WIDGET 0x5C502B2
+#define DEPOSIT_WIDGET 0x5C502A5
+#define BANKING_WIDGET 0x5C5027B

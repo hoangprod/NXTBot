@@ -409,6 +409,21 @@ EntityObj* RS::GetClosestMonster()
 	return 0;
 }
 
+EntityObj* RS::GetEntityNPCByName(const char* name)
+{
+	auto Entities = GetNPCEntityList();
+
+	for (auto ent : Entities)
+	{
+		if (strcmp(name, ent->Name) == 0)
+		{
+			return ent;
+		}
+	}
+
+	return nullptr;
+}
+
 EntityObj* RS::GetEntityObjectByEntityId(uint32_t EntityId)
 {
 	auto Entities = GetNPCEntityList();
@@ -445,6 +460,34 @@ EntityObj* RS::GetMonsterWithinRadius(Tile2D from, float MaxDistance)
 		if (distance < MaxDistance)
 		{
 			if (entity && strlen(entity->Name) > 0)
+				return entity;
+		}
+	}
+
+	return 0;
+}
+
+EntityObj* RS::GetMonsterWithinRadiusWithName(const char* monsterName, Tile2D from, float MaxDistance)
+{
+	auto Count = GetEntityCount();
+
+	if (!Count)
+		return 0;
+
+	for (uint32_t i = 0; i < Count + 20; i++)
+	{
+		auto entity = GetEntityObjByIndex(i);
+
+		auto ent = Entity(entity);
+
+		if (!entity || *(UINT_PTR*)entity == 0 || entity->EntityType != 1 || ent.NPCCurHealth() == 0)
+			continue;
+
+		float distance = GetDistance(from, GetEntityTilePos(entity));
+
+		if (distance < MaxDistance)
+		{
+			if (entity && strlen(entity->Name) > 0 && strcmp(entity	->Name, monsterName) == 0)
 				return entity;
 		}
 	}
@@ -494,4 +537,14 @@ Tile2D RS::WorldToTilePos(const int32_t wX, const int32_t wY) {
 	tile.y = (wY / 512) & 0xFFF;
 
 	return tile;
+}
+
+std::string RS::ItemIdToString(uint32_t itemId)
+{
+	return std::string();
+}
+
+int RS::ItemNameToId(std::string itemName)
+{
+	return 0;
 }

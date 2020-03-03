@@ -70,9 +70,32 @@ bool Player::Talk(uint32_t Entity)
 	return false;
 }
 
-bool Player::Bank(uint32_t Entity)
+bool Player::BankUsingNPC(uint32_t targetEntity)
 {
-	return false;
+	auto ent = RS::GetEntityObjectByEntityId(targetEntity);
+
+	if (!ent)
+		return false;
+
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = ent->EntityId;
+	*reinterpret_cast<int*>(&data[0x54]) = 0;
+	*reinterpret_cast<int*>(&data[0x58]) = 0;
+
+	uint64_t func_ptr = g_Module + 0x94a70;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _Loot)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_Loot>(func_ptr)(g_GameContext, &dt);
+
+	return true;
 }
 
 bool Player::Loot(FakeItemEX ObjectId)
@@ -121,11 +144,11 @@ bool Player::LootAllConfirm()
 	return true;
 }
 
-bool Player::DepositActionNPC()
+bool Player::DepositActionNPC(uint32_t Entity)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = 4297; // Hardcoded for Wizard Myrtle
+	*reinterpret_cast<int*>(&data[0x50]) = Entity;
 
 	uint64_t func_ptr = g_Module + 0x94ab0;
 
@@ -138,6 +161,29 @@ bool Player::DepositActionNPC()
 
 	typedef uintptr_t(__cdecl* _InteractionDepositNPC)(uint64_t* _this, void* dataPtr);
 	auto test = reinterpret_cast<_InteractionDepositNPC>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Player::DepositAllThroughBank()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = 1;
+	*reinterpret_cast<int*>(&data[0x54]) = -1;
+	*reinterpret_cast<int*>(&data[0x58]) = 0x2050025;
+
+	uint64_t func_ptr = g_Module + 0x94940;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
 
 	return true;
 }
@@ -310,7 +356,7 @@ bool Entity::bTargeting()
 	return *(int*)((UINT_PTR)_base + Patterns.Offset_IsCurrentlyTargeting) == 1;
 }
 
-uint32_t Entity::CurrentTarget()
+int Entity::CurrentTarget()
 {
 	if (!_base)
 		return 0;

@@ -18,6 +18,7 @@
 #include <detours.h>
 #include <string>
 #include <mutex>
+#include <fstream>
 
 #include "glew/GL/glew.h"
 #include <gl\glut.h>

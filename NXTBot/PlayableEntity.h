@@ -13,7 +13,7 @@ public:
 
 	uint32_t Id();
 	uint32_t GetType();
-	uint32_t CurrentTarget();
+	int CurrentTarget();
 	uint32_t CurrentAnimation();
 	uint32_t CurrentSpotAnimation();
 
@@ -35,12 +35,14 @@ public:
 	bool Move(Tile2D tile);
 	bool Attack(uint32_t Entity);
 	bool Talk(uint32_t Entity);
-	bool Bank(uint32_t Entity);
+	bool BankUsingNPC(uint32_t Entity);
 	bool Loot(FakeItemEX lootItem);
 
 
 	bool LootAllConfirm();
-	bool DepositActionNPC();
+	
+	bool DepositActionNPC(uint32_t Entity);
+	bool DepositAllThroughBank();
 	bool ConfirmChat();
 	bool DepositAll();
 	

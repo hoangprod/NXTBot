@@ -115,6 +115,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ExceptionHandling>Async</ExceptionHandling>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -154,8 +155,9 @@
       <PreprocessorDefinitions>GLUT_STATIC_LIB;GLEW_STATIC;NDEBUG;NXTBOT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <ExceptionHandling>Async</ExceptionHandling>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -176,6 +178,7 @@
     <ClInclude Include="Inventory.h" />
     <ClInclude Include="ItemDef.h" />
     <ClInclude Include="json.hpp" />
+    <ClInclude Include="Manager.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Patterns.h" />
     <ClInclude Include="pch.h" />
@@ -195,6 +198,7 @@
     <ClCompile Include="Hooks.cpp" />
     <ClCompile Include="Inventory.cpp" />
     <ClCompile Include="ItemDef.cpp" />
+    <ClCompile Include="Manager.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="Patterns.cpp" />
     <ClCompile Include="pch.cpp">

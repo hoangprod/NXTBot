@@ -11,6 +11,7 @@
 #include "PlayableEntity.h"
 #include "Widgets.h"
 #include "Wisp.h"
+#include "Manager.h"
 #include "Helper.h"
 
 Detour64 detours;
@@ -28,8 +29,8 @@ fn_CursorWorldContextMenu o_CursorWorldConextMenu;
 fn_OnDispatchNetMessage o_OnDispatchNetMessage;
 fn_GUIManagerRender o_Render;
 
-bool Wisping = false;
-Wisp* wisp = 0;
+nlohmann::json itemList;
+
 
 bool h_OnDispatchNetMessage(UINT_PTR* a1, UINT_PTR* a2)
 {
@@ -61,34 +62,11 @@ UINT_PTR h_CursorWorldContextMenu(UINT_PTR* GameContext, int a2, int a3, int a4,
 	return o_CursorWorldConextMenu(GameContext, a2, a3, a4, a5);
 }
 
-uint64_t tick = 200;
 
 bool h_wglSwapBuffers(HDC hDc)
 {
-	static uint64_t last_tick = 0;
-
-	if (Wisping && wisp)
-	{
-		uint32_t randomTick = (rand() % 400 + 30);
-		// If X ticks have not past yet + a random of 30-300~ ticks
-		if ((last_tick + tick + randomTick) < GetTickCount64())
-		{
-			if (randomTick % 5 == 0)
-			{
-				SendMessage(hWnd, WM_KEYDOWN, VK_INSERT, 0);
-				SendMessage(hWnd, WM_KEYUP, VK_INSERT, 0);
-			}
-
-			if (RS::IsInGame())
-				wisp->FSM();
-
-			last_tick = GetTickCount64();
-		}
-	}
-
-
-
-
+	// Botting
+	Manager::Manage();
 
 	return o_wglSwapBuffers(hDc);
 }
@@ -108,6 +86,31 @@ bool __stdcall Unload()
 	return false;
 }
 
+static BOOL CALLBACK enumWindowCallback(HWND hWndv, LPARAM lparam) {
+
+	DWORD lpdwProcessId;
+	GetWindowThreadProcessId(hWndv, &lpdwProcessId);
+
+	if(lpdwProcessId == lparam)
+	{
+		char* buffer = new char[MAX_PATH];
+
+
+		GetClassNameA(hWndv, buffer, MAX_PATH);
+		std::string windowTitle(buffer);
+
+		// List visible windows with a non-empty title
+		if (windowTitle.length() != 0 && windowTitle == "JagWindow") {
+			hWnd = FindWindowExW(hWndv, 0, L"JagOpenGLView", 0);
+			return TRUE;
+		}
+
+		delete[] buffer;
+	}
+	return TRUE;
+}
+
+
 
 LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -118,16 +121,9 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	if (uMsg == WM_KEYUP)
 	{
-		if (wParam == VK_NUMPAD9)
-		{
-			auto player = RS::GetLocalPlayer();
 
-			Player * playerz = new Player(player);
+		Manager::Keystates(wParam);
 
-			wisp = new Wisp();
-
-			Wisping = true;
-		}
 		if (wParam == VK_NUMPAD0)
 		{
 			printf("gcontext = %p\n", g_GameContext);
@@ -137,85 +133,65 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			if (wParam == VK_NUMPAD1)
 			{
-				auto test = Inventory::GetInventoryItems();
-
-				printf("size :%lld\n", test.size());
-				for (auto i : test)
+				if (itemList.size() == 0)
 				{
-					printf("%d %d\n", i.ItemId, i.ItemQuantity);
+					std::ifstream inputs("C:\\ProgramData\\Jagex\\launcher\\ItemList.json");
+
+					if (!inputs.fail() && inputs.peek() != std::ifstream::traits_type::eof()) {
+						printf("Input is legit\n");
+						inputs >> itemList;
+					}
+					else
+					{
+						printf("wtf?\n");
+					}
+
+
+				//	inputs.close();
 				}
 
 
+				printf("%d %d\n", itemList.count("1925"), itemList.count("99999999"));
+
+				if (itemList.count("1925") > 0)
+				{
+					std::string iteName = itemList["1925"]["name"].get<std::string>();
+
+					printf("%s\n", iteName.data());
+				}
 			}
 			if (wParam == VK_NUMPAD2)
 			{
-				auto test = Inventory::GetFreeSlot();
-
-				printf("test %p\n", test);
 			}
 			if (wParam == VK_NUMPAD3)
 			{
-				/*
-				auto test = Tile::GetTilesWithLoot();
-				printf("Found %lld loots.\n", test.size());
-
-				auto work = Tile::GetAllLootsNearby();
-
-				for (auto loot : work)
-				{
-					printf("Loot id: %d Quantity: %d  X:  %d   Y: %d  Plane: %d\n", loot.ItemId, loot.ItemQuantity, loot.Pos.x, loot.Pos.y, loot.Pos.plane);
-				}*/
-
-
-				auto test = Tile::GetClosestItem(15.0f);
-
-				auto container = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::AreaLoot));
-				auto player = RS::GetLocalPlayer();
-				Player playerz = Player((UINT_PTR*)player);
-				if (!container && test.ItemId != -1)
-				{
-					playerz.Loot(test);
-				}
-				else
-				{
-					playerz.LootAllConfirm();
-				}
 			}
 			if (wParam == VK_NUMPAD4)
 			{
-				auto player = RS::GetLocalPlayer();
-				Player playerz = Player((UINT_PTR*)player);
-
-				auto closest = RS::GetClosestMonster();
-
-				playerz.Attack(closest->EntityId);
 			}
 			if (wParam == VK_NUMPAD5)
 			{
-				auto test = RS::GetInCombatNPCwithMe();
-
-				for (auto i : test)
-					printf("%s\n",i->Name);
-
 			}
 			if (wParam == VK_NUMPAD6)
 			{
+				/*
 				auto localplayer = RS::GetLocalPlayer();
 				Player play = Player(localplayer);
 				play.Test();
-
+				*/
 			}
 			if (wParam == VK_OEM_3)
 			{
+#ifdef _DEBUG
 				UINT_PTR* PlayerObj = *(UINT_PTR**)(g_GameContext[1] + 0x1780);
 				auto player = o_GetLocalPlayer(PlayerObj);
 				printf("Found local player players %p and %d entities %s.\n", RS::GetLocalPlayer(), RS::GetEntityCount(), RS::GetLocalPlayer()->Name);
-			
+#endif
 			}
 		}
 		if (wParam == VK_CONTROL)
 		{
-			g_HijackCtrl = !g_HijackCtrl;
+
 		}
 	}
 
@@ -225,10 +201,18 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return CallWindowProc(OriginalWndProcHandler, hWnd, uMsg, wParam, lParam);
 }
 
-
-
 bool hooks()
 {
+
+	do
+	{
+		printf("[+] Finding the correct HWND\n");
+		EnumWindows(enumWindowCallback, GetCurrentProcessId());
+		Sleep(1000);
+	} while (!hWnd);
+
+	printf("[+] Found HWND at %p\n", hWnd);
+
 	g_Module = (UINT_PTR)HdnGetModuleBase("rs2client.exe");
 
 	if (!findPatterns())
@@ -237,10 +221,9 @@ bool hooks()
 		return false;
 	}
 
-	hWnd = FindWindowEx(FindWindow(L"JagWindow", 0), 0, L"JagOpenGLView", 0);
-
 	if (!hWnd)
 		return false;
+		
 
 	o_GetLocalPlayer = (fn_GetLocalPlayer)Patterns.Func_GetLocalPlayer;
 
@@ -266,5 +249,11 @@ bool hooks()
 
 	OriginalWndProcHandler = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)hWndProc);
 
+
+
+
+#ifdef NDEBUG
+	Beep(523, 500);
+#endif
 	return true;
 }

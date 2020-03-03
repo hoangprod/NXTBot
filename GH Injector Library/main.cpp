@@ -50,16 +50,75 @@ bool isReady(HWND hwnd)
 	return false;
 }
 
-int WINAPI main()
+
+DWORD WINAPI inject(LPVOID pidz)
 {
+	int pid = *static_cast<int*>(pidz);
+
 	DWORD Err = 0;
 	DWORD Ret = 0;
 
 	HINSTANCE out;
 	const wchar_t* szDll = L"NXTBot.dll";
 
+	printf("[+] Found new client with pid %d\n", pid);
+
+	HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, false, pid);
+
+	// Let it load first
+
+	printf("[+] Waiting for runescape client with pid %d to load.\n", pid);
+
+	Sleep(1000);
+
+	if (!hProc)
+	{
+		std::cout << "[!] Error Opening Process => " << "0x" << std::hex << hProc << std::endl;
+		delete pidz;
+		return 0;
+	}
+
+	Ret = _ManualMap(szDll, hProc, LAUNCH_METHOD::LM_HijackThread, INJ_ERASE_HEADER, out, Err);
+
+
+	if (Err || Ret)
+		printf("[!] Error %d when injecting.\n", Err);
+	else
+	{
+		std::cout << "[+] Injected into runescape with handle => " << "0x" << std::hex << hProc << "\n";
+		std::cout << "[+] HModule of DLL is => " << "0x" << std::hex << out << "\n";
+	}
+
+	if (Ret)
+	{
+		std::cout << "[!] Error Injecting into => " << "0x" << std::hex << pid << std::endl;
+	}
+
+	CloseHandle(hProc);
+
+	printf("==========================================\n");
+
+	delete pidz;
+
+	return 1;
+}
+
+int WINAPI main()
+{
+
+
 	while (TRUE)
 	{
+
+		while (TRUE)
+		{
+			if (GetAsyncKeyState(VK_END) & 1)
+				break;
+
+			Sleep(50);
+		}
+
+
 		auto pids = GetPIDs(L"rs2client.exe");
 
 		for (auto pid : pids)
@@ -68,48 +127,16 @@ int WINAPI main()
 			if (isInList(pid))
 				continue;
 
-			printf("[+] Found new client with pid %d\n", pid);
-
-			HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, false, pid);
-
-			// Let it load first
-			
-			printf("[+] Waiting for runescape client to load.\n");
-			Sleep(1000);
-
-			if (!hProc)
-			{
-				std::cout << "[!] Error Opening Process => " << "0x" << std::hex << hProc << std::endl;
-				continue;
-			}
-
-			Ret = _ManualMap(szDll, hProc, LAUNCH_METHOD::LM_HijackThread, INJ_ERASE_HEADER, out, Err);
-
-
-			if(Err || Ret)
-				printf("[!] Error %d when injecting.\n", Err);
-			else
-			{
-				std::cout << "[+] Injected into runescape with handle => " << "0x" << std::hex << hProc << "\n";
-				std::cout << "[+] HModule of DLL is => " << "0x" << std::hex << out << "\n";
-			}
-
-
 			HandleList.push_back(pid);
 
-			if (Ret)
-			{
-				std::cout << "[!] Error Injecting into => " << "0x" << std::hex << pid << std::endl;
-			}
+			int* id = new int(pid);
 
-			CloseHandle(hProc);
-
-			printf("==========================================\n");
+			CreateThread(NULL, NULL, inject, id, NULL, NULL);
 
 			Sleep(1000);
 		}
 
-		Sleep(3000);
+		Sleep(1000);
 	}
 	return TRUE;
 }

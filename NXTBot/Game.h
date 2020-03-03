@@ -30,13 +30,15 @@ struct RS {
 	static std::vector<EntityObj*> GetPlayerEntityList();
 	static EntityObj* GetClosestPlayer();
 	static EntityObj* GetClosestMonster();
+	static EntityObj* GetEntityNPCByName(const char* name);
 	static EntityObj* GetEntityObjectByEntityId(uint32_t EntityId);
 	static EntityObj* GetMonsterWithinRadius(Tile2D from, float MaxDistance);
+	static EntityObj* GetMonsterWithinRadiusWithName(const char* monsterName, Tile2D from, float MaxDistance);
 	static EntityObj* GetClosestMonsterWithinRadius(Tile2D from, float MaxDistance);
 
 	static Tile2D WorldToTilePos(const int32_t wX, const int32_t wY);
 
 	static std::string ItemIdToString(uint32_t itemId);
-	static std::string ItemNameToId(std::string itemName);
+	static int ItemNameToId(std::string itemName);
 };
 
