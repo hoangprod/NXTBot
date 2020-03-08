@@ -12,6 +12,7 @@
 #include "Widgets.h"
 #include "Wisp.h"
 #include "Manager.h"
+#include "Experience.h"
 #include "Helper.h"
 
 Detour64 detours;
@@ -29,7 +30,12 @@ fn_CursorWorldContextMenu o_CursorWorldConextMenu;
 fn_OnDispatchNetMessage o_OnDispatchNetMessage;
 fn_GUIManagerRender o_Render;
 
-nlohmann::json itemList;
+
+using nlohmann::json;
+json itemList;
+
+std::string botStatus = "Not started.";
+
 
 
 bool h_OnDispatchNetMessage(UINT_PTR* a1, UINT_PTR* a2)
@@ -62,13 +68,97 @@ UINT_PTR h_CursorWorldContextMenu(UINT_PTR* GameContext, int a2, int a3, int a4,
 	return o_CursorWorldConextMenu(GameContext, a2, a3, a4, a5);
 }
 
+std::map<int, HGLRC> contexts;
 
-bool h_wglSwapBuffers(HDC hDc)
+bool h_wglSwapBuffers(HDC hdc)
 {
+	
+
+	int pixelformat = GetPixelFormat(hdc);
+	if (!contexts.count(pixelformat))
+	{
+		HGLRC ctx = wglCreateContext(hdc);
+		HGLRC old_ctx = wglGetCurrentContext();
+		HDC old_dc = wglGetCurrentDC();
+		wglMakeCurrent(hdc, ctx);
+
+		glDisable(GL_ALPHA_TEST);
+		glDisable(GL_AUTO_NORMAL);
+		glEnable(GL_BLEND);
+		glDisable(GL_COLOR_LOGIC_OP);
+		glDisable(GL_COLOR_MATERIAL);
+		glDisable(GL_COLOR_TABLE);
+		glDisable(GL_CONVOLUTION_1D);
+		glDisable(GL_CONVOLUTION_2D);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_DITHER);
+		glDisable(GL_FOG);
+		glDisable(GL_HISTOGRAM);
+		glDisable(GL_INDEX_LOGIC_OP);
+		glDisable(GL_LIGHTING);
+		glDisable(GL_MINMAX);
+		glDisable(GL_SEPARABLE_2D);
+		glDisable(GL_SCISSOR_TEST);
+		glDisable(GL_STENCIL_TEST);
+		glEnable(GL_TEXTURE_2D);
+		glDisable(GL_TEXTURE_GEN_Q);
+		glDisable(GL_TEXTURE_GEN_R);
+		glDisable(GL_TEXTURE_GEN_S);
+		glDisable(GL_TEXTURE_GEN_T);
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+		wglMakeCurrent(old_dc, old_ctx);
+		contexts[pixelformat] = ctx;
+	}
+
+	//Overwrite context
+	HGLRC oldctx = wglGetCurrentContext();
+	HDC oldhdc = wglGetCurrentDC();
+	wglMakeCurrent(hdc, contexts[pixelformat]);
+
+	uint32_t width = GetDeviceCaps(hdc, HORZRES);
+	uint32_t height = GetDeviceCaps(hdc, VERTRES);
+	
+	HWND hwnd = WindowFromDC(hdc);
+	if (hwnd)
+	{
+		RECT r;
+		if (GetClientRect(hwnd, &r))
+		{
+			width = r.right - r.left;
+			height = r.bottom - r.top;
+		}
+	}
+	
+
+	
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	glPushMatrix();
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, width, height, 0, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glDisable(GL_DEPTH_TEST);
+	
+	Render r{ hdc, 11 };
+	glColor3ub(0xFF, 0x0, 0x0);
+	//r.DrawRect(100, 100, 200, 200, false);
+
+	auto status = "NXTBot Heph Status =  " + botStatus;
+	r.Print(200.0f, 30.0f, 0.0f, 0x00, 0xFF, status.data());
+
+	glPopMatrix();
+	glPopAttrib();
+
+	wglMakeCurrent(oldhdc, oldctx);
+	
 	// Botting
 	Manager::Manage();
 
-	return o_wglSwapBuffers(hDc);
+	return o_wglSwapBuffers(hdc);
 }
 
 
@@ -133,35 +223,39 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			if (wParam == VK_NUMPAD1)
 			{
-				if (itemList.size() == 0)
-				{
-					std::ifstream inputs("C:\\ProgramData\\Jagex\\launcher\\ItemList.json");
+				std::set<uint64_t> static_entities;
+				Static::GetStaticEntities(&static_entities);
 
-					if (!inputs.fail() && inputs.peek() != std::ifstream::traits_type::eof()) {
-						printf("Input is legit\n");
-						inputs >> itemList;
-					}
-					else
+				for (const uint64_t& entity_ptr : static_entities) {
+					EntityType type = *reinterpret_cast<EntityType*>(entity_ptr + 0x40);
+
+
+					if (type == EntityType::Object2)
 					{
-						printf("wtf?\n");
+						auto staticObj = (StaticObj2Wrapper*)entity_ptr;
+
+						if (staticObj->Definition == 0) {
+							continue;
+						}
+
+						printf("Obj Type 2: %p - id: %d  name: %s at (%d, %d)\n", staticObj, staticObj->Definition->Id, staticObj->Definition->Name, staticObj->TileX, staticObj->TileY);
+					}
+					else if (type == EntityType::Object)
+					{
+						auto staticObj = (StaticObj1Wrapper*)entity_ptr;
+
+						if (staticObj->Definition == 0) {
+							continue;
+						}
+						printf("Obj Type 1: %p - id: %d  name: %s at (%d, %d)\n", staticObj, staticObj->Definition->Id, staticObj->Definition->Name, staticObj->TileX, staticObj->TileY);
 					}
 
-
-				//	inputs.close();
 				}
 
-
-				printf("%d %d\n", itemList.count("1925"), itemList.count("99999999"));
-
-				if (itemList.count("1925") > 0)
-				{
-					std::string iteName = itemList["1925"]["name"].get<std::string>();
-
-					printf("%s\n", iteName.data());
-				}
 			}
 			if (wParam == VK_NUMPAD2)
 			{
+				printf("exp %d\n", Exp::GetCurrentExp(SkillType::MINING));
 			}
 			if (wParam == VK_NUMPAD3)
 			{
@@ -182,11 +276,9 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			if (wParam == VK_OEM_3)
 			{
-#ifdef _DEBUG
 				UINT_PTR* PlayerObj = *(UINT_PTR**)(g_GameContext[1] + 0x1780);
 				auto player = o_GetLocalPlayer(PlayerObj);
 				printf("Found local player players %p and %d entities %s.\n", RS::GetLocalPlayer(), RS::GetEntityCount(), RS::GetLocalPlayer()->Name);
-#endif
 			}
 		}
 		if (wParam == VK_CONTROL)
@@ -223,7 +315,21 @@ bool hooks()
 
 	if (!hWnd)
 		return false;
-		
+
+#ifdef NDEBUG
+	std::ifstream inputs("C:\\ProgramData\\Jagex\\launcher\\ItemList.json", std::ios::binary);
+
+	if (!inputs.fail() && inputs.peek() != std::ifstream::traits_type::eof()) {
+		printf("[+] Successfully Read the JSON Item List file.\n\n\n");
+
+		inputs >> itemList;
+
+	}
+	else
+	{
+		printf("[!] Item List JSON File is not in the Launcher folder!\n");
+	}
+#endif
 
 	o_GetLocalPlayer = (fn_GetLocalPlayer)Patterns.Func_GetLocalPlayer;
 
@@ -239,18 +345,9 @@ bool hooks()
 
 	o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)detours.Hook(o_OnDispatchNetMessage, h_OnDispatchNetMessage, 18);
 
-	//o_Yeet = (fn_Yeet)0x7FF6E48B96A0;
-
-	//o_Yeet = (fn_Yeet)detours.Hook(o_Yeet, h_Yeet, 14);
-
-	//ofn_GetInterface = (fn_GetInterface)detours.Hook(ofn_GetInterface, h_GetInterface, 17);
-
 	o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", h_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
 
 	OriginalWndProcHandler = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)hWndProc);
-
-
-
 
 #ifdef NDEBUG
 	Beep(523, 500);

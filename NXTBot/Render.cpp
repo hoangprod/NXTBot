@@ -16,9 +16,7 @@ Render::Render(HDC DC, int FontSize) : Base(glGenLists(96))
 
 Render::~Render()
 {
-	/**Causes RS to print a stack trace.. Might as well let the OS clean it up automatically then..**/
-	/**Todo investigate why**/
-	//glDeleteLists(this->Base, 96);
+	glDeleteLists(this->Base, 96);
 }
 
 void Render::EnableDrawing()

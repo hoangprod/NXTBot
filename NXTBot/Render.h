@@ -48,7 +48,7 @@ void Render::Print(float X, float Y, float R, float G, float B, const char* Text
 	std::size_t Position = 0;
 	std::string Container(Text);
 	std::vector<std::string> Arguments;
-	//std::initializer_list<int> {(Arguments.push_back(std::to_string(args)), 0)...};
+	std::initializer_list<int> {(Arguments.push_back(std::to_string(args)), 0)...};
 
 	for (auto it = Arguments.begin(); it != Arguments.end(); ++it)
 	{

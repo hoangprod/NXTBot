@@ -310,6 +310,23 @@ char* Scan_Offsets(char* pBase, UINT_PTR RegionSize, const char* szPattern, cons
 	return nullptr;
 }
 
+
+char* Scan_Offsets2(char* pBase, UINT_PTR RegionSize, const char* szPattern, const char* szMask, uintptr_t szOffset, size_t szSize)
+{
+	char* result = 0;
+	char* initResult = PatternScan(pBase, RegionSize, szPattern, szMask);
+
+	initResult = PatternScan(initResult+1, RegionSize, szPattern, szMask);
+
+	if ((size_t)initResult)
+	{
+		memcpy(&result, initResult + szOffset, szSize);
+		if (result)
+			return result;
+	}
+	return nullptr;
+}
+
 char* ptr_offset_Scanner2(char* pBase, UINT_PTR RegionSize, const char* szPattern, uintptr_t i_offset,
 	uintptr_t i_length, uintptr_t instruction_before_offset, const char* szMask)
 {
@@ -433,6 +450,43 @@ bool Detour64::Clearhook()
 	}
 	hooked_funcs.clear();
 	return true;
+}
+
+uintptr_t EATHook(HMODULE mod, const char* FN) 
+{
+
+	printf("mod %p\n", mod);
+
+	uintptr_t EATA, OP;
+	IMAGE_DOS_HEADER* DOSH = (IMAGE_DOS_HEADER*)mod;
+	IMAGE_NT_HEADERS* NTH = NULL;
+
+	if (DOSH->e_magic != IMAGE_DOS_SIGNATURE) return NULL;
+
+	NTH = ((PIMAGE_NT_HEADERS)((uintptr_t)(DOSH)+(uintptr_t)(DOSH->e_lfanew)));
+
+	if (NTH->Signature != IMAGE_NT_SIGNATURE) return NULL;
+
+	EATA = NTH->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+	IMAGE_EXPORT_DIRECTORY* EATP = (IMAGE_EXPORT_DIRECTORY*)((uintptr_t)EATA + (uintptr_t)mod);
+
+
+	for (uintptr_t i = 0; i < EATP->NumberOfFunctions; i++)
+	{
+
+		DWORD* ENTP = (DWORD*)((uintptr_t)mod + ((uintptr_t)EATP->AddressOfNames + (sizeof(size_t) * i)));
+
+		if (strcmp((char*)((uintptr_t)mod + *ENTP), FN) == 0)
+		{
+			WORD* AONP = (WORD*)((uintptr_t)mod + ((uintptr_t)EATP->AddressOfNameOrdinals + (i * sizeof(WORD))));
+			uintptr_t* AOF = (uintptr_t*)((uintptr_t)mod + ((DWORD)EATP->AddressOfFunctions + (sizeof(DWORD) * *AONP)));
+
+			printf("Found %s at %p\n", FN, AOF);
+			
+			return 1;
+		}
+	}
+	return NULL;
 }
 
 void** find(const char* function, HMODULE module)

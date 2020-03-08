@@ -121,6 +121,29 @@ bool Player::Loot(FakeItemEX ObjectId)
 	return true;
 }
 
+bool Player::Mine(StaticObj obj)
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = obj.ItemId;
+	*reinterpret_cast<int*>(&data[0x54]) = obj.Pos.x;
+	*reinterpret_cast<int*>(&data[0x58]) = obj.Pos.y;
+
+	uint64_t func_ptr = g_Module + 0x94990;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _Loot)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_Loot>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
 bool Player::LootAllConfirm()
 {
 	uint8_t data[100] = { 0 };
@@ -128,6 +151,29 @@ bool Player::LootAllConfirm()
 	*reinterpret_cast<int*>(&data[0x50]) = 1;
 	*reinterpret_cast<int*>(&data[0x54]) = -1;
 	*reinterpret_cast<int*>(&data[0x58]) = 0x6560015;
+
+	uint64_t func_ptr = g_Module + 0x94940;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Player::QuickDropSlot1()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = 8;
+	*reinterpret_cast<int*>(&data[0x54]) = -1;
+	*reinterpret_cast<int*>(&data[0x58]) = 93716544;
 
 	uint64_t func_ptr = g_Module + 0x94940;
 
@@ -231,6 +277,14 @@ bool Player::DepositAll()
 	typedef uintptr_t(__cdecl* _BankDepositAll)(uint64_t* _this, void* dataPtr);
 	reinterpret_cast<_BankDepositAll>(func_ptr)(g_GameContext, &dt);
 	return true;
+}
+
+bool Player::isMining()
+{
+	if (!_base)
+		return 0;
+
+	return *(int*)((UINT_PTR)_base + Patterns.Offset_TargetedEntity - 4) == 3;
 }
 
 bool Player::inCombat()

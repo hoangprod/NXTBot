@@ -15,4 +15,8 @@ struct Tile {
 
 	static std::vector<FakeItem*> SearchForLoot(char* ItemName);
 	static std::vector<FakeItem*> SearchForLoot(uint32_t ItemId);
+
+	static bool IsWithinAreaLoot(FakeItemEX origin, FakeItemEX point);
+	static FakeItemEX GetBestLoot(std::vector<FakeItemEX> lootlist);
 };
+

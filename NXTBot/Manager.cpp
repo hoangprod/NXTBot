@@ -12,6 +12,7 @@ Wisp* wisp = 0;
 Rabbit* rabbit = 0;
 GeneralCombat* genCombat = 0;
 
+extern std::string botStatus;
 
 void Manager::Manage()
 {
@@ -51,6 +52,10 @@ void Manager::Manage()
 
 			last_tick = GetTickCount64();
 		}
+	}
+	else
+	{
+		botStatus = "Not botting";
 	}
 
 

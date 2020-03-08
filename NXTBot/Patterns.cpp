@@ -252,6 +252,25 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_TargetedEntity is at %llx\n", Patterns.Offset_TargetedEntity); };
 
+	// 11a8
+	Patterns.Offset_CharacterInfo = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x48\xCC\xCC\xCC\x11\x00\x00\x48\xCC\xCC\xCC\xCC\xCC\x00\x4b", "x???xxxx?????xx", 3, 4);
+
+	if (!Patterns.Offset_CharacterInfo)
+	{
+		printf("[Error] Patterns.Offset_CharacterInfo failed to pattern scan.\n");
+		return FALSE;
+	}
+	else { printf("[Pattern Scan]  Patterns.Offset_CharacterInfo is at %llx\n", Patterns.Offset_CharacterInfo); };
+
+	// 6670
+	Patterns.Offset_SkillExperience = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x4c\xCC\xCC\xCC\x66\x00\x00\x49\xCC\xCC\x10", "x???xxxx??x", 3, 4);
+
+	if (!Patterns.Offset_SkillExperience)
+	{
+		printf("[Error] Patterns.Offset_SkillExperience failed to pattern scan.\n");
+		return FALSE;
+	}
+	else { printf("[Pattern Scan]  Patterns.Offset_SkillExperience is at %llx\n", Patterns.Offset_SkillExperience); };
 
 	// 11c0
 	Patterns.Offset_TileList = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\xCC\xCC\xCC\xCC\x11\x00\x00\xCC\xCC\xCC\x38\xCC\xCC\xCC\x30\xCC\xCC\xCC\x0f", "????xxx???x???x???x", 3, 4);
@@ -275,8 +294,6 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_LootObject is at %llx\n", Patterns.Offset_LootObject); };
 
-
-
 	// 1180
 	Patterns.Offset_Widget = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x48\xCC\xCC\xCC\x11\x00\x00\xe8\xCC\xCC\xCC\x00\x48\xCC\xCC\x48\xCC\xCC\x08", "x???xxxx???xx??x??x", 3, 4);
 
@@ -289,8 +306,43 @@ bool __stdcall findPatterns()
 
 
 
+	Patterns.Offset_Ptr1 = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\xCC\xCC\xCC\xCC\x12\x00\x00\xCC\xCC\xCC\x90\x00\x00\x00", "????xxx???xxxx", 3, 4);
+
+	if (!Patterns.Offset_Ptr1)
+	{
+		printf("[Error] Patterns.Offset_Ptr1 failed to pattern scan.\n");
+		return FALSE;
+	}
+	else { printf("[Pattern Scan]  Patterns.Offset_Ptr1 is at %llx\n", Patterns.Offset_Ptr1); };
 
 
+	Patterns.Offset_Camera = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\xCC\xCC\xCC\xCC\x00\x01\x00\xe8", "????xxxx", 3, 4);
+
+	if (!Patterns.Offset_Camera)
+	{
+		printf("[Error] Patterns.Offset_Camera failed to pattern scan.\n");
+		return FALSE;
+	}
+	else { printf("[Pattern Scan]  Patterns.Offset_Camera is at %llx\n", Patterns.Offset_Camera); };
+
+	Patterns.Offset_StaticEntityPtr = (UINT_PTR)Scan_Offsets2(Rs2Client, 0x300000, "\x48\x8b\xCC\xCC\x01\x00\x00\x4c\xCC\xCC\x48\xCC\xCC\x48", "xx??xxxx??x??x", 3, 4);
+
+	if (!Patterns.Offset_StaticEntityPtr)
+	{
+		printf("[Error] Patterns.Offset_StaticEntityPtr failed to pattern scan.\n");
+		return FALSE;
+	}
+	else { printf("[Pattern Scan]  Patterns.Offset_StaticEntityPtr is at %llx\n", Patterns.Offset_StaticEntityPtr); };
+
+
+	Patterns.Offset_StaticAnd20 = (UINT_PTR)Scan_Offsets2(Rs2Client, 0x300000, "\xCC\xCC\xCC\xCC\x00\x00\x00\xf6\xCC\x20", "????xxxx?x", 3, 4);
+
+	if (!Patterns.Offset_StaticAnd20)
+	{
+		printf("[Error] Patterns.Offset_StaticAnd20 failed to pattern scan.\n");
+		return FALSE;
+	}
+	else { printf("[Pattern Scan]  Patterns.Offset_StaticAnd20 is at %llx\n", Patterns.Offset_StaticAnd20); };
 
 
 

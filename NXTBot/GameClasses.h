@@ -195,6 +195,52 @@ public:
 	virtual void Function17();
 }; //Size: 0x0440
 
+class StaticObjCore
+{
+public:
+	char pad_0000[32]; //0x0000
+	uint32_t Id; //0x0020
+	char pad_0024[60]; //0x0024
+	char* Op0; //0x0060
+	char pad_0068[56]; //0x0068
+	char* Op1; //0x00A0
+	char pad_00A8[56]; //0x00A8
+	char* Op2; //0x00E0
+	char pad_00E8[56]; //0x00E8
+	char* Op3; //0x0120
+	char pad_0128[56]; //0x0128
+	char* Op4; //0x0160
+	char pad_0168[56]; //0x0168
+	char* Op5; //0x01A0
+	char pad_01A8[56]; //0x01A8
+	char* Name; //0x01E0
+	char pad_01E8[80]; //0x01E8
+}; //Size: 0x0238
+
+class StaticObj2Wrapper
+{
+public:
+	char pad_0000[64]; //0x0000
+	uint32_t Type; //0x0040
+	char pad_0044[168]; //0x0044
+	int32_t TileX; //0x00EC
+	int32_t TileY; //0x00F0
+	char pad_00F4[12]; //0x00F4
+	class StaticObjCore* Definition; //0x0100
+	char pad_0108[64]; //0x0108
+}; //Size: 0x0148
+
+class StaticObj1Wrapper
+{
+public:
+	char pad_0000[280]; //0x0000
+	class StaticObjCore* Definition; //0x0118
+	char pad_0120[76]; //0x0120
+	uint32_t TileX; //0x016C
+	uint32_t TileY; //0x0170
+	char pad_0174[28]; //0x0174
+}; //Size: 0x0190
+
 class TileList
 {
 public:
@@ -235,6 +281,21 @@ public:
 	int32_t y; //0x0004
 }; //Size: 0x0008
 
+class StaticObj
+{
+public:
+	StaticObj() { ItemId = -1; };
+	StaticObj(uint32_t id, uint32_t _x, uint32_t _y)
+	{
+		ItemId = id;
+		Pos.x = _x;
+		Pos.y = _y;
+	};
+
+	int ItemId; //0x0000
+	Tile2D Pos;
+};
+
 class FakeItemEX
 {
 public:
@@ -266,7 +327,7 @@ enum class ContainerType : uint32_t {
 	DeathReclaim = 676,
 };
 
-enum EntityType {
+enum class EntityType {
 	Object = 0,
 	NPC = 1,
 	Players = 2,
@@ -299,11 +360,17 @@ typedef UINT_PTR(__fastcall* fn_CursorWorldContextMenu) (UINT_PTR* GameContext, 
 typedef bool(__fastcall* fn_OnDispatchNetMessage)(UINT_PTR* a1, UINT_PTR* a2);
 typedef float*(__fastcall* fn_GetWOrldTranslation)(UINT_PTR* camera);
 typedef void(__fastcall* fn_GUIManagerRender)(UINT_PTR* a1);
-
 typedef UINT_PTR*(__fastcall* fn_GetContainerPtr)(UINT_PTR* ContainerManager, uint32_t containerId, uint8_t idk);
 
-#define ReadPtrOffset(address, x) ((uint64_t)address == 0 || ((uint64_t)address % sizeof(uint64_t)) != 0) ? (0) : *(uint64_t*)((uint64_t)address + x)
+typedef UINT_PTR(__fastcall* fn_glDrawRangeElement)(GLenum mode,
+	GLuint start,
+	GLuint end,
+	GLsizei count,
+	GLenum type,
+	const void* indices);
 
+
+#define ReadPtrOffset(address, x) ((uint64_t)address == 0 || ((uint64_t)address % sizeof(uint64_t)) != 0) ? (0) : *(uint64_t*)((uint64_t)address + x)
 
 
 #define BANK_GROUP 0x5c5

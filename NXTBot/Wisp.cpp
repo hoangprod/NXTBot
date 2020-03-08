@@ -6,7 +6,10 @@
 #include "PlayableEntity.h"
 #include "Tile.h"
 #include "Widgets.h"
+#include "Experience.h"
 #include "Wisp.h"
+
+extern std::string botStatus;
 
 void Wisp::FSM()
 {
@@ -22,26 +25,26 @@ void Wisp::FSM()
 
 		if (!Myrtle)
 		{
-			printf("[!] Cannot find Myrtle, myrtle is too far maybe?\n");
+			botStatus = std::string("[!] Cannot find Myrtle, myrtle is too far maybe?\n");
 			return;
 		}
 
 		MyrtleId = Myrtle->EntityId;
 
-		printf("[+] Found Myrtle with id %d\n", MyrtleId);
+		//printf("[+] Found Myrtle with id %d\n", MyrtleId);
 	}
 
 	// If I am moving around or targeting something, do not fuck with it
 	if (player->isMoving() || (player->bTargeting() && player->CurrentTarget() != MyrtleId))
 	{
-		printf("[+] Current moving or fighting\n");
+		botStatus = std::string("[+] Current moving or fighting\n");
 		return;
 	}
 
 	if (player->inCombat())
 	{
 		// If already fighting, leave it alone.
-		printf("[+] Current fighting\n");
+		botStatus = std::string("[+] Current fighting\n");
 
 		return;
 	}
@@ -51,7 +54,7 @@ void Wisp::FSM()
 
 	if (attackingEnemies.size() > 0)
 	{
-		printf("[+] Attacking Monster\n");
+		botStatus = std::string("[+] Attacking Monster\n");
 
 		// Attack the first monster in the list that is attacking us
 		return Combat(attackingEnemies[0]);
@@ -59,20 +62,20 @@ void Wisp::FSM()
 
 	if (Inventory::isInventoryFull())
 	{
-		printf("[+] Inventory is full, go bank\n");
+		botStatus = std::string("[+] Inventory is full, go bank\n");
 
 		return Wisp::Banking();
 	}
 
 	auto lootsAvailable = Tile::GetAllLootsNearbyWithinRadius(origin, 10.0f);
 
-
-	// If there are at least X items on the ground within 10 radius
-	if (lootsAvailable.size() > 4)
+	if (lootsAvailable.size() > 6)
 	{
-		printf("[+] Loots found and going to loot\n");
+		botStatus = std::string("[+] Loots found and going to loot\n");
 
-		return Wisp::Looting(lootsAvailable);
+		FakeItemEX bestLoot = Tile::GetBestLoot(lootsAvailable);
+
+		return Wisp::Looting(bestLoot);
 	}
 
 	EntityObj* EnemyMonsters = RS::GetMonsterWithinRadiusWithName("Spellwisp", origin, 15.0f);
@@ -81,13 +84,25 @@ void Wisp::FSM()
 	// If there are a monster 15 tiles away from origin, fight it
 	if (EnemyMonsters)
 	{
-		printf("[+] Fight monster\n");
+		botStatus = std::string("[+] Fight monster\n");
 
 		return Combat(EnemyMonsters);
 	}
 
+
+	// If there are at least X items on the ground within 10 radius
+	if (lootsAvailable.size() > 0)
+	{
+		botStatus = std::string("[+] Loots found and going to loot\n");
+
+		FakeItemEX bestLoot = Tile::GetBestLoot(lootsAvailable);
+
+		return Wisp::Looting(bestLoot);
+	}
+
+
 	// If not in combat, not being attacked, not full inventory and not have anything to loot
-	printf("[+] Doing nothing, shouldn't really be here\n");
+	botStatus = std::string("[+] Doing nothing, shouldn't really be here\n");
 
 	// Do nothing
 }
@@ -105,7 +120,7 @@ void Wisp::Banking()
 	// If not talking NOR banking, then go bank
 	if (!Widgets::GetWidgetUI(CONVERSATION_WIDGET) && !Widgets::GetWidgetUI(DEPOSIT_WIDGET))
 	{
-		printf("[+] Going to talk to Wizard Myrtle\n");
+		botStatus = std::string("[+] Going to talk to Wizard Myrtle\n");
 
 		player->DepositActionNPC(MyrtleId);
 		return;
@@ -114,12 +129,12 @@ void Wisp::Banking()
 	{
 		if (Widgets::GetWidgetUI(CONVERSATION_WIDGET))
 		{
-			printf("[+] Clicking through chat option\n");
+			botStatus = std::string("[+] Clicking through chat option\n");
 			player->ConfirmChat();
 		}
 		else if (Widgets::GetWidgetUI(DEPOSIT_WIDGET))
 		{
-			printf("[+] Clicking deposit all items\n");
+			botStatus = std::string("[+] Clicking deposit all items\n");
 			player->DepositAll();
 		}
 
@@ -127,14 +142,14 @@ void Wisp::Banking()
 	}
 }
 
-void Wisp::Looting(std::vector<FakeItemEX> loots)
+void Wisp::Looting(FakeItemEX loot)
 {
-	auto loot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::AreaLoot));
+	auto areaLoot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::AreaLoot));
 
-	if (loot)
+	if (areaLoot)
 		player->LootAllConfirm();
-	else
-		player->Loot(loots[0]);
+	else if (loot.ItemQuantity != 0)
+		player->Loot(loot);
 }
 
 void GeneralCombat::FSM()
@@ -145,20 +160,20 @@ void GeneralCombat::FSM()
 		player = new Player(RS::GetLocalPlayer());
 		origin = player->GetTilePosition();
 
-		printf("[+] Player %s will be targeting %s from tile position (%d, %d)\n", player->GetName().data(), monsterTargetName.data(), origin.x, origin.y);
+		//printf("[+] Player %s will be targeting %s from tile position (%d, %d)\n", player->GetName().data(), monsterTargetName.data(), origin.x, origin.y);
 	}
 
 	// If I am moving around or targeting something, do not fuck with it
 	if (player->isMoving() || (player->bTargeting() || player->CurrentTarget() > 0))
 	{
-		printf("[+] Current moving or fighting\n");
+		botStatus = std::string("[+] Current moving or fighting\n");
 		return;
 	}
 
 	if (player->inCombat())
 	{
 		// If already fighting, leave it alone.
-		printf("[+] Current fighting\n");
+		botStatus = std::string("[+] Current fighting\n");
 
 		return;
 	}
@@ -168,7 +183,7 @@ void GeneralCombat::FSM()
 
 	if (attackingEnemies.size() > 0)
 	{
-		printf("[+] Attacking Monster\n");
+		botStatus = std::string("[+] Attacking Monster\n");
 
 		// Attack the first monster in the list that is attacking us
 		return Combat(attackingEnemies[0]);
@@ -180,13 +195,13 @@ void GeneralCombat::FSM()
 	// If there are a monster 15 tiles away from origin, fight it
 	if (EnemyMonsters)
 	{
-		printf("[+] Fight monster\n");
+		botStatus = std::string("[+] Fight monster\n");
 
 		return Combat(EnemyMonsters);
 	}
 
 	// If not in combat, not being attacked, not full inventory and not have anything to loot
-	printf("[+] Doing nothing, shouldn't really be here unless no monster around\n");
+	botStatus = std::string("[+] Doing nothing, shouldn't really be here unless no monster around\n");
 }
 
 void GeneralCombat::Combat(EntityObj* Enemy)
@@ -213,14 +228,14 @@ void Rabbit::FSM()
 	// If I am moving around or targeting something, do not fuck with it
 	if (player->isMoving() || (player->bTargeting() && player->CurrentTarget() != 25688)) // Hardcode bank id
 	{
-		printf("[+] Current moving or fighting\n");
+		botStatus = std::string("[+] Current moving or fighting\n");
 		return;
 	}
 
 	if (player->inCombat())
 	{
 		// If already fighting, leave it alone.
-		printf("[+] Current fighting\n");
+		botStatus = std::string("[+] Current fighting\n");
 
 		return;
 	}
@@ -230,7 +245,7 @@ void Rabbit::FSM()
 
 	if (attackingEnemies.size() > 0)
 	{
-		printf("[+] Attacking Monster\n");
+		botStatus = std::string("[+] Attacking Monster\n");
 
 		// Attack the first monster in the list that is attacking us
 		return Combat(attackingEnemies[0]);
@@ -238,7 +253,7 @@ void Rabbit::FSM()
 
 	if (Inventory::isInventoryFull())
 	{
-		printf("[+] Inventory is full, go bank\n");
+		botStatus = std::string("[+] Inventory is full, go bank\n");
 
 		return Rabbit::Banking();
 	}
@@ -249,9 +264,11 @@ void Rabbit::FSM()
 	// If there are at least X items on the ground within 10 radius
 	if (lootsAvailable.size() > 9)
 	{
-		printf("[+] Loots found and going to loot\n");
+		botStatus = std::string("[+] Loots found and going to loot\n");
 
-		return Rabbit::Looting(lootsAvailable);
+		FakeItemEX bestLoot = Tile::GetBestLoot(lootsAvailable);
+
+		return Rabbit::Looting(bestLoot);
 	}
 
 	EntityObj* EnemyMonsters = RS::GetMonsterWithinRadiusWithName("Rabbit", origin, 7.0f);
@@ -260,18 +277,19 @@ void Rabbit::FSM()
 	// If there are a monster 15 tiles away from origin, fight it
 	if (EnemyMonsters)
 	{
-		printf("[+] Fight monster\n");
+		botStatus = std::string("[+] Fight monster\n");
 
 		return Rabbit::Combat(EnemyMonsters);
 	}
 
 	// If not in combat, not being attacked, not full inventory and not have anything to loot
-	printf("[+] Doing nothing, shouldn't really be here\n");
+	botStatus = std::string("[+] Doing nothing, shouldn't really be here\n");
 }
 
 void Rabbit::Combat(EntityObj* Enemies)
 {
 	player->Attack(Enemies->EntityId);
+	return;
 }
 
 void Rabbit::Banking()
@@ -282,11 +300,11 @@ void Rabbit::Banking()
 
 		if (!banker)
 		{
-			printf("Bank find Gnome Banker to bank\n");
+			printf("[!] Can't find Gnome Banker to bank\n");
 			return;
 		}
 
-		printf("[+] Going to talk to Bank\n");
+		botStatus = std::string("[+] Going to talk to Bank\n");
 		player->BankUsingNPC(banker->EntityId); // Hardcode that bank of Gielinor
 		return;
 	}
@@ -294,19 +312,67 @@ void Rabbit::Banking()
 	{
 		if (Widgets::GetWidgetUI(BANKING_WIDGET))
 		{
-			printf("[+] Depositing all inventory to bank\n");
+			botStatus = std::string("[+] Depositing all inventory to bank\n");
 			player->DepositAllThroughBank();
 		}
 		return;
 	}
 }
 
-void Rabbit::Looting(std::vector<FakeItemEX> loots)
+void Rabbit::Looting(FakeItemEX loot)
 {
-	auto loot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::AreaLoot));
+	auto areaLoot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::AreaLoot));
 
-	if (loot)
+	if (areaLoot)
+	{
 		player->LootAllConfirm();
-	else
-		player->Loot(loots[0]);
+		return;
+	}
+	else if (loot.ItemQuantity != 0)
+	{
+		player->Loot(loot);
+		return;
+	}
+}
+
+void GenMining::FSM()
+{
+	if (!player || !player->_base)
+	{
+		player = new Player(RS::GetLocalPlayer());
+		MiningExp = Exp::GetCurrentExp(SkillType::MINING);
+	}
+
+	if (!player->isMining())
+	{
+		printf("[+] Start mining.");
+		player->Mine(StaticObj());
+		return;
+	}
+
+	int CurrentExp = Exp::GetCurrentExp(SkillType::MINING);
+
+	if (CurrentExp > MiningExp)
+	{
+		player->Mine(StaticObj());
+		MiningExp = CurrentExp;
+
+		if (Inventory::HaveItemName("Mithril ore"))
+		{
+			player->QuickDropSlot1();
+			printf("[+] Dropping ore.");
+		}
+
+		return;
+	}
+
+	if (Inventory::isInventoryFull())
+	{
+		if (Inventory::HaveItemName("Mithril ore"))
+		{
+			player->QuickDropSlot1();
+		}
+
+		return;
+	}
 }

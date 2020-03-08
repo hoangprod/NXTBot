@@ -12,7 +12,7 @@ char* ptr_offset_Scanner2(char* pBase, UINT_PTR RegionSize, const char* szPatter
 	uintptr_t i_length, uintptr_t instruction_before_offset, const char* szMask);
 
 char* Scan_Offsets(char* pBase, UINT_PTR RegionSize, const char* szPattern, const char* szMask, uintptr_t szOffset, size_t szSize);
-
+char* Scan_Offsets2(char* pBase, UINT_PTR RegionSize, const char* szPattern, const char* szMask, uintptr_t szOffset, size_t szSize);
 
 class Detour64
 {
@@ -38,3 +38,4 @@ private:
 
 void** find(const char* function, HMODULE module);
 uintptr_t detour_iat_ptr(const char* function, void* newfunction, HMODULE module = 0);
+uintptr_t EATHook(HMODULE mod, const char* FN);

@@ -10,7 +10,7 @@ public:
 	void FSM();
 	void Combat(EntityObj* Enemies);
 	void Banking();
-	void Looting(std::vector<FakeItemEX> loots);
+	void Looting(FakeItemEX loots);
 
 
 	Player * player;
@@ -26,7 +26,7 @@ public:
 	void FSM();
 	void Combat(EntityObj* Enemies);
 	void Banking();
-	void Looting(std::vector<FakeItemEX> loots);
+	void Looting(FakeItemEX loots);
 
 
 	Player* player;
@@ -42,4 +42,15 @@ public:
 	Player* player;
 	std::string monsterTargetName;
 	Tile2D origin;
+};
+
+
+class GenMining
+{
+public:
+	void FSM();
+
+	Player* player;
+	int MiningExp;
+	int Node;
 };

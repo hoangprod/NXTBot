@@ -178,7 +178,12 @@ std::vector<FakeItemEX> Tile::GetAllLootsNearby()
 
 		for (auto fakeitem : fakeitemlist)
 		{
-			Result.push_back(FakeItemEX(fakeitem.ItemId, fakeitem.ItemQuantity, lootlist->TileX, lootlist->TileY, lootlist->Plane));
+
+			auto lootName = RS::ItemIdToString(fakeitem.ItemId);
+
+			// If the item is not arrow nor bolt
+			if(lootName.find("arrow") == std::string::npos && lootName.find("bolt") == std::string::npos)
+				Result.push_back(FakeItemEX(fakeitem.ItemId, fakeitem.ItemQuantity, lootlist->TileX, lootlist->TileY, lootlist->Plane));
 		}
 	}
 
@@ -217,3 +222,40 @@ std::vector<FakeItem*> Tile::SearchForLoot(uint32_t ItemId)
 {
 	return std::vector<FakeItem*>();
 }
+
+bool Tile::IsWithinAreaLoot(FakeItemEX origin, FakeItemEX point)
+{
+	if (RS::GetDistance(Tile2D(origin.Pos.x, origin.Pos.y), Tile2D(point.Pos.x, point.Pos.y)) <= 3.0f)
+		return true;
+	return false;
+}
+
+FakeItemEX Tile::GetBestLoot(std::vector<FakeItemEX> lootlist)
+{
+	int mostLoot = 0;
+	int mostLootIndex = -1;
+
+	for (int i = 0; i < lootlist.size(); i++)
+	{
+		int curLoot = 0;
+
+		for (auto loot : lootlist)
+		{
+			if (IsWithinAreaLoot(lootlist[i], loot))
+				curLoot++;
+		}
+
+		if (curLoot > mostLoot)
+		{
+			mostLoot = curLoot;
+			mostLootIndex = i;
+		}
+	}
+
+	if (mostLootIndex == -1)
+		return FakeItemEX();
+	else
+		return lootlist[mostLootIndex];
+}
+
+

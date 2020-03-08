@@ -5,12 +5,12 @@
 void Initialize()
 {
 	// Hook SwapBuffer OpenGL
-
 #ifdef _DEBUG
 	AllocConsole();
 	FILE* fp;
 	freopen_s(&fp, "CONOUT$", "w", stdout);
 #endif
+
 
 	hooks();
 

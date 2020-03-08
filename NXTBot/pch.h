@@ -19,6 +19,7 @@
 #include <string>
 #include <mutex>
 #include <fstream>
+#include <set>
 
 #include "glew/GL/glew.h"
 #include <gl\glut.h>

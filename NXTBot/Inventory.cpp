@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "GameClasses.h"
 #include "Patterns.h"
+#include "Game.h"
 #include "Inventory.h"
 
 extern UINT_PTR* g_GameContext;
@@ -41,6 +42,33 @@ bool Inventory::isBankOpened()
 bool Inventory::isInventoryFull()
 {
 	return GetFreeSlot() == 0;
+}
+
+bool Inventory::HaveItemName(std::string name)
+{
+	std::vector<FakeItem> Result;
+
+	auto inventory = GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack));
+
+	if (!inventory || inventory->ContainerContent == 0)
+	{
+		return false;
+	}
+
+	for (int i = 0; i < 28; i++)
+	{
+		FakeItem item = inventory->ContainerContent[i];
+
+		if (item.ItemId != -1)
+		{
+			std::string ItemName = RS::ItemIdToString(item.ItemId);
+
+			if(ItemName == name)
+				return true;
+		}
+	}
+
+	return false;
 }
 
 ContainerObj* Inventory::GetContainerObj(uint32_t containerId)

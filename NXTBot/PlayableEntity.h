@@ -37,16 +37,17 @@ public:
 	bool Talk(uint32_t Entity);
 	bool BankUsingNPC(uint32_t Entity);
 	bool Loot(FakeItemEX lootItem);
-
+	bool Mine(StaticObj obj);
 
 	bool LootAllConfirm();
-	
+	bool QuickDropSlot1();
+
 	bool DepositActionNPC(uint32_t Entity);
 	bool DepositAllThroughBank();
 	bool ConfirmChat();
 	bool DepositAll();
 	
-	
+	bool isMining();
 	bool inCombat();
 	bool isMoving();
 	bool isNextTo(uint32_t Entity);

@@ -9,6 +9,9 @@ extern UINT_PTR* g_GameContext;
 extern Addr Patterns;
 extern fn_GetLocalPlayer o_GetLocalPlayer;
 
+using nlohmann::json;
+extern json itemList;
+
 GameContext* RS::GetGameContext()
 {
 	if(!g_GameContext)
@@ -541,10 +544,72 @@ Tile2D RS::WorldToTilePos(const int32_t wX, const int32_t wY) {
 
 std::string RS::ItemIdToString(uint32_t itemId)
 {
-	return std::string();
+	std::string itemIdS = std::to_string(itemId);
+
+	if (itemList.count(itemIdS) > 0)
+	{
+		return itemList[itemIdS]["name"].get<std::string>();
+	}
+
+	return "Unknown";
 }
 
 int RS::ItemNameToId(std::string itemName)
 {
 	return 0;
+}
+
+UINT_PTR Static::GetFullEntityList()
+{
+	UINT_PTR Ptr2 = *(UINT_PTR*)((UINT_PTR)RS::GetGameContext() + Patterns.Offset_Ptr1);
+
+	if (!Ptr2)
+		return 0;
+
+	uint64_t ptr3 = *(uint64_t*)(Ptr2 + 0x70);
+
+	if (!ptr3)
+		return 0;
+
+	uint64_t camera = *(uint64_t*)(ptr3 + 0x8);
+
+	if (!camera)
+		return 0;
+
+	uint64_t g_entityListFull = *(uint64_t*)(camera + Patterns.Offset_Camera);
+
+	if (!g_entityListFull)
+		return 0;
+
+	return g_entityListFull;
+}
+
+void Static::GetStaticEntities(std::set<uint64_t>* out)
+{
+	GetStaticEntities_(GetFullEntityList(), out);
+}
+
+void Static::GetStaticEntities_(uint64_t curr, std::set<uint64_t>* out)
+{
+	uint64_t list = curr;
+
+
+	uint64_t entity_ptr = ReadPtrOffset(list, Patterns.Offset_StaticEntityPtr);
+	if (entity_ptr != 0) {
+		out->insert(entity_ptr);
+	}
+	if (**reinterpret_cast<uint8_t**>(list + Patterns.Offset_StaticAnd20) & 0x20) {
+
+		uint64_t start_ptr = ReadPtrOffset(list, Patterns.Offset_StaticEntityPtr - 0x68);
+		uint64_t end_ptr = ReadPtrOffset(list, Patterns.Offset_StaticEntityPtr - 0x60);
+
+		if (start_ptr != end_ptr) {
+			size_t count = (end_ptr - start_ptr + 7) >> 3;
+
+
+			for (size_t i = 0; i < count; ++i) {
+				GetStaticEntities_(ReadPtrOffset(start_ptr, i * 8), out);
+			}
+		}
+	}
 }
