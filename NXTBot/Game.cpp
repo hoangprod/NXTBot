@@ -584,6 +584,69 @@ UINT_PTR Static::GetFullEntityList()
 	return g_entityListFull;
 }
 
+UINT_PTR Static::GetClosestStaticObjectByName(const char* name)
+{
+	std::set<uint64_t> static_entities;
+	GetStaticEntities(&static_entities);
+
+	Player player = RS::GetLocalPlayer();
+
+	uint64_t closestEnt = 0;
+	float closestDistance = 99999.0f;
+
+	for (const uint64_t& entity_ptr : static_entities) {
+		EntityType type = *reinterpret_cast<EntityType*>(entity_ptr + 0x40);
+
+
+
+		if (type == EntityType::Object)
+		{
+			auto staticObj = (StaticObj1Wrapper*)entity_ptr;
+
+			if (staticObj->Definition == 0) {
+				continue;
+			}
+
+			Tile2D Pos = Tile2D(staticObj->TileX, staticObj->TileY);
+
+			float curDistance = RS::GetDistance(player.GetTilePosition(), Pos);
+
+			if (strcmp(name, staticObj->Definition->Name) == 0)
+			{
+				if (curDistance < closestDistance)
+				{
+					closestDistance = curDistance;
+					closestEnt = entity_ptr;
+				}
+			}
+
+		}
+		else if (type == EntityType::Object2)
+		{
+			auto staticObj = (StaticObj2Wrapper*)entity_ptr;
+
+			if (staticObj->Definition == 0) {
+				continue;
+			}
+
+			Tile2D Pos = Tile2D(staticObj->TileX, staticObj->TileY);
+
+			float curDistance = RS::GetDistance(player.GetTilePosition(), Pos);
+
+			if (strcmp(name, staticObj->Definition->Name) == 0)
+			{
+				if (curDistance < closestDistance)
+				{
+					closestDistance = curDistance;
+					closestEnt = entity_ptr;
+				}
+			}
+		}
+	}
+
+	return closestEnt;
+}
+
 void Static::GetStaticEntities(std::set<uint64_t>* out)
 {
 	GetStaticEntities_(GetFullEntityList(), out);

@@ -47,6 +47,7 @@ struct Static
 {
 	static UINT_PTR GetFullEntityList();
 
+	static UINT_PTR GetClosestStaticObjectByName(const char* name);
 	static void GetStaticEntities(std::set<uint64_t>* out);
 	static void GetStaticEntities_(uint64_t curr, std::set<uint64_t>* out);
 };

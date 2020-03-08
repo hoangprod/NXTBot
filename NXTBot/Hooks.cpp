@@ -223,34 +223,27 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			if (wParam == VK_NUMPAD1)
 			{
-				std::set<uint64_t> static_entities;
-				Static::GetStaticEntities(&static_entities);
+				auto mithrilOre = Static::GetClosestStaticObjectByName("Mithril rock");
 
-				for (const uint64_t& entity_ptr : static_entities) {
-					EntityType type = *reinterpret_cast<EntityType*>(entity_ptr + 0x40);
+				if (mithrilOre)
+				{
+					EntityType type = *reinterpret_cast<EntityType*>(mithrilOre + 0x40);
 
-
-					if (type == EntityType::Object2)
+					if (type == EntityType::Object)
 					{
-						auto staticObj = (StaticObj2Wrapper*)entity_ptr;
+						auto staticObj = (StaticObj1Wrapper*)mithrilOre;
 
-						if (staticObj->Definition == 0) {
-							continue;
-						}
+						printf("1> name %s at (%d, %d)\n", staticObj->Definition->Name, staticObj->TileX, staticObj->TileY);
 
-						printf("Obj Type 2: %p - id: %d  name: %s at (%d, %d)\n", staticObj, staticObj->Definition->Id, staticObj->Definition->Name, staticObj->TileX, staticObj->TileY);
 					}
-					else if (type == EntityType::Object)
+					else if (type == EntityType::Object2)
 					{
-						auto staticObj = (StaticObj1Wrapper*)entity_ptr;
+						auto staticObj = (StaticObj2Wrapper*)mithrilOre;
+						printf("2> name %s at (%d, %d)\n", staticObj->Definition->Name, staticObj->TileX, staticObj->TileY);
 
-						if (staticObj->Definition == 0) {
-							continue;
-						}
-						printf("Obj Type 1: %p - id: %d  name: %s at (%d, %d)\n", staticObj, staticObj->Definition->Id, staticObj->Definition->Name, staticObj->TileX, staticObj->TileY);
 					}
-
 				}
+
 
 			}
 			if (wParam == VK_NUMPAD2)
