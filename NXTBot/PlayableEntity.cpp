@@ -121,13 +121,13 @@ bool Player::Loot(FakeItemEX ObjectId)
 	return true;
 }
 
-bool Player::Mine(StaticObj obj)
+bool Player::StaticInteract(StaticObjEX obj)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = obj.ItemId;
-	*reinterpret_cast<int*>(&data[0x54]) = obj.Pos.x;
-	*reinterpret_cast<int*>(&data[0x58]) = obj.Pos.y;
+	*reinterpret_cast<int*>(&data[0x50]) = obj.Definition->Id;
+	*reinterpret_cast<int*>(&data[0x54]) = obj.TileX;
+	*reinterpret_cast<int*>(&data[0x58]) = obj.TileY;
 
 	uint64_t func_ptr = g_Module + 0x94990;
 
@@ -189,6 +189,77 @@ bool Player::QuickDropSlot1()
 
 	return true;
 }
+
+bool Player::ExitToLobby()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = 1;
+	*reinterpret_cast<int*>(&data[0x54]) = -1;
+	*reinterpret_cast<int*>(&data[0x58]) = 93913154;
+
+	uint64_t func_ptr = g_Module + 0x94940;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Player::WindClockWork()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = 1;
+	*reinterpret_cast<int*>(&data[0x54]) = -1;
+	*reinterpret_cast<int*>(&data[0x58]) = 93716544;
+
+	uint64_t func_ptr = g_Module + 0x94940;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Player::ReleaseClockWork()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = 7;
+	*reinterpret_cast<int*>(&data[0x54]) = -1;
+	*reinterpret_cast<int*>(&data[0x58]) = 93716557;
+
+	uint64_t func_ptr = g_Module + 0x94940;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+
 
 bool Player::DepositActionNPC(uint32_t Entity)
 {
@@ -279,6 +350,73 @@ bool Player::DepositAll()
 	return true;
 }
 
+bool Player::BankInteractItem(int slot, int option)
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = option;
+	*reinterpret_cast<int*>(&data[0x54]) = slot;
+	*reinterpret_cast<int*>(&data[0x58]) = 0x205000E; // Hardcoded
+
+	uint64_t func_ptr = g_Module + 0x94940;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef uintptr_t(__cdecl* _BankDepositAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_BankDepositAll>(func_ptr)(g_GameContext, &dt);
+	return true;
+}
+
+bool Player::BankLoadPreset(int preset)
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = 1;
+	*reinterpret_cast<int*>(&data[0x54]) = preset;
+	*reinterpret_cast<int*>(&data[0x58]) = 0x2050070;// Hardcoded
+
+	uint64_t func_ptr = g_Module + 0x94940;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef uintptr_t(__cdecl* _BankDepositAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_BankDepositAll>(func_ptr)(g_GameContext, &dt);
+	return true;
+}
+
+bool Player::TeleportToAbyssThroughMage()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x50]) = 18542; // UPDATE PLEASE MageOfZamorak
+	*reinterpret_cast<int*>(&data[0x54]) = 0;
+	*reinterpret_cast<int*>(&data[0x58]) = 0;// Hardcoded
+
+	uint64_t func_ptr = g_Module + 0x94ad0;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef uintptr_t(__cdecl* _BankDepositAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_BankDepositAll>(func_ptr)(g_GameContext, &dt);
+	return true;
+}
+
+
 bool Player::isMining()
 {
 	if (!_base)
@@ -309,6 +447,7 @@ bool Player::isNextTo(uint32_t Entity)
 	return false;
 }
 
+
 void Player::Test()
 {
 	printf("===== Performing test =====\n");
@@ -333,6 +472,24 @@ int Entity::MovingState()
 		return 1; // Walk
 		break;
 	case 18039:
+		return 2; // Run
+		break;
+	case 18041:
+		return 0; // Stand
+		break;
+	case 18043:
+		return 1; // Walk
+		break;
+	case 18042:
+		return 2; // Run
+		break;
+	case 18019:
+		return 0; // Stand
+		break;
+	case 18021:
+		return 1; // Walk
+		break;
+	case 18020:
 		return 2; // Run
 		break;
 	default:
@@ -400,6 +557,16 @@ uint32_t Entity::GetType()
 	auto entity = (EntityObj*)_base;
 
 	return entity->EntityType;
+}
+
+bool Entity::IsInAnimation()
+{
+	if (!_base)
+		return 0;
+
+	auto entity = (EntityObj*)_base;
+
+	return (entity->DefautAni != entity->CurrentAni);
 }
 
 bool Entity::bTargeting()

@@ -470,6 +470,7 @@ EntityObj* RS::GetMonsterWithinRadius(Tile2D from, float MaxDistance)
 	return 0;
 }
 
+
 EntityObj* RS::GetMonsterWithinRadiusWithName(const char* monsterName, Tile2D from, float MaxDistance)
 {
 	auto Count = GetEntityCount();
@@ -533,14 +534,14 @@ EntityObj* RS::GetClosestMonsterWithinRadius(Tile2D from, float MaxDistance)
 }
 
 Tile2D RS::WorldToTilePos(const int32_t wX, const int32_t wY) {
-
 	Tile2D tile;
 
-	tile.x = (wX / 512) & 0xFFF;
-	tile.y = (wY / 512) & 0xFFF;
+	tile.x = (wX / 512);
+	tile.y = (wY / 512);
 
 	return tile;
 }
+
 
 std::string RS::ItemIdToString(uint32_t itemId)
 {
@@ -584,7 +585,7 @@ UINT_PTR Static::GetFullEntityList()
 	return g_entityListFull;
 }
 
-UINT_PTR Static::GetClosestStaticObjectByName(const char* name)
+StaticObjEX Static::GetClosestStaticObjectByName(const char* name)
 {
 	std::set<uint64_t> static_entities;
 	GetStaticEntities(&static_entities);
@@ -621,6 +622,7 @@ UINT_PTR Static::GetClosestStaticObjectByName(const char* name)
 			}
 
 		}
+
 		else if (type == EntityType::Object2)
 		{
 			auto staticObj = (StaticObj2Wrapper*)entity_ptr;
@@ -644,7 +646,249 @@ UINT_PTR Static::GetClosestStaticObjectByName(const char* name)
 		}
 	}
 
-	return closestEnt;
+	StaticObjEX returnObj = StaticObjEX();
+
+	if (closestEnt)
+	{
+		returnObj.Type = *reinterpret_cast<EntityType*>(closestEnt + 0x40);
+
+		if (returnObj.Type == EntityType::Object)
+		{
+			auto staticObj = (StaticObj1Wrapper*)closestEnt;
+			returnObj.TileX = staticObj->TileX;
+			returnObj.TileY = staticObj->TileY;
+			returnObj.Definition = staticObj->Definition;
+
+		}
+		else if (returnObj.Type == EntityType::Object2)
+		{
+			auto staticObj = (StaticObj2Wrapper*)closestEnt;
+			returnObj.TileX = staticObj->TileX;
+			returnObj.TileY = staticObj->TileY;
+			returnObj.Definition = staticObj->Definition;
+		}
+	}
+
+
+	return returnObj;
+}
+
+StaticObjEX Static::GetClosestStaticTreeObjectByName(const char* name)
+{
+	std::set<uint64_t> static_entities;
+	GetStaticEntities(&static_entities);
+
+	Player player = RS::GetLocalPlayer();
+
+	uint64_t closestEnt = 0;
+	float closestDistance = 99999.0f;
+
+	for (const uint64_t& entity_ptr : static_entities) {
+		EntityType type = *reinterpret_cast<EntityType*>(entity_ptr + 0x40);
+
+		if (type == EntityType::Object2)
+		{
+			auto staticObj = (StaticObj2Wrapper*)entity_ptr;
+
+			if (staticObj->Definition == 0 || staticObj->IsHarvested) {
+				continue;
+			}
+
+			Tile2D Pos = Tile2D(staticObj->TileX, staticObj->TileY);
+
+			float curDistance = RS::GetDistance(player.GetTilePosition(), Pos);
+			if (strcmp(name, staticObj->Definition->Name) == 0 && strcmp("Chop down", staticObj->Definition->Op0) == 0)
+			{
+				if (curDistance < closestDistance)
+				{
+					closestDistance = curDistance;
+					closestEnt = entity_ptr;
+				}
+			}
+		}
+	}
+
+	StaticObjEX returnObj = StaticObjEX();
+
+	if (closestEnt)
+	{
+		returnObj.Type = *reinterpret_cast<EntityType*>(closestEnt + 0x40);
+
+		if (returnObj.Type == EntityType::Object)
+		{
+			auto staticObj = (StaticObj1Wrapper*)closestEnt;
+			returnObj.TileX = staticObj->TileX;
+			returnObj.TileY = staticObj->TileY;
+			returnObj.Definition = staticObj->Definition;
+
+		}
+		else if (returnObj.Type == EntityType::Object2)
+		{
+			auto staticObj = (StaticObj2Wrapper*)closestEnt;
+			returnObj.TileX = staticObj->TileX;
+			returnObj.TileY = staticObj->TileY;
+			returnObj.Definition = staticObj->Definition;
+		}
+	}
+
+
+	return returnObj;
+}
+
+StaticObjEX Static::GetClosestStaticTreeObjectByNameWithOrigin(const char* name, Tile2D origin)
+{
+	std::set<uint64_t> static_entities;
+	GetStaticEntities(&static_entities);
+
+	uint64_t closestEnt = 0;
+	float closestDistance = 99999.0f;
+
+	for (const uint64_t& entity_ptr : static_entities) {
+		EntityType type = *reinterpret_cast<EntityType*>(entity_ptr + 0x40);
+
+		if (type == EntityType::Object2)
+		{
+			auto staticObj = (StaticObj2Wrapper*)entity_ptr;
+
+			if (staticObj->Definition == 0 || staticObj->IsHarvested) {
+				continue;
+			}
+
+			Tile2D Pos = Tile2D(staticObj->TileX, staticObj->TileY);
+
+			float curDistance = RS::GetDistance(origin, Pos);
+			if (strcmp(name, staticObj->Definition->Name) == 0 && strcmp("Chop down", staticObj->Definition->Op0) == 0)
+			{
+				if (curDistance < closestDistance)
+				{
+					closestDistance = curDistance;
+					closestEnt = entity_ptr;
+				}
+			}
+		}
+	}
+
+	StaticObjEX returnObj = StaticObjEX();
+
+	if (closestEnt)
+	{
+		returnObj.Type = *reinterpret_cast<EntityType*>(closestEnt + 0x40);
+
+		if (returnObj.Type == EntityType::Object)
+		{
+			auto staticObj = (StaticObj1Wrapper*)closestEnt;
+			returnObj.TileX = staticObj->TileX;
+			returnObj.TileY = staticObj->TileY;
+			returnObj.Definition = staticObj->Definition;
+
+		}
+		else if (returnObj.Type == EntityType::Object2)
+		{
+			auto staticObj = (StaticObj2Wrapper*)closestEnt;
+			returnObj.TileX = staticObj->TileX;
+			returnObj.TileY = staticObj->TileY;
+			returnObj.Definition = staticObj->Definition;
+		}
+	}
+
+
+	return returnObj;
+}
+
+EntityObj* Static::GetEntityNpcByName(const char* name)
+{
+	std::set<uint64_t> static_entities;
+	GetStaticEntities(&static_entities);
+
+	float closestDistance = 99999.0f;
+
+	for (const uint64_t& entity_ptr : static_entities) {
+		EntityType type = *reinterpret_cast<EntityType*>(entity_ptr + 0x40);
+		if (type == EntityType::NPC)
+		{
+			EntityObj* ent = (EntityObj*)entity_ptr;
+
+			if (ent && strlen(ent->Name) > 0)
+			{
+				printf("ent name: %s\n", ent->Name);
+
+				if (strcmp(ent->Name, name) == 0)
+					return ent;
+			}
+		}
+	}
+
+	return 0;
+}
+
+StaticObjEX Static::GetCStaticObjectById(uint32_t id)
+{
+	std::set<uint64_t> static_entities;
+	GetStaticEntities(&static_entities);
+
+	uint64_t findingEnt = 0;
+
+	for (const uint64_t& entity_ptr : static_entities) {
+		EntityType type = *reinterpret_cast<EntityType*>(entity_ptr + 0x40);
+
+
+
+		if (type == EntityType::Object)
+		{
+			auto staticObj = (StaticObj1Wrapper*)entity_ptr;
+
+			if (staticObj->Definition == 0) {
+				continue;
+			}
+
+			if (staticObj->Definition->Id == id)
+			{
+				findingEnt = entity_ptr;
+				break;
+			}
+
+		}
+		else if (type == EntityType::Object2)
+		{
+			auto staticObj = (StaticObj2Wrapper*)entity_ptr;
+
+			if (staticObj->Definition == 0) {
+				continue;
+			}
+
+			if (staticObj->Definition->Id == id)
+			{
+				findingEnt = entity_ptr;
+				break;
+			}
+
+		}
+	}
+
+	StaticObjEX returnObj = StaticObjEX();
+
+	if (findingEnt)
+	{
+		returnObj.Type = *reinterpret_cast<EntityType*>(findingEnt + 0x40);
+
+		if (returnObj.Type == EntityType::Object)
+		{
+			auto staticObj = (StaticObj1Wrapper*)findingEnt;
+			returnObj.TileX = staticObj->TileX;
+			returnObj.TileY = staticObj->TileY;
+			returnObj.Definition = staticObj->Definition;
+
+		}
+		else if (returnObj.Type == EntityType::Object2)
+		{
+			auto staticObj = (StaticObj2Wrapper*)findingEnt;
+			returnObj.TileX = staticObj->TileX;
+			returnObj.TileY = staticObj->TileY;
+			returnObj.Definition = staticObj->Definition;
+		}
+	}
+
+	return returnObj;
 }
 
 void Static::GetStaticEntities(std::set<uint64_t>* out)

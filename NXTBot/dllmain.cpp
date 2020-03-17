@@ -11,7 +11,6 @@ void Initialize()
 	freopen_s(&fp, "CONOUT$", "w", stdout);
 #endif
 
-
 	hooks();
 
 }

@@ -10,9 +10,15 @@ extern UINT_PTR* g_GameContext;
 extern UINT_PTR g_Module;
 extern Addr Patterns;
 
+//0x5C502B2 4a7 = First // Player's turn talking with a NEXT
+//0x5C502B2 4a0 = Second
+//0x5C502B2 4a2 = NO option, not a conversation. ie: "You do not have any essence to craft" or "Your pouch does not need repair" 
+//0x5C502B2 4a4 = Multiple selection chat options.
 
 // 0x5C502A5 Deposit Box
 // 0x5C502B2 Conversation Talk
+
+
 
 UINT_PTR* Widgets::GetWidgetUI(uint32_t FullIndex)
 {

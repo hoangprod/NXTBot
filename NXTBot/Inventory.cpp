@@ -71,6 +71,33 @@ bool Inventory::HaveItemName(std::string name)
 	return false;
 }
 
+int Inventory::GetItemNameSlot(std::string name)
+{
+	std::vector<FakeItem> Result;
+
+	auto inventory = GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack));
+
+	if (!inventory || inventory->ContainerContent == 0)
+	{
+		return false;
+	}
+
+	for (int i = 0; i < 28; i++)
+	{
+		FakeItem item = inventory->ContainerContent[i];
+
+		if (item.ItemId != -1)
+		{
+			std::string ItemName = RS::ItemIdToString(item.ItemId);
+
+			if (ItemName == name)
+				return i;
+		}
+	}
+
+	return -1;
+}
+
 ContainerObj* Inventory::GetContainerObj(uint32_t containerId)
 {
 	auto gContext = g_GameContext[1];

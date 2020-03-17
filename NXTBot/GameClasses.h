@@ -1,5 +1,13 @@
 // Created with ReClass.NET 1.2 by KN4CK3R
 
+enum class EntityType {
+	Object = 0,
+	NPC = 1,
+	Players = 2,
+	GroundItem = 3,
+	Object2 = 12
+};
+
 class GameContextPtr
 {
 public:
@@ -19,11 +27,28 @@ public:
 	char pad_0008[48]; //0x0008
 	void* camera; //0x0038
 	uint32_t EntityType; //0x0040
-	char pad_0044[204]; //0x0044
+	char pad_0044[12]; //0x0044
+	uint32_t UnkAnimation; //0x0050
+	char pad_0054[188]; //0x0054
 	uint32_t EntityId; //0x0110
 	char pad_0114[4]; //0x0114
-	char* Name; //0x0118 C2A0 for space
-	char pad_0120[4910]; //0x0120
+	char* Name; //0x0118
+	char pad_0120[308]; //0x0120
+	uint32_t CurrentTarget; //0x0254
+	char pad_0258[112]; //0x0258
+	int32_t IsTargeting; //0x02C8
+	char pad_02CC[116]; //0x02CC
+	void* DefautAni; //0x0340
+	void* CurrentAni; //0x0348
+	char pad_0350[1712]; //0x0350
+	uint32_t AnimationId; //0x0A00
+	char pad_0A04[28]; //0x0A04
+	void* DirectionPtr; //0x0A20
+	char pad_0A28[68]; //0x0A28
+	uint32_t ElapsedLastAction; //0x0A6C
+	char pad_0A70[1284]; //0x0A70
+	uint32_t Level; //0x0F74
+	char pad_0F78[1272]; //0x0F78
 
 
 	virtual void Function0();
@@ -217,6 +242,19 @@ public:
 	char pad_01E8[80]; //0x01E8
 }; //Size: 0x0238
 
+class StaticObjEX
+{
+public:
+	StaticObjEX()
+	{
+		Definition = 0;
+	};
+	EntityType Type; //0x0040
+	int32_t TileX; //0x00EC
+	int32_t TileY; //0x00F0
+	StaticObjCore* Definition; //0x0100
+};
+
 class StaticObj2Wrapper
 {
 public:
@@ -225,9 +263,12 @@ public:
 	char pad_0044[168]; //0x0044
 	int32_t TileX; //0x00EC
 	int32_t TileY; //0x00F0
-	char pad_00F4[12]; //0x00F4
+	char pad_00F4[4]; //0x00F4
+	void* DefaultInteraction; //0x00F8
 	class StaticObjCore* Definition; //0x0100
-	char pad_0108[64]; //0x0108
+	char pad_0108[58]; //0x0108
+	int8_t IsHarvested; //0x0142
+	char pad_0143[5]; //0x0143
 }; //Size: 0x0148
 
 class StaticObj1Wrapper
@@ -327,13 +368,6 @@ enum class ContainerType : uint32_t {
 	DeathReclaim = 676,
 };
 
-enum class EntityType {
-	Object = 0,
-	NPC = 1,
-	Players = 2,
-	GroundItem = 3,
-	Object2 = 12
-};
 
 enum class GameState {
 	LoginScreen = 10,

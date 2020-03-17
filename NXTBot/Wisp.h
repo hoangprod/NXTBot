@@ -52,5 +52,88 @@ public:
 
 	Player* player;
 	int MiningExp;
-	int Node;
+	StaticObjEX Node;
+};
+
+
+class Penguins
+{
+public:
+	void FSM();
+
+	Player* player;
+
+};
+
+
+class BikeAgi
+{
+public:
+	void FSM();
+
+	Player* player;
+};
+
+
+class Woodcutting
+{
+public:
+	void FSM();
+
+	Tile2D origin;
+	Player* player;
+	int WoodchoppingExp;
+	std::string TargetTree;
+	std::string TargetLog;
+};
+
+struct AgilityCourse
+{
+	AgilityCourse() {};
+
+	AgilityCourse(uint32_t _objId)
+	{
+		objId = _objId;
+	}
+
+	AgilityCourse(uint32_t _objId, Tile2D end) {
+		objId = _objId;
+		EndPos = end;
+	}
+	uint32_t objId;
+	Tile2D EndPos;
+};
+
+
+
+class MoneyAgi
+{
+public:
+	void FSM();
+	AgilityCourse GetNextCourse();
+
+	Player* player;
+	uint32_t currentObstacle;
+};
+
+
+
+
+class AbyssCrafting
+{
+public:
+	void FSM();
+	void FillPouches();
+	void RepairPouches();
+	void TravelToAbyss();
+	bool FinishedCrafting();
+	bool IsInAbyss();
+	bool IsInAltar();
+	bool isOuterAbyss();
+	bool isInnerAbyss();
+	bool NeedToRepairPouches();
+
+	Player* player;
+	int tripSinceLastRepair;
+	std::string RuneType;
 };

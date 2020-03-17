@@ -33,7 +33,51 @@ public:
 
 	template<typename... Args>
 	void Print(float X, float Y, float R, float G, float B, const char* Text, Args... args);
+
+	void PrintCStr(float X, float Y, float R, float G, float B, const char* Text);
 };
+
+
+/*
+template<typename T>
+struct is_literal
+{
+	enum { value = false };
+};
+
+template<>
+struct is_literal<char>
+{
+	enum { value = true };
+};
+
+template<>
+struct is_literal<char*>
+{
+	enum { value = true };
+};
+
+template<>
+struct is_literal<const char*>
+{
+	enum { value = true };
+};
+
+template<typename Char, typename Traits, typename Alloc>
+struct is_literal<std::basic_string<Char, Traits, Alloc>>
+{
+	enum { value = true };
+};
+
+template<typename T>
+std::string to_string(T value)
+{
+	static_assert(is_literal<T>::value, "Argument: Value Must be of literal type.");
+	std::string Result;
+	Result += value;
+	return Result;
+}
+*/
 
 template<typename... Args>
 void Render::Print(float X, float Y, const char* Text, Args... args)

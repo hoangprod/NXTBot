@@ -37,7 +37,7 @@ struct RS {
 	static EntityObj* GetClosestMonsterWithinRadius(Tile2D from, float MaxDistance);
 
 	static Tile2D WorldToTilePos(const int32_t wX, const int32_t wY);
-	
+
 	static std::string ItemIdToString(uint32_t itemId);
 	static int ItemNameToId(std::string itemName);
 };
@@ -47,7 +47,13 @@ struct Static
 {
 	static UINT_PTR GetFullEntityList();
 
-	static UINT_PTR GetClosestStaticObjectByName(const char* name);
+	static StaticObjEX GetClosestStaticObjectByName(const char* name);
+	static StaticObjEX GetClosestStaticTreeObjectByName(const char* name);
+	static StaticObjEX GetClosestStaticTreeObjectByNameWithOrigin(const char* name, Tile2D origin);
+
+	static EntityObj* GetEntityNpcByName(const char* name);
+
+	static StaticObjEX GetCStaticObjectById(uint32_t id);
 	static void GetStaticEntities(std::set<uint64_t>* out);
 	static void GetStaticEntities_(uint64_t curr, std::set<uint64_t>* out);
 };

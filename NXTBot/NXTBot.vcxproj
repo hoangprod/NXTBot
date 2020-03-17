@@ -181,6 +181,7 @@
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Manager.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="nuklear.h" />
     <ClInclude Include="Patterns.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlayableEntity.h" />

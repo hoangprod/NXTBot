@@ -167,3 +167,19 @@ void Render::DrawTexture(std::uint32_t Target, std::uint32_t ID, float X1, float
 	glEnd();
 	glDisable(Target);
 }
+
+void Render::PrintCStr(float X, float Y, float R, float G, float B, const char* Text)
+{
+	using namespace std;
+	std::size_t Position = 0;
+	std::string Container(Text);
+
+	glColor3f(R, G, B);
+	glRasterPos2f(X, Y);
+	glPushAttrib(GL_LIST_BIT);
+	glListBase(this->Base - 32);
+	glCallLists(Container.size(), GL_UNSIGNED_BYTE, Container.data());
+	glPopAttrib();
+	glFlush();
+
+}

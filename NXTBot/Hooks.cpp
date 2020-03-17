@@ -15,6 +15,9 @@
 #include "Experience.h"
 #include "Helper.h"
 
+#define NK_IMPLEMENTATION
+#include "nuklear.h"
+
 Detour64 detours;
 HWND hWnd;
 extern Addr Patterns;
@@ -36,14 +39,32 @@ json itemList;
 
 std::string botStatus = "Not started.";
 
+int SelectedBot = -1;
+int SelectedWood = 0;
+int SelectedOre = 0;
 
+
+enum class BotType {
+	SpellWisp,
+	Rabbit,
+	GeneralCombat,
+	Mining,
+	ClockworkSuit,
+	WoodCutting,
+	AnachroniaAgility
+};
+
+std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility"};
+std::vector<std::string> TreeNames = { "Tree", "Oak", "Willow", "Teak", "Maple", "Acadia", "Mahogany", "Yew" };
+std::vector<std::string> LogNames = { "Logs", "Oak logs", "Willow logs", "Teak logs", "Maple logs", "Acadia logs", "Mahogany logs", "Yew logs" };
 
 bool h_OnDispatchNetMessage(UINT_PTR* a1, UINT_PTR* a2)
 {
 	return o_OnDispatchNetMessage(a1, a2);
 }
 
-
+bool RecordAgility = false;
+std::vector<AgilityCourse> agiList;
 DWORD* h_OnCursorDoAction(UINT_PTR a1, ActionPtr actionPtr, float* position)
 {
 	auto action = actionPtr.Action;
@@ -57,6 +78,13 @@ DWORD* h_OnCursorDoAction(UINT_PTR a1, ActionPtr actionPtr, float* position)
 
 	//printf("[+] actionPtr %p, action %p, dispatcher %p, dispatcherInstance %p, Index %d, TileX %d, TileY %d, dispatcherFunc %p -> \n", actionPtr, action, dispatcher, dispatcherInstance, param1, param2, param3, dispatcherFunc);
 	printf("[+] Index %d, TileX %d, TileY %d, dispatcherFunc %p -> 0x%x\n",  param1, param2, param3, dispatcherFunc, (UINT_PTR)dispatcherFunc - g_Module);
+
+	if (RecordAgility && param1 > 1)
+	{
+		printf("Adding %d to agi list\n", param1);
+
+		agiList.push_back(AgilityCourse(param1));
+	}
 
 	return o_OnCursorDoAction(a1, actionPtr, position);
 }
@@ -148,15 +176,34 @@ bool h_wglSwapBuffers(HDC hdc)
 	//r.DrawRect(100, 100, 200, 200, false);
 
 	auto status = "NXTBot Heph Status =  " + botStatus;
-	r.Print(200.0f, 30.0f, 0.0f, 0x00, 0xFF, status.data());
+	r.PrintCStr(100.0f, 70.0f, 0xFF, 0x00, 0x00, status.data());
+
+	
+	if (SelectedBot == -1)
+	{
+		r.PrintCStr(100.0f, 90.0f, 0x00, 0xFF, 0x00, std::string("Selected Bot: None").data());
+	}
+	else
+	{
+		std::string selectedBotName = std::string("Selected Bot: ") + std::string(botList[SelectedBot]);
+		r.PrintCStr(100.0f, 90.0f, 0x00, 0xFF, 0x00, selectedBotName.data());
+
+		if (SelectedBot == (int)BotType::WoodCutting)
+		{
+			std::string TreeName = std::string("Selected Tree: ") + std::string(TreeNames[SelectedWood]);
+			r.PrintCStr(100.0f, 110.0f, 44, 195, 212, TreeName.data());
+		}
+
+	}
+	
+	// Botting
+	Manager::Manage();
 
 	glPopMatrix();
 	glPopAttrib();
 
 	wglMakeCurrent(oldhdc, oldctx);
-	
-	// Botting
-	Manager::Manage();
+
 
 	return o_wglSwapBuffers(hdc);
 }
@@ -201,13 +248,13 @@ static BOOL CALLBACK enumWindowCallback(HWND hWndv, LPARAM lparam) {
 }
 
 
-
 LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (false)
 	{
 		SetCursor((HCURSOR)LoadImageA(NULL, MAKEINTRESOURCEA(32515), IMAGE_CURSOR, 0, 0, LR_SHARED));
 	}
+
 
 	if (uMsg == WM_KEYUP)
 	{
@@ -221,37 +268,63 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		if (RS::IsInGame())
 		{
+			if (wParam == VK_NUMPAD0)
+			{
+				/*
+				printf("std::vector<AgilityCourse> agiList = { ");
+
+				for (auto i : agiList)
+				{
+					printf("AgilityCourse(%d, Tile2D(%d, %d)), ", i.objId, i.EndPos.x, i.EndPos.y);
+				}
+
+
+				printf(" };");
+				*/
+			}
+
 			if (wParam == VK_NUMPAD1)
 			{
-				auto mithrilOre = Static::GetClosestStaticObjectByName("Mithril rock");
 
-				if (mithrilOre)
+				auto leech = RS::GetEntityNPCByName("Dark mage");
+
+				if (leech)
 				{
-					EntityType type = *reinterpret_cast<EntityType*>(mithrilOre + 0x40);
-
-					if (type == EntityType::Object)
-					{
-						auto staticObj = (StaticObj1Wrapper*)mithrilOre;
-
-						printf("1> name %s at (%d, %d)\n", staticObj->Definition->Name, staticObj->TileX, staticObj->TileY);
-
-					}
-					else if (type == EntityType::Object2)
-					{
-						auto staticObj = (StaticObj2Wrapper*)mithrilOre;
-						printf("2> name %s at (%d, %d)\n", staticObj->Definition->Name, staticObj->TileX, staticObj->TileY);
-
-					}
+					printf("Dark mage with distance: %f\n", RS::GetDistance(RS::GetLocalPlayerTilePos(), RS::GetEntityTilePos(leech)));
 				}
 
 
 			}
 			if (wParam == VK_NUMPAD2)
 			{
-				printf("exp %d\n", Exp::GetCurrentExp(SkillType::MINING));
+				auto invent = Inventory::GetInventoryItems();
+
+				/*
+				auto player = RS::GetLocalPlayerTilePos();
+				agiList[agiList.size() - 1].EndPos = player;
+
+				printf("Added (%d, %d) as player pos.\n", player.x, player.y);
+				*/
 			}
 			if (wParam == VK_NUMPAD3)
 			{
+				Player player = RS::GetLocalPlayer();
+
+				auto tree = Static::GetClosestStaticTreeObjectByName("Tree");
+				if (tree.Definition)
+				{
+					printf("Choppign down %d [%d] at (%d, %d)\n", tree.Definition->Id, tree.Type, tree.TileX, tree.TileY);
+					player.StaticInteract(tree);
+				}
+				else {
+					printf("Cant find tree\n");
+				}
+
+				/*
+				RecordAgility = !RecordAgility;
+
+				printf("Record Agi: %d\n", RecordAgility);
+				*/
 			}
 			if (wParam == VK_NUMPAD4)
 			{
@@ -259,14 +332,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (wParam == VK_NUMPAD5)
 			{
 			}
-			if (wParam == VK_NUMPAD6)
-			{
-				/*
-				auto localplayer = RS::GetLocalPlayer();
-				Player play = Player(localplayer);
-				play.Test();
-				*/
-			}
+
 			if (wParam == VK_OEM_3)
 			{
 				UINT_PTR* PlayerObj = *(UINT_PTR**)(g_GameContext[1] + 0x1780);
