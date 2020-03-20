@@ -53,6 +53,9 @@ public:
 	Player* player;
 	int MiningExp;
 	StaticObjEX Node;
+	
+	std::string TargetNode;
+	std::string TargetOre;
 };
 
 
@@ -135,5 +138,6 @@ public:
 
 	Player* player;
 	int tripSinceLastRepair;
-	std::string RuneType;
+	bool justTeleported = false;
+	std::string RuneType = "Cosmic rune";
 };

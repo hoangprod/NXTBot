@@ -14,8 +14,8 @@ bool Player::Move(Tile2D tile)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x54]) = tile.x;
-	*reinterpret_cast<int*>(&data[0x58]) = tile.y;
+	*reinterpret_cast<int*>(&data[0x5c]) = tile.x;
+	*reinterpret_cast<int*>(&data[0x60]) = tile.y;
 
 	uint64_t** handler = (uint64_t**)Patterns.Addr_MoveActionHandler;
 
@@ -46,11 +46,11 @@ bool Player::Attack(uint32_t Entity)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = Entity;
-	*reinterpret_cast<int*>(&data[0x54]) = 0;
-	*reinterpret_cast<int*>(&data[0x58]) = 0;
+	*reinterpret_cast<int*>(&data[0x58]) = Entity;
+	*reinterpret_cast<int*>(&data[0x5c]) = 0;
+	*reinterpret_cast<int*>(&data[0x60]) = 0;
 
-	uint64_t func_ptr = g_Module + 0x094A90;
+	uint64_t func_ptr = g_Module + 0x9c180;
 
 	if (!func_ptr)
 		return false;
@@ -79,11 +79,11 @@ bool Player::BankUsingNPC(uint32_t targetEntity)
 
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = ent->EntityId;
-	*reinterpret_cast<int*>(&data[0x54]) = 0;
-	*reinterpret_cast<int*>(&data[0x58]) = 0;
+	*reinterpret_cast<int*>(&data[0x58]) = ent->EntityId;
+	*reinterpret_cast<int*>(&data[0x5c]) = 0;
+	*reinterpret_cast<int*>(&data[0x60]) = 0;
 
-	uint64_t func_ptr = g_Module + 0x94a70;
+	uint64_t func_ptr = g_Module + 0x9c160;
 
 	if (!func_ptr)
 		return false;
@@ -102,11 +102,11 @@ bool Player::Loot(FakeItemEX ObjectId)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = ObjectId.ItemId;
-	*reinterpret_cast<int*>(&data[0x54]) = ObjectId.Pos.x;
-	*reinterpret_cast<int*>(&data[0x58]) = ObjectId.Pos.y;
+	*reinterpret_cast<int*>(&data[0x58]) = ObjectId.ItemId;
+	*reinterpret_cast<int*>(&data[0x5c]) = ObjectId.Pos.x;
+	*reinterpret_cast<int*>(&data[0x60]) = ObjectId.Pos.y;
 
-	uint64_t func_ptr = g_Module + 0x94b90;
+	uint64_t func_ptr = g_Module + 0x9c280;
 
 	if (!func_ptr)
 		return false;
@@ -125,11 +125,42 @@ bool Player::StaticInteract(StaticObjEX obj)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = obj.Definition->Id;
-	*reinterpret_cast<int*>(&data[0x54]) = obj.TileX;
-	*reinterpret_cast<int*>(&data[0x58]) = obj.TileY;
+	if(obj.SecondId)
+		*reinterpret_cast<int*>(&data[0x58]) = obj.SecondId;
+	else
+		*reinterpret_cast<int*>(&data[0x58]) = obj.Definition->Id;
 
-	uint64_t func_ptr = g_Module + 0x94990;
+	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
+	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
+
+	uint64_t func_ptr = g_Module + 0x9c080;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _Loot)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_Loot>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Player::StaticInteract2(StaticObjEX obj)
+{
+	uint8_t data[100] = { 0 };
+
+	if (obj.SecondId)
+		*reinterpret_cast<int*>(&data[0x58]) = obj.SecondId;
+	else
+		*reinterpret_cast<int*>(&data[0x58]) = obj.Definition->Id;
+
+	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
+	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
+
+	uint64_t func_ptr = g_Module + 0x9c0a0;
 
 	if (!func_ptr)
 		return false;
@@ -148,11 +179,34 @@ bool Player::LootAllConfirm()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = 1;
-	*reinterpret_cast<int*>(&data[0x54]) = -1;
-	*reinterpret_cast<int*>(&data[0x58]) = 0x6560015;
+	*reinterpret_cast<int*>(&data[0x58]) = 1;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 0x6560015;
 
-	uint64_t func_ptr = g_Module + 0x94940;
+	uint64_t func_ptr = g_Module + 0x9c030;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Player::InteractWithEquipment(int slot, int option, int64_t param3)
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x58]) = slot;
+	*reinterpret_cast<int*>(&data[0x5c]) = option;
+	*reinterpret_cast<int*>(&data[0x60]) = param3;
+
+	uint64_t func_ptr = g_Module + 0x9c030;
 
 	if (!func_ptr)
 		return false;
@@ -171,11 +225,11 @@ bool Player::QuickDropSlot1()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = 8;
-	*reinterpret_cast<int*>(&data[0x54]) = -1;
-	*reinterpret_cast<int*>(&data[0x58]) = 93716544;
+	*reinterpret_cast<int*>(&data[0x58]) = 8;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 93716544;
 
-	uint64_t func_ptr = g_Module + 0x94940;
+	uint64_t func_ptr = g_Module + 0x9c030;
 
 	if (!func_ptr)
 		return false;
@@ -194,11 +248,11 @@ bool Player::ExitToLobby()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = 1;
-	*reinterpret_cast<int*>(&data[0x54]) = -1;
-	*reinterpret_cast<int*>(&data[0x58]) = 93913154;
+	*reinterpret_cast<int*>(&data[0x58]) = 1;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 93913154;
 
-	uint64_t func_ptr = g_Module + 0x94940;
+	uint64_t func_ptr = g_Module + 0x9c030;
 
 	if (!func_ptr)
 		return false;
@@ -217,11 +271,11 @@ bool Player::WindClockWork()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = 1;
-	*reinterpret_cast<int*>(&data[0x54]) = -1;
-	*reinterpret_cast<int*>(&data[0x58]) = 93716544;
+	*reinterpret_cast<int*>(&data[0x58]) = 1;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 93716544;
 
-	uint64_t func_ptr = g_Module + 0x94940;
+	uint64_t func_ptr = g_Module + 0x9c030;
 
 	if (!func_ptr)
 		return false;
@@ -240,11 +294,11 @@ bool Player::ReleaseClockWork()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = 7;
-	*reinterpret_cast<int*>(&data[0x54]) = -1;
-	*reinterpret_cast<int*>(&data[0x58]) = 93716557;
+	*reinterpret_cast<int*>(&data[0x58]) = 7;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 93716557;
 
-	uint64_t func_ptr = g_Module + 0x94940;
+	uint64_t func_ptr = g_Module + 0x9c030;
 
 	if (!func_ptr)
 		return false;
@@ -265,9 +319,9 @@ bool Player::DepositActionNPC(uint32_t Entity)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = Entity;
+	*reinterpret_cast<int*>(&data[0x58]) = Entity;
 
-	uint64_t func_ptr = g_Module + 0x94ab0;
+	uint64_t func_ptr = g_Module + 0x9c1a0;
 
 	if (!func_ptr)
 		return false;
@@ -286,11 +340,11 @@ bool Player::DepositAllThroughBank()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = 1;
-	*reinterpret_cast<int*>(&data[0x54]) = -1;
-	*reinterpret_cast<int*>(&data[0x58]) = 0x2050025;
+	*reinterpret_cast<int*>(&data[0x58]) = 1;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 0x2050025;
 
-	uint64_t func_ptr = g_Module + 0x94940;
+	uint64_t func_ptr = g_Module + 0x9c030;
 
 	if (!func_ptr)
 		return false;
@@ -305,15 +359,15 @@ bool Player::DepositAllThroughBank()
 	return true;
 }
 
-bool Player::ConfirmChat()
+bool Player::ConfirmChat(int64_t param3)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = 0;
-	*reinterpret_cast<int*>(&data[0x54]) = -1;
-	*reinterpret_cast<int*>(&data[0x58]) = 0x4A0000F; // Hardcoded
+	*reinterpret_cast<int*>(&data[0x58]) = 0;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = param3; // Hardcoded
 
-	uint64_t func_ptr = g_Module + 0x94930;
+	uint64_t func_ptr = g_Module + 0x9c020;
 
 	if (!func_ptr)
 		return false;
@@ -332,11 +386,11 @@ bool Player::DepositAll()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = 1;
-	*reinterpret_cast<int*>(&data[0x54]) = -1;
-	*reinterpret_cast<int*>(&data[0x58]) = 0xb0005; // Hardcoded
+	*reinterpret_cast<int*>(&data[0x58]) = 1;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 0xb0005; // Hardcoded
 
-	uint64_t func_ptr = g_Module + 0x94940;
+	uint64_t func_ptr = g_Module + 0x9c030;
 
 	if (!func_ptr)
 		return false;
@@ -354,11 +408,11 @@ bool Player::BankInteractItem(int slot, int option)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = option;
-	*reinterpret_cast<int*>(&data[0x54]) = slot;
-	*reinterpret_cast<int*>(&data[0x58]) = 0x205000E; // Hardcoded
+	*reinterpret_cast<int*>(&data[0x58]) = option;
+	*reinterpret_cast<int*>(&data[0x5c]) = slot;
+	*reinterpret_cast<int*>(&data[0x60]) = 0x205000E; // Hardcoded
 
-	uint64_t func_ptr = g_Module + 0x94940;
+	uint64_t func_ptr = g_Module + 0x9c030;
 
 	if (!func_ptr)
 		return false;
@@ -376,11 +430,11 @@ bool Player::BankLoadPreset(int preset)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = 1;
-	*reinterpret_cast<int*>(&data[0x54]) = preset;
-	*reinterpret_cast<int*>(&data[0x58]) = 0x2050070;// Hardcoded
+	*reinterpret_cast<int*>(&data[0x58]) = 1;
+	*reinterpret_cast<int*>(&data[0x5c]) = preset;
+	*reinterpret_cast<int*>(&data[0x60]) = 0x2050070;// Hardcoded
 
-	uint64_t func_ptr = g_Module + 0x94940;
+	uint64_t func_ptr = g_Module + 0x9c030;
 
 	if (!func_ptr)
 		return false;
@@ -398,11 +452,11 @@ bool Player::TeleportToAbyssThroughMage()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = 18542; // UPDATE PLEASE MageOfZamorak
-	*reinterpret_cast<int*>(&data[0x54]) = 0;
-	*reinterpret_cast<int*>(&data[0x58]) = 0;// Hardcoded
+	*reinterpret_cast<int*>(&data[0x58]) = 18542; // UPDATE PLEASE MageOfZamorak
+	*reinterpret_cast<int*>(&data[0x5c]) = 0;
+	*reinterpret_cast<int*>(&data[0x60]) = 0;// Hardcoded
 
-	uint64_t func_ptr = g_Module + 0x94ad0;
+	uint64_t func_ptr = g_Module + 0x9c1c0;
 
 	if (!func_ptr)
 		return false;
@@ -432,15 +486,17 @@ bool Player::inCombat()
 	return false;
 }
 
+
 bool Player::isMoving()
 {
-	auto movingState = MovingState();
+	auto DestFlag = RS::GetDestinationFlag();
+	
+	if (DestFlag->X == -1 || DestFlag->Y == -1)
+		return false;
 
-	if (movingState == 1 || movingState == 2)
-		return true;
-
-	return false;
+	return true;
 }
+
 
 bool Player::isNextTo(uint32_t Entity)
 {
@@ -490,6 +546,15 @@ int Entity::MovingState()
 		return 1; // Walk
 		break;
 	case 18020:
+		return 2; // Run
+		break;
+	case 15069:
+		return 0; // Stand
+		break;
+	case 15073:
+		return 1; // Walk
+		break;
+	case 15070:
 		return 2; // Run
 		break;
 	default:

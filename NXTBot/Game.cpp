@@ -53,6 +53,18 @@ uint32_t RS::GetPlayerEntityCount()
 	return result;
 }
 
+DestinationFlag* RS::GetDestinationFlag()
+{
+	auto g_gameContextDef = g_GameContext[1];
+
+	if (!g_gameContextDef)
+		return 0;
+
+	DestinationFlag* destFlag = *(DestinationFlag**)(g_gameContextDef + Patterns.Offset_DestinationFlag);
+
+	return destFlag;
+}
+
 EntityObj* RS::GetLocalPlayer()
 {
 	if (!g_GameContext)
@@ -427,6 +439,42 @@ EntityObj* RS::GetEntityNPCByName(const char* name)
 	return nullptr;
 }
 
+EntityObj* RS::GetClosestEntityNPCByName(const char* name)
+{
+	Player player = RS::GetLocalPlayer();
+
+	auto Count = GetEntityCount();
+
+	EntityObj* ret = 0;
+
+	float closest = 99999.0f;
+
+	if (!Count)
+		return 0;
+
+	for (uint32_t i = 0; i < Count + 20; i++)
+	{
+		auto entity = GetEntityObjByIndex(i);
+
+
+		if (!entity || *(UINT_PTR*)entity == 0 || entity->EntityType != 1)
+			continue;
+
+		float distance = GetDistance(player.GetTilePosition(), GetEntityTilePos(entity));
+
+		if (distance < closest && strcmp(entity->Name, name) == 0)
+		{
+			closest = distance;
+			ret = entity;
+		}
+	}
+
+	if (ret && strlen(ret->Name) > 0)
+		return ret;
+
+	return 0;
+}
+
 EntityObj* RS::GetEntityObjectByEntityId(uint32_t EntityId)
 {
 	auto Entities = GetNPCEntityList();
@@ -585,7 +633,7 @@ UINT_PTR Static::GetFullEntityList()
 	return g_entityListFull;
 }
 
-StaticObjEX Static::GetClosestStaticObjectByName(const char* name)
+StaticObjEX Static::GetClosestStaticObjectByName(const char* name, bool useSecondary)
 {
 	std::set<uint64_t> static_entities;
 	GetStaticEntities(&static_entities);
@@ -659,10 +707,13 @@ StaticObjEX Static::GetClosestStaticObjectByName(const char* name)
 			returnObj.TileY = staticObj->TileY;
 			returnObj.Definition = staticObj->Definition;
 
+			if (useSecondary)
+				returnObj.SecondId = staticObj->SecondaryId;
 		}
 		else if (returnObj.Type == EntityType::Object2)
 		{
 			auto staticObj = (StaticObj2Wrapper*)closestEnt;
+
 			returnObj.TileX = staticObj->TileX;
 			returnObj.TileY = staticObj->TileY;
 			returnObj.Definition = staticObj->Definition;
@@ -795,6 +846,66 @@ StaticObjEX Static::GetClosestStaticTreeObjectByNameWithOrigin(const char* name,
 	return returnObj;
 }
 
+StaticObjEX Static::GetClosestAbyssEntrance()
+{
+	std::set<uint64_t> static_entities;
+	GetStaticEntities(&static_entities);
+
+	Player player = RS::GetLocalPlayer();
+
+	uint64_t closestEnt = 0;
+	float closestDistance = 99999.0f;
+
+	for (const uint64_t& entity_ptr : static_entities) {
+		EntityType type = *reinterpret_cast<EntityType*>(entity_ptr + 0x40);
+
+		if (type == EntityType::Object)
+		{
+			auto staticObj = (StaticObj1Wrapper*)entity_ptr;
+
+			if (staticObj->Definition == 0) {
+				continue;
+			}
+
+			Tile2D Pos = Tile2D(staticObj->TileX, staticObj->TileY);
+
+			float curDistance = RS::GetDistance(player.GetTilePosition(), Pos);
+
+			if ((strcmp("Passage", staticObj->Definition->Name) == 0 && strcmp("Go-through", staticObj->Definition->Op0) == 0) ||
+				(strcmp("Rock", staticObj->Definition->Name) == 0 && strcmp("Mine", staticObj->Definition->Op0) == 0) ||
+				(strcmp("Gap", staticObj->Definition->Name) == 0 && strcmp("Squeeze-through", staticObj->Definition->Op0) == 0))
+			{
+				if (curDistance < closestDistance)
+				{
+					closestDistance = curDistance;
+					closestEnt = entity_ptr;
+				}
+			}
+
+		}
+	}
+
+	StaticObjEX returnObj = StaticObjEX();
+
+	if (closestEnt)
+	{
+		returnObj.Type = *reinterpret_cast<EntityType*>(closestEnt + 0x40);
+
+		if (returnObj.Type == EntityType::Object)
+		{
+			auto staticObj = (StaticObj1Wrapper*)closestEnt;
+			returnObj.TileX = staticObj->TileX;
+			returnObj.TileY = staticObj->TileY;
+			returnObj.SecondId = staticObj->SecondaryId;
+			returnObj.Definition = staticObj->Definition;
+
+		}
+	}
+
+
+	return returnObj;
+}
+
 EntityObj* Static::GetEntityNpcByName(const char* name)
 {
 	std::set<uint64_t> static_entities;
@@ -831,7 +942,7 @@ StaticObjEX Static::GetCStaticObjectById(uint32_t id)
 	for (const uint64_t& entity_ptr : static_entities) {
 		EntityType type = *reinterpret_cast<EntityType*>(entity_ptr + 0x40);
 
-
+		
 
 		if (type == EntityType::Object)
 		{
@@ -863,6 +974,12 @@ StaticObjEX Static::GetCStaticObjectById(uint32_t id)
 			}
 
 		}
+		/*
+		else if(type != EntityType::GroundItem && type != EntityType::Players)
+		{
+			printf("Type: %d  %p\n", type, entity_ptr);
+		}
+		*/
 	}
 
 	StaticObjEX returnObj = StaticObjEX();

@@ -116,9 +116,9 @@ bool Inventory::InteractItemOption(uint32_t slot, uint32_t Type)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x50]) = Type;
-	*reinterpret_cast<int*>(&data[0x54]) = slot; 
-	*reinterpret_cast<int*>(&data[0x58]) = 0x5C10007;
+	*reinterpret_cast<int*>(&data[0x60]) = Type;
+	*reinterpret_cast<int*>(&data[0x5c]) = slot; 
+	*reinterpret_cast<int*>(&data[0x60]) = 0x5C10007;
 	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
 	if (!handler)
 		return false;

@@ -20,7 +20,7 @@ extern Addr Patterns;
 
 
 
-UINT_PTR* Widgets::GetWidgetUI(uint32_t FullIndex)
+DialogInfoEx* Widgets::GetWidgetUI(uint32_t FullIndex)
 {
 	if (!g_GameContext)
 		return 0;
@@ -47,5 +47,37 @@ UINT_PTR* Widgets::GetWidgetUI(uint32_t FullIndex)
 
 	auto WidgetPtr = ReadPtrOffset(curr, 0x10);
 
-	return (UINT_PTR*)WidgetPtr;
+	return (DialogInfoEx*)WidgetPtr;
+}
+
+DialogInfoEx* Widgets::IsInDialogWidget()
+{
+	return Widgets::GetWidgetUI(CONVERSATION_WIDGET);
+}
+
+RSDialog Widgets::GetDialogType()
+{
+	auto Dialog = IsInDialogWidget();
+
+	if (!Dialog)
+		return RSDialog::Unknown;
+
+	switch (Dialog->SecondaryId)
+	{
+	case 0x4a0:
+		return RSDialog::NPCDialog;
+		break;
+	case 0x4a2:
+		return RSDialog::GameDialog;
+		break;
+	case 0x4a4:
+		return RSDialog::MultiSelectionDialog;
+		break;
+	case 0x4a7:
+		return RSDialog::PlayerDialog;
+		break;
+	default:
+		return RSDialog::Unknown;
+		break;
+	}
 }

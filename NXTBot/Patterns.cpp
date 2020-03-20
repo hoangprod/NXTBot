@@ -99,7 +99,7 @@ bool __stdcall findPatterns()
 
 
 	// 1780
-	Patterns.Offset_PlayerContext = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x48\x8b\x88\xCC\xCC\x00\x00\xe8\xCC\xCC\xCC\xff\x48\x8b\x48\x08", "xxx??xxx???xxxxx", 3, 4);
+	Patterns.Offset_PlayerContext = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x48\x8b\x88\xCC\xCC\x00\x00\xe8\xCC\xCC\xCC\xCC\x48\x8b\x48\x08", "xxx??xxx????xxxx", 3, 4);
 
 	if (!Patterns.Offset_PlayerContext)
 	{
@@ -109,7 +109,7 @@ bool __stdcall findPatterns()
 	else { printf("[Pattern Scan]  Patterns.Offset_PlayerContext is at %llx\n", Patterns.Offset_PlayerContext); };
 
 	// 4038
-	Patterns.Offset_EntityArrayList = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x48\x8b\xCC\xCC\x40\x00\x00\x48\x8b\xCC\xCC\x40\x00\x00\x48", "xx??xxxxx??xxxx", 3, 4);
+	Patterns.Offset_EntityArrayList = (UINT_PTR)Scan_Offsets2(Rs2Client, 0x300000, "\x48\x8b\xCC\xCC\x40\x00\x00\x48\x8b\xCC\xCC\x40\x00\x00\x48", "xx??xxxxx??xxxx", 3, 4);
 
 	if (!Patterns.Offset_EntityArrayList)
 	{
@@ -135,7 +135,7 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_EntityOffsetList is at %llx\n", Patterns.Offset_EntityOffsetList); };
 
-	//fd0
+	//fd0 -> ff0
 	Patterns.Offset_Health = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x41\x8b\xCC\xCC\xCC\x0f\x00\x00\x45\x8b\xCC\xCC\xCC\xCC\x00\x00", "xx???xxxxx????xx", 4, 4);
 
 	if (!Patterns.Offset_Health)
@@ -203,9 +203,6 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_AnimationSpotId is at %llx\n", Patterns.Offset_AnimationSpotId); };
 
-
-
-
 	// 177c
 	Patterns.Offset_GameState = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x48\x8b\xf9\x3b\x91\xCC\xCC\x00\x00\x74", "xxxxx??xxx", 5, 4);
 
@@ -215,8 +212,6 @@ bool __stdcall findPatterns()
 		return FALSE;
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_GameState is at %llx\n", Patterns.Offset_GameState); };
-
-
 
 	// 2c8
 	Patterns.Offset_IsCurrentlyTargeting = (UINT_PTR)Scan_Offsets(Rs2Client, 0x500000, "\x41\xCC\xCC\xCC\x02\x00\x00\x01\x00\x00\x00\xeb", "x???xxxxxxxx", 3, 4);
@@ -233,8 +228,6 @@ bool __stdcall findPatterns()
 		else { printf("[Pattern Scan]  Patterns.Offset_IsCurrentlyTargeting is at %llx\n", Patterns.Offset_IsCurrentlyTargeting); };
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_IsCurrentlyTargeting is at %llx\n", Patterns.Offset_IsCurrentlyTargeting); };
-
-
 
 	// 254
 	Patterns.Offset_TargetedEntity = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x48\xCC\xCC\xCC\x02\x00\x00\x8b\xCC\xCC\x02\x00\x00\x83\xCC\x02", "x???xxxx??xxxx?x", 3, 4);
@@ -282,10 +275,8 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_TileList is at %llx\n", Patterns.Offset_TileList); };
 
-
-
 	// 108
-	Patterns.Offset_LootObject = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x48\x8b\xCC\xCC\x01\x00\x00\x48\x8b\xCC\xCC\x01\x00\x00\x48\xCC\xCC\x0f", "xx??xxxxx??xxxx??x", 3, 4);
+	Patterns.Offset_LootObject = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\xCC\x8b\xCC\xCC\x01\x00\x00\xCC\x8b\xCC\xCC\x01\x00\x00\xCC\xCC\xCC\x0f\xCC\xCC\xCC\x00\x00\x4c", "?x??xxx?x??xxx???x???xxx", 3, 4);
 
 	if (!Patterns.Offset_LootObject)
 	{
@@ -305,7 +296,7 @@ bool __stdcall findPatterns()
 	else { printf("[Pattern Scan]  Patterns.Offset_Widget is at %llx\n", Patterns.Offset_Widget); };
 
 
-
+	// 1240
 	Patterns.Offset_Ptr1 = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\xCC\xCC\xCC\xCC\x12\x00\x00\xCC\xCC\xCC\x90\x00\x00\x00", "????xxx???xxxx", 3, 4);
 
 	if (!Patterns.Offset_Ptr1)
@@ -315,7 +306,7 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_Ptr1 is at %llx\n", Patterns.Offset_Ptr1); };
 
-
+	// 100b0
 	Patterns.Offset_Camera = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\xCC\xCC\xCC\xCC\x00\x01\x00\xe8", "????xxxx", 3, 4);
 
 	if (!Patterns.Offset_Camera)
@@ -325,6 +316,7 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_Camera is at %llx\n", Patterns.Offset_Camera); };
 
+	// 1d0
 	Patterns.Offset_StaticEntityPtr = (UINT_PTR)Scan_Offsets2(Rs2Client, 0x300000, "\x48\x8b\xCC\xCC\x01\x00\x00\x4c\xCC\xCC\x48\xCC\xCC\x48", "xx??xxxx??x??x", 3, 4);
 
 	if (!Patterns.Offset_StaticEntityPtr)
@@ -335,6 +327,7 @@ bool __stdcall findPatterns()
 	else { printf("[Pattern Scan]  Patterns.Offset_StaticEntityPtr is at %llx\n", Patterns.Offset_StaticEntityPtr); };
 
 
+	// f8
 	Patterns.Offset_StaticAnd20 = (UINT_PTR)Scan_Offsets2(Rs2Client, 0x300000, "\xCC\xCC\xCC\xCC\x00\x00\x00\xf6\xCC\x20", "????xxxx?x", 3, 4);
 
 	if (!Patterns.Offset_StaticAnd20)
@@ -344,7 +337,15 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_StaticAnd20 is at %llx\n", Patterns.Offset_StaticAnd20); };
 
+	// 1108
+	Patterns.Offset_DestinationFlag = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\xCC\xCC\xCC\xCC\x11\x00\x00\xCC\xCC\x14\xCC\xCC\xCC\x18", "????xxx??x???x", 3, 4);
 
+	if (!Patterns.Offset_DestinationFlag)
+	{
+		printf("[Error] Patterns.Offset_DestinationFlag failed to pattern scan.\n");
+		return FALSE;
+	}
+	else { printf("[Pattern Scan]  Patterns.Offset_DestinationFlag is at %llx\n", Patterns.Offset_DestinationFlag); };
 
 	printf("\n------------------ [ FUNCTIONS ] ------------------\n\n");
 
@@ -352,8 +353,14 @@ bool __stdcall findPatterns()
 
 	if (!Patterns.Func_OnCursorDoAction)
 	{
-		printf("[Error] Patterns.Func_OnCursorDoAction failed to pattern scan.\n");
-		return FALSE;
+		Patterns.Func_OnCursorDoAction = (UINT_PTR)PatternScan(Rs2Client, 0x300000, "\x40\x57\x41\x56\x41\x57\x48\x83\xec\x40\x48\xc7\x44\x24\x28\xfe\xff\xff\xff", "xxxxxxxxxxxxxxxxxxx");
+
+		if (!Patterns.Func_OnCursorDoAction)
+		{
+			printf("[Error] Patterns.Func_OnCursorDoAction failed to pattern scan.\n");
+			return FALSE;
+		}
+		else { printf("[Pattern Scan]  Patterns.Func_OnCursorDoAction is at %llx\n", Patterns.Func_OnCursorDoAction); };
 	}
 	else { printf("[Pattern Scan]  Patterns.Func_OnCursorDoAction is at %llx\n", Patterns.Func_OnCursorDoAction); };
 

@@ -20,6 +20,14 @@ public:
 	char pad_02F4[336]; //0x02F4
 }; //Size: 0x0444
 
+class DestinationFlag
+{
+public:
+	char pad_0000[20]; //0x0000
+	int X; //0x0014
+	int Y; //0x0018
+	char pad_001C[44]; //0x001C
+}; //Size: 0x0048
 
 class EntityObj
 {
@@ -118,6 +126,7 @@ public:
 	int32_t y; //0x0004
 }; //Size: 0x0008
 
+
 class ActionHandler
 {
 public:
@@ -130,20 +139,22 @@ public:
 class ActionPtr
 {
 public:
-	char test[8]; //0x0000
+	char pad_0000[8]; //0x0000
 	class Action* Action; //0x0008
 }; //Size: 0x0010
 
 class Action
 {
 public:
-	char pad_0000[64]; //0x0000
-	class Dispatcher* Dispatcher; //0x0040
-	char pad_0048[8]; //0x0048
-	uint32_t Index; //0x0050
-	uint32_t TileX; //0x0054
-	uint32_t TileY; //0x0058
-}; //Size: 0x005C
+	char pad_0000[72]; //0x0000
+	class Dispatcher* Dispatcher; //0x0048
+	char pad_0050[8]; //0x0050
+	uint32_t Index; //0x0058
+	uint32_t TileX; //0x005C
+	uint32_t TileY; //0x0060
+}; //Size: 0x0064
+
+
 
 class Dispatcher
 {
@@ -252,6 +263,7 @@ public:
 	EntityType Type; //0x0040
 	int32_t TileX; //0x00EC
 	int32_t TileY; //0x00F0
+	int32_t SecondId;
 	StaticObjCore* Definition; //0x0100
 };
 
@@ -274,7 +286,9 @@ public:
 class StaticObj1Wrapper
 {
 public:
-	char pad_0000[280]; //0x0000
+	char pad_0000[248]; //0x0000
+	uint32_t SecondaryId; //0x00F8
+	char pad_00FC[28]; //0x00FC
 	class StaticObjCore* Definition; //0x0118
 	char pad_0120[76]; //0x0120
 	uint32_t TileX; //0x016C
@@ -303,6 +317,21 @@ public:
 	class LootInfo* LootInfo; //0x0038
 }; //Size: 0x0040
 
+class DialogInfoEx
+{
+public:
+	char pad_0000[12]; //0x0000
+	int32_t SecondaryId; //0x000C
+	int32_t WidgetId; //0x0010
+}; //Size: 0x0014
+
+class DialogInfo
+{
+public:
+	uint32_t DialogFullId; //0x0000
+	char pad_0004[12]; //0x0004
+	class DialogInfoEx* dialogInfoEx; //0x0010
+}; //Size: 0x0108
 
 class LootInfo
 {
@@ -368,6 +397,14 @@ enum class ContainerType : uint32_t {
 	DeathReclaim = 676,
 };
 
+enum class RSDialog
+{
+	Unknown,
+	PlayerDialog,
+	NPCDialog,
+	MultiSelectionDialog,
+	GameDialog
+};
 
 enum class GameState {
 	LoginScreen = 10,

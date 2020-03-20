@@ -13,10 +13,11 @@
 extern std::string botStatus;
 
 extern int SelectedWood;
-
+extern int SelectedOre;
+extern std::vector<std::string> OreName;
+extern std::vector<std::string> OreNode;
 extern std::vector<std::string> TreeNames;
 extern std::vector<std::string> LogNames;
-
 
 void Wisp::FSM()
 {
@@ -348,7 +349,11 @@ void GenMining::FSM()
 	{
 		player = new Player(RS::GetLocalPlayer());
 		MiningExp = Exp::GetCurrentExp(SkillType::MINING);
-		Node = Static::GetClosestStaticObjectByName("Runite rock");
+
+		TargetNode = OreNode[SelectedOre];
+		TargetOre = OreName[SelectedOre];
+
+		Node = Static::GetClosestStaticObjectByName(TargetNode.data());
 		if (Node.Definition == NULL)
 		{
 			botStatus = "Cannot find Node to mine!";
@@ -371,7 +376,7 @@ void GenMining::FSM()
 		player->StaticInteract(Node);
 		MiningExp = CurrentExp;
 
-		if (Inventory::HaveItemName("Runite ore"))
+		if (Inventory::HaveItemName(TargetOre.data()))
 		{
 			player->QuickDropSlot1();
 			botStatus = "Dropping ore.";
@@ -384,7 +389,7 @@ void GenMining::FSM()
 	{
 		botStatus = "Inventory is full.";
 
-		if (Inventory::HaveItemName("Runite ore"))
+		if (Inventory::HaveItemName(TargetOre.data()))
 		{
 			botStatus = "Inventory is full, dropping ore";
 			player->QuickDropSlot1();
@@ -576,6 +581,16 @@ AgilityCourse MoneyAgi::GetNextCourse()
 		}
 	}
 
+	else if (playerPos.x == 5655 && playerPos.y == 2370)
+	{
+		for (auto course : AnachroniaAgi)
+		{
+			if (course.objId == 113716)
+			{
+				return course;
+			}
+		}
+	}
 	//botStatus = "Moving inbetween obstacle OR you are not standing where u should be to start.";
 
 	return AgilityCourse();
@@ -655,13 +670,124 @@ void Woodcutting::FSM()
 
 void AbyssCrafting::FSM()
 {
-	// If near bank and inventory not full, go bank
-	auto banker = RS::GetMonsterWithinRadiusWithName("Banker", player->GetTilePosition(), 15.0f);
+	if (!player || !player->_base)
+	{
+		player = new Player(RS::GetLocalPlayer());
+	}
 
-	if (banker && !Inventory::isInventoryFull())
+
+	if (player->GetTilePosition().y > 3521 && !IsInAbyss() && RS::GetInCombatNPCwithMe().size() > 0)
+	{
+		botStatus = "Being attacked, teleporting out!";
+		player->InteractWithEquipment(2, 3);
+		Beep(523, 100);
+		return;
+	}
+
+
+	if (player->isMoving() || player->IsInAnimation())
+		return;
+
+
+	// If near bank and inventory not full AND have Cosmic rune, go bank
+	auto banker = RS::GetMonsterWithinRadiusWithName("Banker", player->GetTilePosition(), 50.0f);
+
+	if (banker && (!Inventory::isInventoryFull() && Inventory::HaveItemName(RuneType)) || (Inventory::HaveItemName("Pure essence") && Inventory::GetFreeSlot() == 1)) // Hardcode
 	{
 		FillPouches();
+		return;
 	}
+
+	// If inventory is full and I have pure essence and NOT in abyss
+	else if (Inventory::isInventoryFull() && Inventory::HaveItemName("Pure essence") && !IsInAbyss() && !IsInAltar())
+	{
+		// If before wilderness wall
+		if (player->GetTilePosition().y < 3520)
+		{
+			auto wall = Static::GetClosestStaticObjectByName("Wilderness wall");
+
+			if (wall.Definition)
+			{
+				botStatus = "Going to wilderness wall";
+				tripSinceLastRepair++;
+
+
+				player->StaticInteract(wall);
+				return;
+			}
+			else
+			{
+				botStatus = "Can't find wilderness wall!\n";
+				return;
+			}
+		}
+		else
+		{
+			botStatus = "Going to the Mage. Trip " + std::to_string(tripSinceLastRepair);
+			player->TeleportToAbyssThroughMage();
+			return;
+		}
+	}
+	else if (IsInAbyss() && isOuterAbyss())
+	{
+		auto widget = Static::GetClosestAbyssEntrance();
+
+		if (widget.Definition)
+		{
+			botStatus = "Trying to go to inner circle.";
+			player->StaticInteract(widget);
+			return;
+		}
+		else
+		{
+			botStatus = "This is bad. Can't find the obstacle to go into the inner ring!!";
+			return;
+		}
+	}
+	else if (IsInAbyss() && isInnerAbyss())
+	{
+		if (NeedToRepairPouches())
+		{
+			RepairPouches();
+			return;
+		}
+		else
+		{
+			auto runeGate = Static::GetClosestStaticObjectByName("Cosmic rift");
+
+			if (runeGate.Definition)
+			{
+				botStatus = "Going to the Rune Rift";
+				player->StaticInteract(runeGate);
+				return;
+			}
+		}
+	}
+	else if (IsInAltar())
+	{
+		// If still have Pure essence means we havent crafted yet
+		if (Inventory::HaveItemName("Pure essence"))
+		{
+			auto Altar = Static::GetClosestStaticObjectByName("Altar");
+
+			if (Altar.Definition)
+			{
+				botStatus = "Crafting rune at altar";
+				player->StaticInteract(Altar);
+				return;
+			}
+		}
+		else
+		{
+			// Means we already crafted, time to TP home
+			botStatus = "Teleporting back to Edgevile";
+			player->InteractWithEquipment(2, 3);
+			return;
+		}
+	}
+		
+	botStatus = "I don't know what is going on here";
+
 }
 
 std::vector<std::string> Pouches = { "Small pouch" , "Medium pouch" , "Large pouch", "Giant pouch"};
@@ -670,7 +796,7 @@ void AbyssCrafting::FillPouches()
 {
 	if (!Inventory::isBankOpened())
 	{
-		auto banker = RS::GetMonsterWithinRadiusWithName("Banker", player->GetTilePosition(), 30.0f);
+		auto banker = RS::GetClosestEntityNPCByName("Banker");
 
 		if (!banker)
 		{
@@ -678,7 +804,7 @@ void AbyssCrafting::FillPouches()
 			return;
 		}
 
-		botStatus = "[+] Going to talk to Bank\n";
+		botStatus = "Going to talk to Bank";
 		player->BankUsingNPC(banker->EntityId); // Hardcode that bank of Gielinor
 		return;
 	}
@@ -692,7 +818,14 @@ void AbyssCrafting::FillPouches()
 				player->BankInteractItem(pouch, 8);
 		}
 
-		player->BankLoadPreset(1);
+		botStatus = "Loaded bank preset and readied inventory";
+		if (Inventory::GetFreeSlot() == 1)
+		{
+			tripSinceLastRepair = 99;
+			player->BankLoadPreset(2);
+		}
+		else
+			player->BankLoadPreset(1);
 	}
 }
 
@@ -700,16 +833,49 @@ void AbyssCrafting::RepairPouches()
 {
 	if (isInnerAbyss())
 	{
-		auto darkMage = RS::GetEntityNPCByName("Dark mage");
 
+		if(!Widgets::IsInDialogWidget())
+		{
+			auto darkMage = RS::GetEntityNPCByName("Dark mage");
 
+			player->DepositActionNPC(darkMage->EntityId);
 
-		player->DepositActionNPC(darkMage->EntityId);
+			botStatus = "Going to talk to Dark Mage";
 
-		return;
+			return;
+		}
+		else
+		{
+			// We just talked to him
+			if (Widgets::GetDialogType() == RSDialog::PlayerDialog)
+			{
+				botStatus = "Clicking through first dialog";
+				player->ConfirmChat(78053391);
+				return;
+			}
+			// He just repaired our shits
+			else if(Widgets::GetDialogType() == RSDialog::NPCDialog)
+			{
+				botStatus = "Clicking through second dialog";
+
+				player->ConfirmChat();
+				tripSinceLastRepair = 0;
+				return;
+			}
+			// Probably already repaired so aka u dont need it anymore
+			else if (Widgets::GetDialogType() == RSDialog::GameDialog)
+			{
+				botStatus = "Pouches already repaired bro.";
+
+				tripSinceLastRepair = 0;
+				return;
+			}
+
+		}
 	}
 
-	botStatus = "Is not in inner abyss";
+	botStatus = "Is not in inner abyss, how is this being called?";
+	return;
 }
 
 
@@ -830,7 +996,7 @@ bool AbyssCrafting::isInnerAbyss()
 
 bool AbyssCrafting::NeedToRepairPouches()
 {
-	if (tripSinceLastRepair > 28)
+	if (tripSinceLastRepair > 22)
 		return true;
 
 	return false;

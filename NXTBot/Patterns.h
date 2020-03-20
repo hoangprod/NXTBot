@@ -28,6 +28,7 @@ struct Addr {
 	UINT_PTR Offset_Camera;
 	UINT_PTR Offset_StaticEntityPtr;
 	UINT_PTR Offset_StaticAnd20;
+	UINT_PTR Offset_DestinationFlag;
 
 
 	UINT_PTR Func_OnCursorDoAction;

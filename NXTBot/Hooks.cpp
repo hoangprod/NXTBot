@@ -15,8 +15,7 @@
 #include "Experience.h"
 #include "Helper.h"
 
-#define NK_IMPLEMENTATION
-#include "nuklear.h"
+#define _CRTDBG_MAP_ALLOC
 
 Detour64 detours;
 HWND hWnd;
@@ -54,7 +53,11 @@ enum class BotType {
 	AnachroniaAgility
 };
 
-std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility"};
+std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility", "Abyss Crafting"};
+
+std::vector<std::string> OreNode = { "Copper rock", "Tin rock", "Iron rock", "Coal", "Mithril rock", "Adamantite rock", "Runite rock", "Orichalcite rock" };
+std::vector<std::string> OreName = { "Copper ore", "Tin ore", "Iron ore", "Coal", "Mithril ore", "Adamantite ore", "Runite ore", "Orichalcite ore" };
+
 std::vector<std::string> TreeNames = { "Tree", "Oak", "Willow", "Teak", "Maple", "Acadia", "Mahogany", "Yew" };
 std::vector<std::string> LogNames = { "Logs", "Oak logs", "Willow logs", "Teak logs", "Maple logs", "Acadia logs", "Mahogany logs", "Yew logs" };
 
@@ -67,13 +70,14 @@ bool RecordAgility = false;
 std::vector<AgilityCourse> agiList;
 DWORD* h_OnCursorDoAction(UINT_PTR a1, ActionPtr actionPtr, float* position)
 {
+	
 	auto action = actionPtr.Action;
 	auto dispatcher = action->Dispatcher;
 	auto dispatcherInstance = dispatcher->DispatcherInstance;
 	auto dispatcherVTable = dispatcherInstance->DispatcherVTable;
 	auto dispatcherFunc = dispatcherVTable->dispatcherFunc;
 	auto param1 = action->Index;
-	auto param2 = action->TileX;
+	auto param2 = action->TileX;	
 	auto param3 = action->TileY;
 
 	//printf("[+] actionPtr %p, action %p, dispatcher %p, dispatcherInstance %p, Index %d, TileX %d, TileY %d, dispatcherFunc %p -> \n", actionPtr, action, dispatcher, dispatcherInstance, param1, param2, param3, dispatcherFunc);
@@ -85,7 +89,7 @@ DWORD* h_OnCursorDoAction(UINT_PTR a1, ActionPtr actionPtr, float* position)
 
 		agiList.push_back(AgilityCourse(param1));
 	}
-
+	
 	return o_OnCursorDoAction(a1, actionPtr, position);
 }
 
@@ -95,6 +99,48 @@ UINT_PTR h_CursorWorldContextMenu(UINT_PTR* GameContext, int a2, int a3, int a4,
 
 	return o_CursorWorldConextMenu(GameContext, a2, a3, a4, a5);
 }
+
+
+class CFont {
+private:
+	unsigned int base;
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+
+public:
+	CFont(int size, unsigned char r, unsigned char g, unsigned char b) {
+		this->r = r;
+		this->g = g;
+		this->b = b;
+		this->base = ::glGenLists(96);
+
+		HDC hdc = ::wglGetCurrentDC();
+		HFONT hFont = ::CreateFontA(-size, NULL, NULL, NULL, FW_MEDIUM, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, FF_DONTCARE | DEFAULT_PITCH, "Consolas");
+		HFONT hOldFont = (HFONT)::SelectObject(hdc, hFont);
+
+		::wglUseFontBitmapsA(hdc, 32, 96, this->base);
+		::SelectObject(hdc, hOldFont);
+		::DeleteObject(hFont);
+	}
+
+	void Print(float x, float y, const char* format, ...) {
+		::glColor3ub(this->r, this->g, this->b);
+		::glRasterPos2f(x, y);
+
+		char text[100];
+		::va_list args;
+
+		va_start(args, format);
+		::vsprintf_s(text, 100, format, args);
+		va_end(args);
+
+		::glPushAttrib(GL_LIST_BIT);
+		::glListBase(this->base - 32);
+		::glCallLists(::strlen(text), GL_UNSIGNED_BYTE, text);
+		::glPopAttrib();
+	}
+};
 
 std::map<int, HGLRC> contexts;
 
@@ -159,8 +205,6 @@ bool h_wglSwapBuffers(HDC hdc)
 		}
 	}
 	
-
-	
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glPushMatrix();
 	glViewport(0, 0, width, height);
@@ -171,31 +215,46 @@ bool h_wglSwapBuffers(HDC hdc)
 	glLoadIdentity();
 	glDisable(GL_DEPTH_TEST);
 	
-	Render r{ hdc, 11 };
+//	Render r{ hdc, 11 };
 	glColor3ub(0xFF, 0x0, 0x0);
-	//r.DrawRect(100, 100, 200, 200, false);
 
+	CFont font(15, 0, 170, 0);
+
+	
 	auto status = "NXTBot Heph Status =  " + botStatus;
-	r.PrintCStr(100.0f, 70.0f, 0xFF, 0x00, 0x00, status.data());
+	//r.PrintCStr(100.0f, 70.0f, 0xFF, 0x00, 0x00, status.data());
 
+	font.Print(100.f, 70.0f, status.data());
 	
 	if (SelectedBot == -1)
 	{
-		r.PrintCStr(100.0f, 90.0f, 0x00, 0xFF, 0x00, std::string("Selected Bot: None").data());
+		//r.PrintCStr(100.0f, 90.0f, 0x00, 0xFF, 0x00, std::string("Selected Bot: None").data());
+		font.Print(100.f, 90.0f, std::string("Selected Bot: None").data());
 	}
 	else
 	{
 		std::string selectedBotName = std::string("Selected Bot: ") + std::string(botList[SelectedBot]);
-		r.PrintCStr(100.0f, 90.0f, 0x00, 0xFF, 0x00, selectedBotName.data());
+		//r.PrintCStr(100.0f, 90.0f, 0x00, 0xFF, 0x00, selectedBotName.data());
+		font.Print(100.f, 90.0f, selectedBotName.data());
 
 		if (SelectedBot == (int)BotType::WoodCutting)
 		{
 			std::string TreeName = std::string("Selected Tree: ") + std::string(TreeNames[SelectedWood]);
-			r.PrintCStr(100.0f, 110.0f, 44, 195, 212, TreeName.data());
+			//r.PrintCStr(100.0f, 110.0f, 44, 195, 212, TreeName.data());
+			font.Print(100.f, 110.0f, TreeName.data());
+
+		} else if (SelectedBot == (int)BotType::Mining)
+		{
+			std::string Ore = std::string("Selected Ore: ") + std::string(OreName[SelectedOre]);
+			//r.PrintCStr(100.0f, 110.0f, 44, 195, 212, TreeName.data());
+			font.Print(100.f, 110.0f, Ore.data());
+
 		}
 
 	}
 	
+	
+
 	// Botting
 	Manager::Manage();
 
@@ -211,6 +270,17 @@ bool h_wglSwapBuffers(HDC hdc)
 
 bool __stdcall Unload()
 {
+#ifdef _DEBUG
+	HANDLE hLogFile;
+	hLogFile = CreateFile(L"C:\\temp\\log.txt", GENERIC_WRITE,
+		FILE_SHARE_WRITE, NULL, CREATE_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL, NULL);
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+	_CrtSetReportFile(_CRT_WARN, hLogFile);
+	_CrtDumpMemoryLeaks();
+	CloseHandle(hLogFile);
+#endif
+
 	if (detours.Clearhook())
 	{
 		o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", o_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
@@ -248,6 +318,27 @@ static BOOL CALLBACK enumWindowCallback(HWND hWndv, LPARAM lparam) {
 }
 
 
+void UpdateTest()
+{
+	printf("LocalPlayer: %p\n",  RS::GetLocalPlayer());
+	printf("EntityCount: %d\n", RS::GetEntityCount());
+	printf("PlayerName: %s\n", RS::GetLocalPlayer()->Name);
+	printf("Inventory Free Slot: %d\n", Inventory::GetFreeSlot());
+	printf("Widget Conversation: %p\n", Widgets::GetWidgetUI(CONVERSATION_WIDGET));
+	printf("Closest Player: %p\n", RS::GetClosestPlayer());
+
+	auto cplayer = RS::GetClosestPlayer();
+
+	if(cplayer)
+		printf("Closest Player Info. Name: %s  X: %f  Y: %f Level: %d\n", cplayer->Name, cplayer->GetPos()[0], cplayer->GetPos()[2], cplayer->Level);
+
+	auto cmonster = RS::GetClosestMonster();
+
+	if(cmonster)
+		printf("Closest Player Info. Name: %s  X: %f  Y: %f Level: %d\n", cmonster->Name, cmonster->GetPos()[0], cmonster->GetPos()[2], cmonster->Level);
+
+}
+
 LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (false)
@@ -268,37 +359,26 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		if (RS::IsInGame())
 		{
-			if (wParam == VK_NUMPAD0)
-			{
-				/*
-				printf("std::vector<AgilityCourse> agiList = { ");
-
-				for (auto i : agiList)
-				{
-					printf("AgilityCourse(%d, Tile2D(%d, %d)), ", i.objId, i.EndPos.x, i.EndPos.y);
-				}
-
-
-				printf(" };");
-				*/
-			}
 
 			if (wParam == VK_NUMPAD1)
 			{
+				Player player = RS::GetLocalPlayer();
 
-				auto leech = RS::GetEntityNPCByName("Dark mage");
-
-				if (leech)
-				{
-					printf("Dark mage with distance: %f\n", RS::GetDistance(RS::GetLocalPlayerTilePos(), RS::GetEntityTilePos(leech)));
-				}
-
-
+				printf("ismvoing\n", player.isMoving());
 			}
 			if (wParam == VK_NUMPAD2)
 			{
-				auto invent = Inventory::GetInventoryItems();
+				auto attackingEnemies = RS::GetInCombatNPCwithMe();
+				Player player = RS::GetLocalPlayer();
 
+
+				if (attackingEnemies.size() > 0)
+				{
+					botStatus = "Attacking Monster";
+
+					// Attack the first monster in the list that is attacking us
+					return player.Attack(attackingEnemies[0]->EntityId);
+				}
 				/*
 				auto player = RS::GetLocalPlayerTilePos();
 				agiList[agiList.size() - 1].EndPos = player;
@@ -336,7 +416,6 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (wParam == VK_OEM_3)
 			{
 				UINT_PTR* PlayerObj = *(UINT_PTR**)(g_GameContext[1] + 0x1780);
-				auto player = o_GetLocalPlayer(PlayerObj);
 				printf("Found local player players %p and %d entities %s.\n", RS::GetLocalPlayer(), RS::GetEntityCount(), RS::GetLocalPlayer()->Name);
 			}
 		}
@@ -394,7 +473,7 @@ bool hooks()
 
 	o_OnCursorDoAction = (fn_OnCursorDoAction)Patterns.Func_OnCursorDoAction;
 
-	o_OnCursorDoAction = (fn_OnCursorDoAction)detours.Hook(o_OnCursorDoAction, h_OnCursorDoAction, 15);
+	o_OnCursorDoAction = (fn_OnCursorDoAction)detours.Hook(o_OnCursorDoAction, h_OnCursorDoAction, 19);
 
 	o_CursorWorldConextMenu = (fn_CursorWorldContextMenu)Patterns.Func_OnCursorWorldContextMenu;
 
@@ -409,7 +488,7 @@ bool hooks()
 	OriginalWndProcHandler = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)hWndProc);
 
 #ifdef NDEBUG
-	Beep(523, 500);
+	Beep(523, 200);
 #endif
 	return true;
 }

@@ -4,5 +4,7 @@
 class Widgets
 {
 public:
-	static UINT_PTR* GetWidgetUI(uint32_t FullIndex);
+	static DialogInfoEx* GetWidgetUI(uint32_t FullIndex);
+	static DialogInfoEx* IsInDialogWidget();
+	static RSDialog GetDialogType();
 };

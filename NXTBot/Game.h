@@ -11,6 +11,7 @@ struct RS {
 	static EntityObj* GetPlayerObjByIndex(uint32_t Index);
 ;	static EntityObjWrap* GetEntityWrapByIndex(uint32_t Index);
 	static EntityObj* GetEntityObjByIndex(uint32_t Index);
+	static DestinationFlag* GetDestinationFlag();
 
 	static GameState GetGameState();
 	static BOOL IsInGame();
@@ -31,6 +32,7 @@ struct RS {
 	static EntityObj* GetClosestPlayer();
 	static EntityObj* GetClosestMonster();
 	static EntityObj* GetEntityNPCByName(const char* name);
+	static EntityObj* GetClosestEntityNPCByName(const char* name);
 	static EntityObj* GetEntityObjectByEntityId(uint32_t EntityId);
 	static EntityObj* GetMonsterWithinRadius(Tile2D from, float MaxDistance);
 	static EntityObj* GetMonsterWithinRadiusWithName(const char* monsterName, Tile2D from, float MaxDistance);
@@ -47,9 +49,11 @@ struct Static
 {
 	static UINT_PTR GetFullEntityList();
 
-	static StaticObjEX GetClosestStaticObjectByName(const char* name);
+	static StaticObjEX GetClosestStaticObjectByName(const char* name, bool useSecondary = false);
 	static StaticObjEX GetClosestStaticTreeObjectByName(const char* name);
 	static StaticObjEX GetClosestStaticTreeObjectByNameWithOrigin(const char* name, Tile2D origin);
+
+	static StaticObjEX GetClosestAbyssEntrance();
 
 	static EntityObj* GetEntityNpcByName(const char* name);
 

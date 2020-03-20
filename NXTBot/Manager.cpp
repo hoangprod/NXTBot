@@ -16,13 +16,15 @@ Penguins* peng = 0;
 BikeAgi* bikeagi = 0;
 Woodcutting* WoodCutting = 0;
 MoneyAgi* AnachAgi = 0;
+AbyssCrafting* abyssCrafting = 0;
 
 extern std::vector<const char*> botList;
 extern std::string botStatus;
 extern int SelectedBot;
 extern int SelectedWood;
+extern int SelectedOre;
 extern std::vector<std::string> TreeNames;
-
+extern std::vector<std::string> OreNode;
 
 void Manager::Manage()
 {
@@ -89,7 +91,7 @@ void Manager::Manage()
 			last_tick = GetTickCount64();
 		}
 	}
-	else if (peng || AnachAgi)
+	else if (peng || AnachAgi || abyssCrafting)
 	{
 		static uint32_t randomTick = 0;
 
@@ -110,6 +112,8 @@ void Manager::Manage()
 					peng->FSM();
 				else if (AnachAgi)
 					AnachAgi->FSM();
+				else if (abyssCrafting)
+					abyssCrafting->FSM();
 			}
 
 			last_tick = GetTickCount64();
@@ -125,7 +129,7 @@ void Manager::Manage()
 
 void Manager::Keystates(WPARAM wParam)
 {
-	
+
 	if (wParam == VK_ADD)
 	{
 		if (SelectedBot == -1 || SelectedBot <= (botList.size() - 2))
@@ -141,18 +145,41 @@ void Manager::Keystates(WPARAM wParam)
 		}
 	}
 
-	if (wParam == VK_MULTIPLY)
+	if (SelectedBot != -1)
 	{
-		if (SelectedWood == -1 || SelectedWood <= (TreeNames.size() - 2))
+		if (strcmp(botList[SelectedBot], "WoodCutting") == 0)
 		{
-			SelectedWood++;
+			if (wParam == VK_MULTIPLY)
+			{
+				if (SelectedWood == -1 || SelectedWood <= (TreeNames.size() - 2))
+				{
+					SelectedWood++;
+				}
+			}
+			else if (wParam == VK_DIVIDE)
+			{
+				if (SelectedWood > 0)
+				{
+					SelectedWood--;
+				}
+			}
 		}
-	}
-	else if (wParam == VK_DIVIDE)
-	{
-		if (SelectedWood > 0)
+		else if (strcmp(botList[SelectedBot], "Mining") == 0)
 		{
-			SelectedWood--;
+			if (wParam == VK_MULTIPLY)
+			{
+				if (SelectedOre == -1 || SelectedOre <= (OreNode.size() - 2))
+				{
+					SelectedOre++;
+				}
+			}
+			else if (wParam == VK_DIVIDE)
+			{
+				if (SelectedOre > 0)
+				{
+					SelectedOre--;
+				}
+			}
 		}
 	}
 
@@ -231,6 +258,14 @@ void Manager::Keystates(WPARAM wParam)
 			}
 			break;
 		case 7:
+			if (!abyssCrafting)
+			{
+				abyssCrafting = new AbyssCrafting();
+			}
+			else if (abyssCrafting)
+			{
+				delete abyssCrafting; abyssCrafting = 0;
+			}
 			break;
 		default:
 			break;

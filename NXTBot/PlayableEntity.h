@@ -39,8 +39,10 @@ public:
 	bool BankUsingNPC(uint32_t Entity);
 	bool Loot(FakeItemEX lootItem);
 	bool StaticInteract(StaticObjEX obj);
+	bool StaticInteract2(StaticObjEX obj);
 
 	bool LootAllConfirm();
+	bool InteractWithEquipment(int slot, int option, int64_t param3 = 0x5B8000F);
 	bool QuickDropSlot1();
 	bool ExitToLobby();
 
@@ -49,7 +51,7 @@ public:
 
 	bool DepositActionNPC(uint32_t Entity);
 	bool DepositAllThroughBank();
-	bool ConfirmChat();
+	bool ConfirmChat(int64_t param3 = 77594639);
 	bool DepositAll();
 	bool BankInteractItem(int slot, int option);
 	bool BankLoadPreset(int preset);
