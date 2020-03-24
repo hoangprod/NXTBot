@@ -38,6 +38,10 @@ class GeneralCombat
 public:
 	void FSM();
 	void Combat(EntityObj* Enemy);
+	void Looting(FakeItemEX loot);
+	void ConsumeFood();
+	bool NeedHeal();
+	
 
 	Player* player;
 	std::string monsterTargetName;
@@ -128,7 +132,6 @@ public:
 	void FSM();
 	void FillPouches();
 	void RepairPouches();
-	void TravelToAbyss();
 	bool FinishedCrafting();
 	bool IsInAbyss();
 	bool IsInAltar();
@@ -137,7 +140,7 @@ public:
 	bool NeedToRepairPouches();
 
 	Player* player;
-	int tripSinceLastRepair;
 	bool justTeleported = false;
-	std::string RuneType = "Cosmic rune";
+	std::string SelectedRune;
+	std::string SelectedRift;
 };

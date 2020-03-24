@@ -160,6 +160,28 @@ void Wisp::Looting(FakeItemEX loot)
 		player->Loot(loot);
 }
 
+
+
+void GeneralCombat::Looting(FakeItemEX loot)
+{
+	auto areaLoot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::AreaLoot));
+
+	if (areaLoot)
+		player->LootAllConfirm();
+	else if (loot.ItemQuantity != 0)
+		player->Loot(loot);
+}
+
+void GeneralCombat::ConsumeFood()
+{
+
+}
+
+bool GeneralCombat::NeedHeal()
+{
+	return false;
+}
+
 void GeneralCombat::FSM()
 {
 	if (!player || !player->_base)
@@ -186,8 +208,18 @@ void GeneralCombat::FSM()
 		return;
 	}
 
-	auto attackingEnemies = RS::GetInCombatNPCwithMe();
+	auto lootsAvailable = Tile::GetAllLootsNearbyWithinRadius(origin, 17.0f);
 
+	for (auto loot : lootsAvailable)
+	{
+		if (loot.ItemId == 12158 || loot.ItemId == 12159 || loot.ItemId == 12160 || loot.ItemId == 12161 || loot.ItemId == 12163 || loot.ItemId == 30139 || loot.ItemId == 30140 || loot.ItemId == 30141)
+		{
+			player->Loot(loot);
+			return;
+		}
+	}
+
+	auto attackingEnemies = RS::GetInCombatNPCwithMe();
 
 	if (attackingEnemies.size() > 0)
 	{
@@ -197,14 +229,16 @@ void GeneralCombat::FSM()
 		return Combat(attackingEnemies[0]);
 	}
 
-	EntityObj* EnemyMonsters = RS::GetMonsterWithinRadiusWithName(monsterTargetName.data(), origin, 10.0f);
 
+	EntityObj* EnemyMonsters = RS::GetMonsterWithinRadiusWithName(monsterTargetName.data(), origin, 15.0f);
 
 	// If there are a monster 15 tiles away from origin, fight it
 	if (EnemyMonsters)
 	{
 		botStatus = "Fight monster";
+		//auto ent = Entity(EnemyMonsters);
 
+		//printf("Trying to fight %p %d %s %d %d\n", EnemyMonsters, EnemyMonsters->EntityId, EnemyMonsters->Name, ent.NPCCurHealth(), ent.CurrentTarget());
 		return Combat(EnemyMonsters);
 	}
 
@@ -486,6 +520,9 @@ void MoneyAgi::FSM()
 	}
 
 
+	if (player->isMoving())
+		return;
+
 	if (RS::GetDistance(player->GetTilePosition(), Tile2D(5418, 2348)) < 7.0f)
 	{
 		//botStatus = "Going to start of course with id" + std::to_string(AnachroniaAgi[0].objId);
@@ -495,9 +532,6 @@ void MoneyAgi::FSM()
 
 		return;
 	}
-
-	if (player->isMoving())
-		return;
 
 	auto next = MoneyAgi::GetNextCourse();
 
@@ -580,7 +614,21 @@ AgilityCourse MoneyAgi::GetNextCourse()
 			}
 		}
 	}
+	else if (currentObstacle == 113704)
+	{
+		auto Rex = RS::GetEntityNPCByName("Spicati apoterrasaur");
 
+		if (RS::GetDistance(playerPos, RS::GetEntityTilePos(Rex)) < 13.0f)
+		{
+			for (auto course : AnachroniaAgi)
+			{
+				if (course.objId == 113704)
+				{
+					return course;
+				}
+			}
+		}
+	}
 	else if (playerPos.x == 5655 && playerPos.y == 2370)
 	{
 		for (auto course : AnachroniaAgi)
@@ -591,6 +639,18 @@ AgilityCourse MoneyAgi::GetNextCourse()
 			}
 		}
 	}
+	
+	else if (playerPos.x == 5562 && playerPos.y == 2272)
+	{
+		for (auto course : AnachroniaAgi)
+		{
+			if (course.objId == 113704)
+			{
+				return course;
+			}
+		}
+	}
+	
 	//botStatus = "Moving inbetween obstacle OR you are not standing where u should be to start.";
 
 	return AgilityCourse();
@@ -668,11 +728,27 @@ void Woodcutting::FSM()
 	return;
 }
 
+std::vector<std::pair<std::string, std::string>> CraftableRunes = {std::pair<std::string, std::string>("Nature rune", "Nature rift"), std::pair<std::string, std::string>("Cosmic rune", "Cosmic rift") };
+
 void AbyssCrafting::FSM()
 {
 	if (!player || !player->_base)
 	{
 		player = new Player(RS::GetLocalPlayer());
+
+		size_t RCExp = Exp::GetCurrentExp(SkillType::RUNECRAFT);
+
+		// Level 91 
+		if (RCExp > 5902830)
+		{
+			SelectedRune = "Nature rune";
+			SelectedRift = "Nature rift";
+		}
+		else
+		{
+			SelectedRune = "Cosmic rune";
+			SelectedRift = "Cosmic rift";
+		}
 	}
 
 
@@ -692,7 +768,7 @@ void AbyssCrafting::FSM()
 	// If near bank and inventory not full AND have Cosmic rune, go bank
 	auto banker = RS::GetMonsterWithinRadiusWithName("Banker", player->GetTilePosition(), 50.0f);
 
-	if (banker && (!Inventory::isInventoryFull() && Inventory::HaveItemName(RuneType)) || (Inventory::HaveItemName("Pure essence") && Inventory::GetFreeSlot() == 1)) // Hardcode
+	if (banker && (!Inventory::isInventoryFull() && Inventory::HaveItemName(SelectedRune.data())) || (Inventory::HaveItemName("Pure essence") && Inventory::GetFreeSlot() == 1))
 	{
 		FillPouches();
 		return;
@@ -702,28 +778,37 @@ void AbyssCrafting::FSM()
 	else if (Inventory::isInventoryFull() && Inventory::HaveItemName("Pure essence") && !IsInAbyss() && !IsInAltar())
 	{
 		// If before wilderness wall
-		if (player->GetTilePosition().y < 3520)
+		if (player->GetTilePosition().y < 3521)
 		{
+
+			botStatus = "Going to wilderness wall";
+
+			player->StaticInteractManual(65084, 3102, 3521);
+			return;
+			/*
 			auto wall = Static::GetClosestStaticObjectByName("Wilderness wall");
 
 			if (wall.Definition)
 			{
 				botStatus = "Going to wilderness wall";
-				tripSinceLastRepair++;
 
-
-				player->StaticInteract(wall);
+				player->StaticInteractManual(65084, 3102, 3521);
 				return;
 			}
 			else
 			{
 				botStatus = "Can't find wilderness wall!\n";
 				return;
-			}
+			}*/
 		}
 		else
 		{
-			botStatus = "Going to the Mage. Trip " + std::to_string(tripSinceLastRepair);
+			botStatus = "Going to the Mage.";
+			//player->TeleportToAbyssThroughMage();
+
+			if(player->GetTilePosition().y > 3520 && player->GetTilePosition().y < 3526)
+				player->InteractWithEquipment(1, -1, 0x59600B5); // Surge
+
 			player->TeleportToAbyssThroughMage();
 			return;
 		}
@@ -753,10 +838,16 @@ void AbyssCrafting::FSM()
 		}
 		else
 		{
-			auto runeGate = Static::GetClosestStaticObjectByName("Cosmic rift");
+			auto runeGate = Static::GetClosestStaticObjectByName(SelectedRift.data());
 
 			if (runeGate.Definition)
 			{
+				botStatus = "Going to the Rune Rift";
+				player->StaticInteract(runeGate);
+
+				//if(RS::GetDistance(player->GetTilePosition(), Tile2D(runeGate.TileX, runeGate.TileY)) > 6.0f)
+				//	player->InteractWithEquipment(1, -1, 0x59600B5); // Surge
+
 				botStatus = "Going to the Rune Rift";
 				player->StaticInteract(runeGate);
 				return;
@@ -821,7 +912,6 @@ void AbyssCrafting::FillPouches()
 		botStatus = "Loaded bank preset and readied inventory";
 		if (Inventory::GetFreeSlot() == 1)
 		{
-			tripSinceLastRepair = 99;
 			player->BankLoadPreset(2);
 		}
 		else
@@ -859,15 +949,12 @@ void AbyssCrafting::RepairPouches()
 				botStatus = "Clicking through second dialog";
 
 				player->ConfirmChat();
-				tripSinceLastRepair = 0;
 				return;
 			}
 			// Probably already repaired so aka u dont need it anymore
 			else if (Widgets::GetDialogType() == RSDialog::GameDialog)
 			{
 				botStatus = "Pouches already repaired bro.";
-
-				tripSinceLastRepair = 0;
 				return;
 			}
 
@@ -879,58 +966,14 @@ void AbyssCrafting::RepairPouches()
 }
 
 
-// Y before wall = 3520
-// Y after wall (in wildy) = 3523
-
-void AbyssCrafting::TravelToAbyss()
-{
-	if (player->isMoving() || player->IsInAnimation())
-		return;
-
-	auto banker = RS::GetMonsterWithinRadiusWithName("Banker", player->GetTilePosition(), 30.0f);
-
-	float distance = RS::GetDistance(RS::GetEntityTilePos(banker), player->GetTilePosition());
-
-	if (distance < 5)
-	{
-		auto wall = Static::GetClosestStaticObjectByName("Wilderness wall");
-
-		if (wall.Definition)
-		{
-			botStatus = "Going to wilderness wall";
-
-			player->StaticInteract(wall);
-			return;
-		}
-		else
-		{
-			botStatus = "Cannot find Wilderness wall";
-		}
-
-	}
-	else
-	{
-		if (player->GetTilePosition().y < 3521)
-		{
-			printf("Something went wrong... why you are not over wildy yet?\n");
-		}
-		else
-		{
-			botStatus = "Going to the Mage";
-			player->TeleportToAbyssThroughMage();
-			return;
-		}
-	}
-}
 
 bool AbyssCrafting::FinishedCrafting()
 {
-	if (IsInAltar() && !Inventory::isInventoryFull() && Inventory::HaveItemName("Cosmic rune")) // Update rune name
+	if (IsInAltar() && !Inventory::isInventoryFull() && Inventory::HaveItemName(SelectedRune.data())) // Update rune name
 		return true;
 
 	return false;
 }
-
 
 //Cosmic rift
 bool AbyssCrafting::IsInAbyss()
@@ -996,7 +1039,7 @@ bool AbyssCrafting::isInnerAbyss()
 
 bool AbyssCrafting::NeedToRepairPouches()
 {
-	if (tripSinceLastRepair > 22)
+	if (Inventory::HaveItemId(5511) || Inventory::HaveItemId(5513) || Inventory::HaveItemId(5515) )
 		return true;
 
 	return false;

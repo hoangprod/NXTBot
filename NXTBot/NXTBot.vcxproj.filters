@@ -81,6 +81,9 @@
     <ClInclude Include="Experience.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fn_hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

@@ -71,6 +71,28 @@ bool Inventory::HaveItemName(std::string name)
 	return false;
 }
 
+bool Inventory::HaveItemId(uint32_t Id)
+{
+	std::vector<FakeItem> Result;
+
+	auto inventory = GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack));
+
+	if (!inventory || inventory->ContainerContent == 0)
+	{
+		return false;
+	}
+
+	for (int i = 0; i < 28; i++)
+	{
+		FakeItem item = inventory->ContainerContent[i];
+
+		if (item.ItemId == Id)
+			return true;
+	}
+
+	return false;
+}
+
 int Inventory::GetItemNameSlot(std::string name)
 {
 	std::vector<FakeItem> Result;

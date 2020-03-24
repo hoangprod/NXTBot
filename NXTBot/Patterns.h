@@ -36,7 +36,7 @@ struct Addr {
 	UINT_PTR Func_GetLocalPlayer;
 	UINT_PTR Func_OnDispatchMessage;
 	UINT_PTR Func_GetContainer;
-
+	UINT_PTR Func_StrCopy;
 
 	// These are MANUAL updates because real updates is bullshit.
 	UINT_PTR Addr_AttackActionHandler;

@@ -417,6 +417,7 @@ enum class GameState {
 };
 
 
+
 #pragma pack(push)
 struct dataStruct {
 	uint64_t unk1;
@@ -433,13 +434,7 @@ typedef float*(__fastcall* fn_GetWOrldTranslation)(UINT_PTR* camera);
 typedef void(__fastcall* fn_GUIManagerRender)(UINT_PTR* a1);
 typedef UINT_PTR*(__fastcall* fn_GetContainerPtr)(UINT_PTR* ContainerManager, uint32_t containerId, uint8_t idk);
 
-typedef UINT_PTR(__fastcall* fn_glDrawRangeElement)(GLenum mode,
-	GLuint start,
-	GLuint end,
-	GLsizei count,
-	GLenum type,
-	const void* indices);
-
+typedef char* (__fastcall* fn_CopyString)(UINT_PTR string, int a2, int a3);
 
 #define ReadPtrOffset(address, x) ((uint64_t)address == 0 || ((uint64_t)address % sizeof(uint64_t)) != 0) ? (0) : *(uint64_t*)((uint64_t)address + x)
 

@@ -171,6 +171,7 @@
   <ItemGroup>
     <ClInclude Include="Exception.h" />
     <ClInclude Include="Experience.h" />
+    <ClInclude Include="fn_hook.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameClasses.h" />

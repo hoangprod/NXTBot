@@ -175,6 +175,29 @@ bool Player::StaticInteract2(StaticObjEX obj)
 	return true;
 }
 
+bool Player::StaticInteractManual(uint32_t id, uint32_t x, uint32_t y)
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x58]) = id;
+	*reinterpret_cast<int*>(&data[0x5c]) = x;
+	*reinterpret_cast<int*>(&data[0x60]) = y;
+
+	uint64_t func_ptr = g_Module + 0x9c080;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _Loot)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_Loot>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
 bool Player::LootAllConfirm()
 {
 	uint8_t data[100] = { 0 };
@@ -452,7 +475,7 @@ bool Player::TeleportToAbyssThroughMage()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x58]) = 18542; // UPDATE PLEASE MageOfZamorak
+	*reinterpret_cast<int*>(&data[0x58]) = 18546; // UPDATE PLEASE MageOfZamorak
 	*reinterpret_cast<int*>(&data[0x5c]) = 0;
 	*reinterpret_cast<int*>(&data[0x60]) = 0;// Hardcoded
 

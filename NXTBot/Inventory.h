@@ -8,6 +8,7 @@ struct Inventory {
 	static bool isBankOpened();
 	static bool isInventoryFull();
 	static bool HaveItemName(std::string name);
+	static bool HaveItemId(uint32_t Id);
 	static int GetItemNameSlot(std::string name);
 
 	static ContainerObj* GetContainerObj(uint32_t containerId);

@@ -38,7 +38,7 @@ void Manager::Manage()
 		{
 			randomTick = (rand() % 1000 + 300);
 
-			if (randomTick % 7 == 0)
+			if (randomTick % 22 == 0)
 			{
 				SendMessage(hWnd, WM_KEYDOWN, VK_INSERT, 0);
 				SendMessage(hWnd, WM_KEYUP, VK_INSERT, 0);
@@ -77,7 +77,7 @@ void Manager::Manage()
 		{
 			randomTick = (rand() % 150);
 
-			if (randomTick % 5 == 0)
+			if (randomTick % 22 == 0)
 			{
 				SendMessage(hWnd, WM_KEYDOWN, VK_INSERT, 0);
 				SendMessage(hWnd, WM_KEYUP, VK_INSERT, 0);
@@ -100,7 +100,7 @@ void Manager::Manage()
 		{
 			randomTick = (rand() % 200 + 200);
 
-			if (randomTick % 7 == 0)
+			if (randomTick % 22 == 0)
 			{
 				SendMessage(hWnd, WM_KEYDOWN, VK_INSERT, 0);
 				SendMessage(hWnd, WM_KEYUP, VK_INSERT, 0);
@@ -180,6 +180,18 @@ void Manager::Keystates(WPARAM wParam)
 					SelectedOre--;
 				}
 			}
+		}
+	}
+
+	if (wParam == VK_NUMPAD8)
+	{
+		if (!abyssCrafting)
+		{
+			abyssCrafting = new AbyssCrafting();
+		}
+		else if (abyssCrafting)
+		{
+			delete abyssCrafting; abyssCrafting = 0;
 		}
 	}
 

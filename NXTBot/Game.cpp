@@ -511,7 +511,12 @@ EntityObj* RS::GetMonsterWithinRadius(Tile2D from, float MaxDistance)
 		if (distance < MaxDistance)
 		{
 			if (entity && strlen(entity->Name) > 0)
-				return entity;
+			{
+				auto npcdef = NpcDef(entity);
+
+				if (npcdef.HaveOption("Attack"))
+					return entity;
+			}
 		}
 	}
 

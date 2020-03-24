@@ -14,6 +14,7 @@
 #include "Manager.h"
 #include "Experience.h"
 #include "Helper.h"
+#include "fn_hook.h"
 
 #define _CRTDBG_MAP_ALLOC
 
@@ -31,7 +32,9 @@ fn_OnCursorDoAction o_OnCursorDoAction;
 fn_CursorWorldContextMenu o_CursorWorldConextMenu;
 fn_OnDispatchNetMessage o_OnDispatchNetMessage;
 fn_GUIManagerRender o_Render;
+fn_CopyString o_CopyString;
 
+char* healthStr = 0;
 
 using nlohmann::json;
 json itemList;
@@ -61,10 +64,12 @@ std::vector<std::string> OreName = { "Copper ore", "Tin ore", "Iron ore", "Coal"
 std::vector<std::string> TreeNames = { "Tree", "Oak", "Willow", "Teak", "Maple", "Acadia", "Mahogany", "Yew" };
 std::vector<std::string> LogNames = { "Logs", "Oak logs", "Willow logs", "Teak logs", "Maple logs", "Acadia logs", "Mahogany logs", "Yew logs" };
 
+
 bool h_OnDispatchNetMessage(UINT_PTR* a1, UINT_PTR* a2)
 {
 	return o_OnDispatchNetMessage(a1, a2);
 }
+
 
 bool RecordAgility = false;
 std::vector<AgilityCourse> agiList;
@@ -100,54 +105,39 @@ UINT_PTR h_CursorWorldContextMenu(UINT_PTR* GameContext, int a2, int a3, int a4,
 	return o_CursorWorldConextMenu(GameContext, a2, a3, a4, a5);
 }
 
+char* h_CopyString(UINT_PTR string, int a2, int a3)
+{
+	UINT_PTR StrStart = *(UINT_PTR*)(string + 0x1c0);
+	UINT_PTR StrEnd = *(UINT_PTR*)(string + 0x1c8);
 
-class CFont {
-private:
-	unsigned int base;
-	unsigned char r;
-	unsigned char g;
-	unsigned char b;
+	if (StrStart && StrEnd && (UINT_PTR)healthStr != StrStart)
+	{
+		UINT_PTR StrSize = StrEnd - StrStart;
+		
+		if (StrSize > 7 && StrSize < 10)
+		{
+			const char* temp = (const char*)StrStart;
 
-public:
-	CFont(int size, unsigned char r, unsigned char g, unsigned char b) {
-		this->r = r;
-		this->g = g;
-		this->b = b;
-		this->base = ::glGenLists(96);
+			if (temp[3] == 0x2f && temp[6] == 0x30 && temp[7] == 0x30)
+			{
+				healthStr = (char*)StrStart;
+			}
+			else if (temp[4] == 0x2f && temp[7] == 0x30 && temp[8] == 0x30)
+			{
+				healthStr = (char*)StrStart;
+			}
 
-		HDC hdc = ::wglGetCurrentDC();
-		HFONT hFont = ::CreateFontA(-size, NULL, NULL, NULL, FW_MEDIUM, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, FF_DONTCARE | DEFAULT_PITCH, "Consolas");
-		HFONT hOldFont = (HFONT)::SelectObject(hdc, hFont);
-
-		::wglUseFontBitmapsA(hdc, 32, 96, this->base);
-		::SelectObject(hdc, hOldFont);
-		::DeleteObject(hFont);
+		}
 	}
 
-	void Print(float x, float y, const char* format, ...) {
-		::glColor3ub(this->r, this->g, this->b);
-		::glRasterPos2f(x, y);
-
-		char text[100];
-		::va_list args;
-
-		va_start(args, format);
-		::vsprintf_s(text, 100, format, args);
-		va_end(args);
-
-		::glPushAttrib(GL_LIST_BIT);
-		::glListBase(this->base - 32);
-		::glCallLists(::strlen(text), GL_UNSIGNED_BYTE, text);
-		::glPopAttrib();
-	}
-};
+	return o_CopyString(string, a2, a3);
+}
 
 std::map<int, HGLRC> contexts;
 
 bool h_wglSwapBuffers(HDC hdc)
 {
-	
-
+	/*
 	int pixelformat = GetPixelFormat(hdc);
 	if (!contexts.count(pixelformat))
 	{
@@ -191,8 +181,8 @@ bool h_wglSwapBuffers(HDC hdc)
 	HDC oldhdc = wglGetCurrentDC();
 	wglMakeCurrent(hdc, contexts[pixelformat]);
 
-	uint32_t width = GetDeviceCaps(hdc, HORZRES);
-	uint32_t height = GetDeviceCaps(hdc, VERTRES);
+
+	uint32_t width = 0, height = 0;
 	
 	HWND hwnd = WindowFromDC(hdc);
 	if (hwnd)
@@ -205,49 +195,56 @@ bool h_wglSwapBuffers(HDC hdc)
 		}
 	}
 	
+
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glPushMatrix();
 	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	//glMatrixMode(GL_PROJECTION);
+	//glLoadIdentity();
 	glOrtho(0, width, height, 0, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glDisable(GL_DEPTH_TEST);
+	//glLoadIdentity();
+	//glDisable(GL_DEPTH_TEST);
 	
-//	Render r{ hdc, 11 };
-	glColor3ub(0xFF, 0x0, 0x0);
+	//Render r{ hdc, 11 };
+	//glColor3ub(0xFF, 0x00, 0x0);
 
-	CFont font(15, 0, 170, 0);
+	CFont font(15, 0xff, 0, 0);
 
 	
 	auto status = "NXTBot Heph Status =  " + botStatus;
 	//r.PrintCStr(100.0f, 70.0f, 0xFF, 0x00, 0x00, status.data());
 
-	font.Print(100.f, 70.0f, status.data());
+	if (SelectedBot == (int)BotType::GeneralCombat && healthStr && RS::IsInGame())
+	{
+		std::string Health = "Health: " + std::string(healthStr);
+		font.Print(100.f, 80.0f, Health.data());
+	}
+
+	font.Print(100.f, 100.0f, status.data());
 	
 	if (SelectedBot == -1)
 	{
 		//r.PrintCStr(100.0f, 90.0f, 0x00, 0xFF, 0x00, std::string("Selected Bot: None").data());
-		font.Print(100.f, 90.0f, std::string("Selected Bot: None").data());
+		font.Print(100.f, 120.0f, std::string("Selected Bot: None").data());
 	}
 	else
 	{
 		std::string selectedBotName = std::string("Selected Bot: ") + std::string(botList[SelectedBot]);
 		//r.PrintCStr(100.0f, 90.0f, 0x00, 0xFF, 0x00, selectedBotName.data());
-		font.Print(100.f, 90.0f, selectedBotName.data());
+		font.Print(100.f, 120.0f, selectedBotName.data());
 
 		if (SelectedBot == (int)BotType::WoodCutting)
 		{
 			std::string TreeName = std::string("Selected Tree: ") + std::string(TreeNames[SelectedWood]);
 			//r.PrintCStr(100.0f, 110.0f, 44, 195, 212, TreeName.data());
-			font.Print(100.f, 110.0f, TreeName.data());
+			font.Print(100.f, 140.0f, TreeName.data());
 
 		} else if (SelectedBot == (int)BotType::Mining)
 		{
 			std::string Ore = std::string("Selected Ore: ") + std::string(OreName[SelectedOre]);
 			//r.PrintCStr(100.0f, 110.0f, 44, 195, 212, TreeName.data());
-			font.Print(100.f, 110.0f, Ore.data());
+			font.Print(100.f, 140.0f, Ore.data());
 
 		}
 
@@ -255,14 +252,16 @@ bool h_wglSwapBuffers(HDC hdc)
 	
 	
 
-	// Botting
-	Manager::Manage();
 
 	glPopMatrix();
 	glPopAttrib();
 
 	wglMakeCurrent(oldhdc, oldctx);
 
+	*/
+
+	// Botting
+	Manager::Manage();
 
 	return o_wglSwapBuffers(hdc);
 }
@@ -362,23 +361,11 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (wParam == VK_NUMPAD1)
 			{
-				Player player = RS::GetLocalPlayer();
 
-				printf("ismvoing\n", player.isMoving());
 			}
 			if (wParam == VK_NUMPAD2)
 			{
-				auto attackingEnemies = RS::GetInCombatNPCwithMe();
-				Player player = RS::GetLocalPlayer();
 
-
-				if (attackingEnemies.size() > 0)
-				{
-					botStatus = "Attacking Monster";
-
-					// Attack the first monster in the list that is attacking us
-					return player.Attack(attackingEnemies[0]->EntityId);
-				}
 				/*
 				auto player = RS::GetLocalPlayerTilePos();
 				agiList[agiList.size() - 1].EndPos = player;
@@ -388,17 +375,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			if (wParam == VK_NUMPAD3)
 			{
-				Player player = RS::GetLocalPlayer();
-
-				auto tree = Static::GetClosestStaticTreeObjectByName("Tree");
-				if (tree.Definition)
-				{
-					printf("Choppign down %d [%d] at (%d, %d)\n", tree.Definition->Id, tree.Type, tree.TileX, tree.TileY);
-					player.StaticInteract(tree);
-				}
-				else {
-					printf("Cant find tree\n");
-				}
+				//Player player = RS::GetLocalPlayer();
 
 				/*
 				RecordAgility = !RecordAgility;
@@ -430,6 +407,8 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	return CallWindowProc(OriginalWndProcHandler, hWnd, uMsg, wParam, lParam);
 }
+
+
 
 bool hooks()
 {
@@ -482,6 +461,10 @@ bool hooks()
 	o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)Patterns.Func_OnDispatchMessage;
 
 	o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)detours.Hook(o_OnDispatchNetMessage, h_OnDispatchNetMessage, 18);
+
+	o_CopyString = (fn_CopyString)Patterns.Func_StrCopy;
+
+	o_CopyString = (fn_CopyString)detours.Hook(o_CopyString, h_CopyString, 20);
 
 	o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", h_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
 
