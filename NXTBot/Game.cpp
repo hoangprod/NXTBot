@@ -439,6 +439,89 @@ EntityObj* RS::GetEntityNPCByName(const char* name)
 	return nullptr;
 }
 
+EntityObj* RS::GetClosestMonsterNPCByName(const char* name)
+{
+	Player player = RS::GetLocalPlayer();
+
+	auto Count = GetEntityCount();
+
+	EntityObj* ret = 0;
+
+	float closest = 99999.0f;
+
+	if (!Count)
+		return 0;
+
+	for (uint32_t i = 0; i < Count + 20; i++)
+	{
+		auto entity = GetEntityObjByIndex(i);
+
+
+		if (!entity || *(UINT_PTR*)entity == 0 || entity->EntityType != 1)
+			continue;
+
+		float distance = GetDistance(player.GetTilePosition(), GetEntityTilePos(entity));
+
+		if (distance < closest && strcmp(entity->Name, name) == 0)
+		{
+			auto npcdef = NpcDef(entity);
+
+			if (npcdef.HaveOption("Attack"))
+			{
+				closest = distance;
+				ret = entity;
+			}
+
+		}
+	}
+
+	if (ret && strlen(ret->Name) > 0)
+		return ret;
+
+	return 0;
+}
+
+
+EntityObj* RS::GetClosestMonsterNPCByNameFromOrigin(const char* name, Tile2D from)
+{
+	auto Count = GetEntityCount();
+
+	EntityObj* ret = 0;
+
+	float closest = 99999.0f;
+
+	if (!Count)
+		return 0;
+
+	for (uint32_t i = 0; i < Count + 20; i++)
+	{
+		auto entity = GetEntityObjByIndex(i);
+
+
+		if (!entity || *(UINT_PTR*)entity == 0 || entity->EntityType != 1)
+			continue;
+
+		float distance = GetDistance(from, GetEntityTilePos(entity));
+
+		if (distance < closest && strcmp(entity->Name, name) == 0)
+		{
+			auto npcdef = NpcDef(entity);
+
+			if (npcdef.HaveOption("Attack"))
+			{
+				closest = distance;
+				ret = entity;
+			}
+
+		}
+	}
+
+	if (ret && strlen(ret->Name) > 0)
+		return ret;
+
+	return 0;
+}
+
 EntityObj* RS::GetClosestEntityNPCByName(const char* name)
 {
 	Player player = RS::GetLocalPlayer();

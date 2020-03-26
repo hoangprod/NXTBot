@@ -137,7 +137,7 @@ std::map<int, HGLRC> contexts;
 
 bool h_wglSwapBuffers(HDC hdc)
 {
-	/*
+	
 	int pixelformat = GetPixelFormat(hdc);
 	if (!contexts.count(pixelformat))
 	{
@@ -179,6 +179,7 @@ bool h_wglSwapBuffers(HDC hdc)
 	//Overwrite context
 	HGLRC oldctx = wglGetCurrentContext();
 	HDC oldhdc = wglGetCurrentDC();
+
 	wglMakeCurrent(hdc, contexts[pixelformat]);
 
 
@@ -212,7 +213,7 @@ bool h_wglSwapBuffers(HDC hdc)
 	CFont font(15, 0xff, 0, 0);
 
 	
-	auto status = "NXTBot Heph Status =  " + botStatus;
+	auto status = "They_Call_Me_Heph =  " + botStatus;
 	//r.PrintCStr(100.0f, 70.0f, 0xFF, 0x00, 0x00, status.data());
 
 	if (SelectedBot == (int)BotType::GeneralCombat && healthStr && RS::IsInGame())
@@ -258,8 +259,8 @@ bool h_wglSwapBuffers(HDC hdc)
 
 	wglMakeCurrent(oldhdc, oldctx);
 
-	*/
-
+	
+	
 	// Botting
 	Manager::Manage();
 
@@ -338,6 +339,22 @@ void UpdateTest()
 
 }
 
+
+
+__int64 * GetVarType(__int64 a1, __int64 DomainType, unsigned int VarType)
+{
+	typedef __int64* (__cdecl* _GetVarType)(__int64 a1, __int64 DomainType, unsigned int VarType);
+	return reinterpret_cast<_GetVarType>(0x07FF79FDEF550)(a1, DomainType, VarType);
+}
+
+
+__int64* GetVarWrap(__int64 a1, unsigned int a2, UINT_PTR* a3)
+{
+	typedef __int64* (__cdecl* _GetVarWrap)(__int64 a1, unsigned int a2, UINT_PTR* a3);
+	return reinterpret_cast<_GetVarWrap>(0x7FF79FDFC8C0)(a1, a2, a3);
+}
+
+
 LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (false)
@@ -361,10 +378,51 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (wParam == VK_NUMPAD1)
 			{
-
+				
 			}
 			if (wParam == VK_NUMPAD2)
 			{
+				__int64 v4; // rax
+				__int64* v5; // rax
+				int v6; // [rsp+20h] [rbp-18h]
+				int v7; // [rsp+20h] [rbp-18h]
+
+				v4 = *(UINT_PTR*)(*(UINT_PTR*)(g_GameContext + 8) + 0x490);
+				if (*(DWORD*)(v4 + 0x68) == 4)
+				{
+					printf("test\n");
+
+					v5 = (__int64*)(*(__int64(__fastcall**)(UINT_PTR, UINT_PTR, UINT_PTR))(**(UINT_PTR**)(*(UINT_PTR*)(v4 + 0x1B8) + 0x40)
+						+ 0x38))(
+							*(UINT_PTR*)(*(UINT_PTR*)(v4 + 0x1B8) + 0x40),
+							0x9B7A,
+							0);
+
+					printf("v5: %p\n", v5);
+
+					/*
+					if (v5[1])
+					{
+						v6 = (*(__int64(__fastcall**)(__int64, __int64*))(*(UINT_PTR*)(*(UINT_PTR*)(g_GameContext + 8) + 0x1790)
+							+ 0x18))(
+								*(UINT_PTR*)(g_GameContext + 8) + 0x1790,
+								v5);
+
+						printf("Varp %d %d\n", 0x9B7A, v6);
+					}*/
+				}
+
+				/*
+				auto v5 = GetVarType(*(UINT_PTR*)(g_GameContext[1] + 0x490), *(UINT_PTR*)0x7FF7A0358890, 3);
+				printf("%p\n", v5);
+
+				if (v5[1])
+				{
+					float* v6 = (float*)(*(__int64(__fastcall**)(__int64, __int64*))(*(UINT_PTR*)(*(UINT_PTR*)(g_GameContext + 8) + 0x1790)
+						+ 8))(
+							*(UINT_PTR*)(g_GameContext + 8) + 0x1790,
+							v5);
+				}*/
 
 				/*
 				auto player = RS::GetLocalPlayerTilePos();
@@ -473,5 +531,6 @@ bool hooks()
 #ifdef NDEBUG
 	Beep(523, 200);
 #endif
+
 	return true;
 }

@@ -120,6 +120,33 @@ int Inventory::GetItemNameSlot(std::string name)
 	return -1;
 }
 
+int Inventory::GetItemNameCount(std::string name)
+{
+	std::vector<FakeItem> Result;
+	int count = 0;
+	auto inventory = GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack));
+
+	if (!inventory || inventory->ContainerContent == 0)
+	{
+		return false;
+	}
+
+	for (int i = 0; i < 28; i++)
+	{
+		FakeItem item = inventory->ContainerContent[i];
+
+		if (item.ItemId != -1)
+		{
+			std::string ItemName = RS::ItemIdToString(item.ItemId);
+
+			if (ItemName == name)
+				count++;
+		}
+	}
+
+	return count;
+}
+
 ContainerObj* Inventory::GetContainerObj(uint32_t containerId)
 {
 	auto gContext = g_GameContext[1];
@@ -141,6 +168,7 @@ bool Inventory::InteractItemOption(uint32_t slot, uint32_t Type)
 	*reinterpret_cast<int*>(&data[0x60]) = Type;
 	*reinterpret_cast<int*>(&data[0x5c]) = slot; 
 	*reinterpret_cast<int*>(&data[0x60]) = 0x5C10007;
+
 	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
 	if (!handler)
 		return false;
@@ -160,8 +188,8 @@ bool Inventory::InteractItemOption(uint32_t slot, uint32_t Type)
 	dt.dataPtr = data;
 
 	// changed cdecl to fastcall which should be correct
-	typedef void(__cdecl* __ItemInteract)(uint64_t** _this, void* dataPtr);
-	reinterpret_cast<__ItemInteract>(func_ptr)(handler, &dt);
+	typedef void(__cdecl* __ItemInteract)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<__ItemInteract>(func_ptr)(g_GameContext, &dt);
 
 	return true;
 }

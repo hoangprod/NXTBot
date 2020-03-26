@@ -32,6 +32,10 @@ struct RS {
 	static EntityObj* GetClosestPlayer();
 	static EntityObj* GetClosestMonster();
 	static EntityObj* GetEntityNPCByName(const char* name);
+	static EntityObj* GetClosestMonsterNPCByName(const char* name);
+	static EntityObj* GetClosestMonsterNPCByNameFromOrigin(const char* name, Tile2D from);
+
+
 	static EntityObj* GetClosestEntityNPCByName(const char* name);
 	static EntityObj* GetEntityObjectByEntityId(uint32_t EntityId);
 	static EntityObj* GetMonsterWithinRadius(Tile2D from, float MaxDistance);

@@ -154,7 +154,36 @@ public:
 	uint32_t TileY; //0x0060
 }; //Size: 0x0064
 
+class VarpWrap
+{
+public:
+	char pad_0000[440]; //0x0000
+	class VarpWrap2* VarpWrap2; //0x01B8
+	char pad_01C0[72]; //0x01C0
+}; //Size: 0x0208
 
+class VarpWrap2
+{
+public:
+	char pad_0000[64]; //0x0000
+	class VarpWrap3* VarpWrap3; //0x0040
+}; //Size: 0x0048
+
+class VarpWrap3
+{
+public:
+
+	virtual void Function0();
+	virtual void Function1();
+	virtual void Function2();
+	virtual void Function3();
+	virtual void Function4();
+	virtual void Function5();
+	virtual void Function6();
+	virtual void GetVarpWrap();
+	virtual void Function8();
+	virtual void Function9();
+}; //Size: 0x0008
 
 class Dispatcher
 {
@@ -260,6 +289,15 @@ public:
 	{
 		Definition = 0;
 	};
+
+	// Can't really use this for any
+	StaticObjEX(uint32_t id, int32_t x, int32_t y)
+	{
+		SecondId = id;
+		TileX = x;
+		TileY = y;
+	};
+
 	EntityType Type; //0x0040
 	int32_t TileX; //0x00EC
 	int32_t TileY; //0x00F0

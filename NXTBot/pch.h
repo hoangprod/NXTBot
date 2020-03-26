@@ -20,6 +20,8 @@
 #include <mutex>
 #include <fstream>
 #include <set>
+#include <random>>
+#include <iterator>
 
 #include "glew/GL/glew.h"
 #include <gl\glut.h>

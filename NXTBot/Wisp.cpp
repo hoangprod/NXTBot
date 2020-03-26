@@ -9,7 +9,7 @@
 #include "Experience.h"
 #include "Wisp.h"
 
-
+extern char* healthStr;
 extern std::string botStatus;
 
 extern int SelectedWood;
@@ -18,6 +18,8 @@ extern std::vector<std::string> OreName;
 extern std::vector<std::string> OreNode;
 extern std::vector<std::string> TreeNames;
 extern std::vector<std::string> LogNames;
+
+std::vector<std::string> foodlist = {"Salmon", "Catfish", "Beltfish", "Sea turtle"};
 
 void Wisp::FSM()
 {
@@ -174,11 +176,33 @@ void GeneralCombat::Looting(FakeItemEX loot)
 
 void GeneralCombat::ConsumeFood()
 {
+	for (auto food : foodlist)
+	{
+		auto eat = Inventory::GetItemNameSlot(food);
 
+		if (eat >= 0)
+		{
+			player->InteractWithEquipment(1, eat, 0x5C10007);
+			return;
+		}
+	}
+
+	// Out of food beep
+	Beep(523, 100);
+
+	return;
 }
 
 bool GeneralCombat::NeedHeal()
 {
+	if (healthStr)
+	{
+		if (healthStr[0] == 0x33)
+		{
+			return true;
+		}
+	}
+
 	return false;
 }
 
@@ -193,12 +217,18 @@ void GeneralCombat::FSM()
 		//printf("[+] Player %s will be targeting %s from tile position (%d, %d)\n", player->GetName().data(), monsterTargetName.data(), origin.x, origin.y);
 	}
 
+	if (GeneralCombat::NeedHeal())
+	{
+		GeneralCombat::ConsumeFood();
+	}
+
 	// If I am moving around or targeting something, do not fuck with it
 	if (player->isMoving() || (player->bTargeting() || player->CurrentTarget() > 0))
 	{
 		botStatus = "Current moving or fighting";
 		return;
 	}
+
 
 	if (player->inCombat())
 	{
@@ -230,7 +260,8 @@ void GeneralCombat::FSM()
 	}
 
 
-	EntityObj* EnemyMonsters = RS::GetMonsterWithinRadiusWithName(monsterTargetName.data(), origin, 15.0f);
+	//EntityObj* EnemyMonsters = RS::GetMonsterWithinRadiusWithName(monsterTargetName.data(), origin, 15.0f);
+	EntityObj* EnemyMonsters = RS::GetClosestMonsterNPCByNameFromOrigin(monsterTargetName.data(), origin);
 
 	// If there are a monster 15 tiles away from origin, fight it
 	if (EnemyMonsters)
@@ -730,6 +761,22 @@ void Woodcutting::FSM()
 
 std::vector<std::pair<std::string, std::string>> CraftableRunes = {std::pair<std::string, std::string>("Nature rune", "Nature rift"), std::pair<std::string, std::string>("Cosmic rune", "Cosmic rift") };
 
+std::vector<StaticObjEX> WallList = { StaticObjEX(65086, 3093, 3521), StaticObjEX(65082, 3096, 3521), StaticObjEX(65082, 3099, 3521), StaticObjEX(65084, 3102, 3521), StaticObjEX(65079, 3090, 3521)};
+
+template<typename Iter, typename RandomGenerator>
+Iter select_randomly(Iter start, Iter end, RandomGenerator& g) {
+	std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
+	std::advance(start, dis(g));
+	return start;
+}
+
+template<typename Iter>
+Iter select_randomly(Iter start, Iter end) {
+	static std::random_device rd;
+	static std::mt19937 gen(rd());
+	return select_randomly(start, end, gen);
+}
+
 void AbyssCrafting::FSM()
 {
 	if (!player || !player->_base)
@@ -780,10 +827,16 @@ void AbyssCrafting::FSM()
 		// If before wilderness wall
 		if (player->GetTilePosition().y < 3521)
 		{
-
 			botStatus = "Going to wilderness wall";
 
-			player->StaticInteractManual(65084, 3102, 3521);
+			int randomIndex = rand() % WallList.size();
+
+			auto wilderness = WallList[randomIndex];
+
+			//printf("Going to %d %d %d\n", wilderness.SecondId, wilderness.TileX, wilderness.TileY);
+
+			player->StaticInteractManual(wilderness.SecondId, wilderness.TileX, wilderness.TileY);
+
 			return;
 			/*
 			auto wall = Static::GetClosestStaticObjectByName("Wilderness wall");
