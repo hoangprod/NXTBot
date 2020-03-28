@@ -76,6 +76,9 @@ RSDialog Widgets::GetDialogType()
 	case 0x4a7:
 		return RSDialog::PlayerDialog;
 		break;
+	case 0x49f:
+		return RSDialog::ModernDestroy;
+		break;
 	default:
 		return RSDialog::Unknown;
 		break;

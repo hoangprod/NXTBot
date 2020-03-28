@@ -46,6 +46,20 @@ void AbyssCrafting::FSM()
 		return;
 	}
 
+	auto item = Inventory::GetItemNameSlot("Key token");
+
+	if (item != -1)
+	{
+		if (Widgets::GetWidgetUI(CONVERSATION_WIDGET) && Widgets::GetDialogType() == RSDialog::ModernDestroy)
+		{
+			Common::ConfirmGUI(0x49F0005);
+		}
+		else
+		{
+			Inventory::InteractItemOption(3, 8);
+		}
+	}
+
 	if (!IsInAbyss() && !IsInAltar())
 	{
 		auto enemy = RS::GetValidWildernessPlayerEnemy();
@@ -57,7 +71,7 @@ void AbyssCrafting::FSM()
 			if (Common::IsWorldWidgetUp())
 			{
 				Common::HopRandomWorld();
-				extraDelay = 800;
+				extraDelay = 2000;
 			}
 			else
 			{
@@ -131,7 +145,7 @@ void AbyssCrafting::FSM()
 			botStatus = "Going to the Mage.";
 			//player.TeleportToAbyssThroughMage();
 
-			if (player.GetTilePosition().y > 3523 && player.GetTilePosition().y < 3527)
+			if (player.GetTilePosition().y > 3521 && player.GetTilePosition().y < 3524)
 				player.InteractWithEquipment(1, -1, 0x59600B5); // Surge
 
 			Common::TeleportToAbyssThroughMage();

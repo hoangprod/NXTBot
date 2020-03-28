@@ -530,7 +530,8 @@ enum class RSDialog
 	PlayerDialog,
 	NPCDialog,
 	MultiSelectionDialog,
-	GameDialog
+	GameDialog,
+	ModernDestroy
 };
 
 enum class GameState {

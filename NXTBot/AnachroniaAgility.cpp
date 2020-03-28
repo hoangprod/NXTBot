@@ -56,7 +56,12 @@ void MoneyAgi::FSM()
 		{
 			//printf("Elapsed: %d\n", player->GetElapsedSecondSinceLastAction());
 
-			if (player->GetElapsedSecondSinceLastAction() < 10)
+			if (player->GetElapsedSecondSinceLastAction() < 10 && next.objId != 113735)
+			{
+				return;
+			}
+			// Unique spot
+			else if (player->GetElapsedSecondSinceLastAction() < 2)
 			{
 				return;
 			}

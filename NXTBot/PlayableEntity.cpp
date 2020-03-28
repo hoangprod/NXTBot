@@ -179,7 +179,16 @@ bool Player::LootAllConfirm()
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
 	*reinterpret_cast<int*>(&data[0x60]) = 0x6560015;
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;
@@ -202,7 +211,16 @@ bool Player::InteractWithEquipment(int slot, int option, int64_t param3)
 	*reinterpret_cast<int*>(&data[0x5c]) = option;
 	*reinterpret_cast<int*>(&data[0x60]) = param3;
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;
@@ -225,7 +243,16 @@ bool Player::QuickDropSlot1()
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
 	*reinterpret_cast<int*>(&data[0x60]) = 93716544;
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;
@@ -248,7 +275,16 @@ bool Player::ExitToLobby()
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
 	*reinterpret_cast<int*>(&data[0x60]) = 93913154;
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;
@@ -271,7 +307,16 @@ bool Player::WindClockWork()
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
 	*reinterpret_cast<int*>(&data[0x60]) = 93716544;
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;
@@ -294,7 +339,16 @@ bool Player::ReleaseClockWork()
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
 	*reinterpret_cast<int*>(&data[0x60]) = 93716557;
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;
@@ -318,7 +372,16 @@ bool Player::DepositAllThroughBank()
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
 	*reinterpret_cast<int*>(&data[0x60]) = 0x2050025;
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;
@@ -343,7 +406,16 @@ bool Player::DepositAll()
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
 	*reinterpret_cast<int*>(&data[0x60]) = 0xb0005; // Hardcoded
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;

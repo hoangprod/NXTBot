@@ -11,6 +11,7 @@
 
 extern UINT_PTR* g_GameContext;
 extern UINT_PTR g_Module;
+extern Addr Patterns;
 
 std::vector<int> MemberWorlds = { 1, 2, 4, 5, 6, 9, 10, 12, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 35, 36, 37, 39, 40, 44, 45, 46, 49, 50, 51, 53, 54, 56, 58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 76,
 	77, 78, 79, 82, 83, 84, 85, 87, 88, 89, 91, 92, 97, 98, 99, 100, 103, 104, 105, 106, 115, 116, 117, 119, 123, 124, 134, 138, 139, 140 };
@@ -68,7 +69,16 @@ int Common::HopWorldGUI()
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
 	*reinterpret_cast<int*>(&data[0x60]) = 0x5B90009;
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;
@@ -91,7 +101,16 @@ int Common::SwitchWorld(int World)
 	*reinterpret_cast<int*>(&data[0x5c]) = World;
 	*reinterpret_cast<int*>(&data[0x60]) = 0x6330008;
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;
@@ -112,9 +131,18 @@ int Common::ConfirmGUI(int GUI_Id)
 
 	*reinterpret_cast<int*>(&data[0x58]) = 0;
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
-	*reinterpret_cast<int*>(&data[0x60]) = GUI_Id; // Hardcoded
+	*reinterpret_cast<int*>(&data[0x60]) = GUI_Id;
 
-	uint64_t func_ptr = g_Module + 0x9c030 - 0x10;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2] - 0x10;
 
 	if (!func_ptr)
 		return false;
@@ -211,7 +239,16 @@ bool Common::BankInteractItem(int slot, int option)
 	*reinterpret_cast<int*>(&data[0x5c]) = slot;
 	*reinterpret_cast<int*>(&data[0x60]) = 0x205000E; // Hardcoded
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;
@@ -233,7 +270,16 @@ bool Common::BankLoadPreset(int preset)
 	*reinterpret_cast<int*>(&data[0x5c]) = preset;
 	*reinterpret_cast<int*>(&data[0x60]) = 0x2050070;// Hardcoded
 
-	uint64_t func_ptr = g_Module + 0x9c030;
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;

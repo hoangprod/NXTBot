@@ -165,7 +165,7 @@ bool Inventory::InteractItemOption(uint32_t slot, uint32_t Type)
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x60]) = Type;
+	*reinterpret_cast<int*>(&data[0x58]) = Type;
 	*reinterpret_cast<int*>(&data[0x5c]) = slot; 
 	*reinterpret_cast<int*>(&data[0x60]) = 0x5C10007;
 

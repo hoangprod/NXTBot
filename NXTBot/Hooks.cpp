@@ -101,6 +101,9 @@ UINT_PTR h_CursorWorldContextMenu(UINT_PTR* GameContext, int a2, int a3, int a4,
 {
 	g_GameContext = GameContext;
 
+	// Botting
+	Manager::Manage();
+
 	return o_CursorWorldConextMenu(GameContext, a2, a3, a4, a5);
 }
 
@@ -250,7 +253,7 @@ bool __stdcall Unload()
 
 	if (detours.Clearhook())
 	{
-		o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", o_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
+		//o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", o_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
 
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)OriginalWndProcHandler);
 
@@ -287,14 +290,14 @@ static BOOL CALLBACK enumWindowCallback(HWND hWndv, LPARAM lparam) {
 
 void UpdateTest()
 {
+	auto cplayer = RS::GetClosestPlayer();
+
 	printf("LocalPlayer: %p\n",  RS::GetLocalPlayer());
 	printf("EntityCount: %d\n", RS::GetEntityCount());
 	printf("PlayerName: %s\n", RS::GetLocalPlayer()->Name);
 	printf("Inventory Free Slot: %d\n", Inventory::GetFreeSlot());
 	printf("Widget Conversation: %p\n", Widgets::GetWidgetUI(CONVERSATION_WIDGET));
-	printf("Closest Player: %p\n", RS::GetClosestPlayer());
-
-	auto cplayer = RS::GetClosestPlayer();
+	printf("Closest Player: %p\n", cplayer);
 
 	if(cplayer)
 		printf("Closest Player Info. Name: %s  X: %f  Y: %f Level: %d\n", cplayer->Name, cplayer->GetPos()[0], cplayer->GetPos()[2], cplayer->Level);
@@ -302,7 +305,7 @@ void UpdateTest()
 	auto cmonster = RS::GetClosestMonster();
 
 	if(cmonster)
-		printf("Closest Player Info. Name: %s  X: %f  Y: %f Level: %d\n", cmonster->Name, cmonster->GetPos()[0], cmonster->GetPos()[2], cmonster->Level);
+		printf("Closest Monster Info. Name: %s  X: %f  Y: %f Level: %d\n", cmonster->Name, cmonster->GetPos()[0], cmonster->GetPos()[2], cmonster->Level);
 
 	printf("Varp check: Health [%d] Prayer [%d]\n", Varpbit::GetVarpBit(1668), Varpbit::GetVarp(3274));
 
@@ -364,7 +367,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			if (wParam == VK_NUMPAD3)
 			{
-				Common::HopRandomWorld();
+
 				//Player player = RS::GetLocalPlayer();
 
 				/*
@@ -375,7 +378,6 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			if (wParam == VK_NUMPAD4)
 			{
-				Common::HopWorldGUI();
 
 			}
 			if (wParam == VK_NUMPAD5)
@@ -402,10 +404,8 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 
-
 bool hooks()
 {
-
 	do
 	{
 		printf("[+] Finding the correct HWND\n");
@@ -451,11 +451,11 @@ bool hooks()
 
 	o_CursorWorldConextMenu = (fn_CursorWorldContextMenu)detours.Hook(o_CursorWorldConextMenu, h_CursorWorldContextMenu, 15);
 
-	o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)Patterns.Func_OnDispatchMessage;
+	//o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)Patterns.Func_OnDispatchMessage;
 
-	o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)detours.Hook(o_OnDispatchNetMessage, h_OnDispatchNetMessage, 18);
+	//o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)detours.Hook(o_OnDispatchNetMessage, h_OnDispatchNetMessage, 18);
 
-	o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", h_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
+	//o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", h_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
 
 	OriginalWndProcHandler = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)hWndProc);
 

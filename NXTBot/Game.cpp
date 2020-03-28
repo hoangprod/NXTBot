@@ -555,7 +555,7 @@ EntityObj* RS::GetValidWildernessPlayerEnemy()
 			{
 				float distance = GetDistance(localPlayerTile, GetEntityTilePos(entity));
 
-				if (distance < 35.0f)
+				if (distance < 45.0f)
 				{
 					return entity;
 				}
