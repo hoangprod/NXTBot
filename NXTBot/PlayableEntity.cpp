@@ -514,6 +514,16 @@ uint32_t Entity::GetType()
 	return entity->EntityType;
 }
 
+uint32_t Entity::GetElapsedSecondSinceLastAction()
+{
+	if (!_base)
+		return 0;
+
+	auto entity = (EntityObj*)_base;
+
+	return entity->ElapsedLastAction;
+}
+
 bool Entity::IsInAnimation()
 {
 	if (!_base)

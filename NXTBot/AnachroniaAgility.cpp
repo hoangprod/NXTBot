@@ -29,6 +29,7 @@ void MoneyAgi::FSM()
 		return;
 	}
 
+	// Start of the course
 	if (RS::GetDistance(player->GetTilePosition(), Tile2D(5418, 2348)) < 7.0f)
 	{
 		//botStatus = "Going to start of course with id" + std::to_string(AnachroniaAgi[0].objId);
@@ -50,10 +51,22 @@ void MoneyAgi::FSM()
 
 	if (obstacle.Definition)
 	{
+
+		if (next.objId == currentObstacle)
+		{
+			//printf("Elapsed: %d\n", player->GetElapsedSecondSinceLastAction());
+
+			if (player->GetElapsedSecondSinceLastAction() < 10)
+			{
+				return;
+			}
+		}
+
 		currentObstacle = obstacle.Definition->Id;
 		botStatus = "Clicking on next obstacle";
-		printf("Clicking on %d\n", currentObstacle);
+		//printf("Clicking on %d\n", currentObstacle);
 		player->StaticInteract(obstacle);
+
 	}
 	else
 	{
@@ -90,6 +103,7 @@ AgilityCourse MoneyAgi::GetNextCourse()
 		}
 	}
 
+	/*
 	if (playerPos.x == 5655 && playerPos.y == 2370)
 	{
 		return 113716;
@@ -109,19 +123,15 @@ AgilityCourse MoneyAgi::GetNextCourse()
 	else if (playerPos.x == 5413 && playerPos.y == 2325)
 	{
 		return 113688;
-	}
+	}*/
 
 
 	if (!player->isMoving())
 	{
-		auto playerEntity = (EntityObj*)(player);
-
-		if(playerEntity->ElapsedLastAction > 60)
-			return currentObstacle;
-
+		return currentObstacle;
 	}
 
 	//botStatus = "Moving inbetween obstacle OR you are not standing where u should be to start.";
 
-	return AgilityCourse();
+	return 0;
 }

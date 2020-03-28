@@ -98,7 +98,7 @@ unsigned char* PerformNonceExchange()
 	if (ClientSocket.Send((char*)nonce, crypto_box_NONCEBYTES, nLen, TIMEOUT) != E_XSOCKET_SUCCESS)
 		return false;
 
-	print_bytes("\n====== [Client Nonce] ======", nonce, crypto_box_NONCEBYTES);
+	//print_bytes("\n====== [Client Nonce] ======", nonce, crypto_box_NONCEBYTES);
 
 	return nonce;
 }
@@ -148,7 +148,7 @@ bool SendAuthentication(std::string Username, std::string Password, std::string 
 	//printf("-------------------------------------------------");
 
 	// Divide by 4 because we don't need to see that many zeros lmao
-	print_bytes("\n====== [Cipher Message] ======", Cipher, BlockSize / 16);
+	//print_bytes("\n====== [Cipher Message] ======", Cipher, BlockSize / 16);
 
 	return true;
 }
@@ -158,9 +158,9 @@ bool PerformKeyExchange()
 	// Generate Keypair
 	crypto_box_keypair(Client_PublicKey, Client_SecretKey);
 
-	print_bytes("====== |Public Key| ======", Client_PublicKey, crypto_box_PUBLICKEYBYTES);
+	//print_bytes("====== |Public Key| ======", Client_PublicKey, crypto_box_PUBLICKEYBYTES);
 
-	print_bytes("====== |Private Key| ======", Client_SecretKey, crypto_box_SECRETKEYBYTES);
+	//print_bytes("====== |Private Key| ======", Client_SecretKey, crypto_box_SECRETKEYBYTES);
 
 	printf("-------------------------------------------------\n\n");
 
@@ -194,7 +194,7 @@ bool PerformKeyExchange()
 		return false;
 	}
 
-	print_bytes("====== [Server Public Key] ======", Server_PublicKey, crypto_box_PUBLICKEYBYTES);
+	//print_bytes("====== [Server Public Key] ======", Server_PublicKey, crypto_box_PUBLICKEYBYTES);
 
 
 	return true;

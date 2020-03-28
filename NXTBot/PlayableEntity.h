@@ -13,6 +13,7 @@ public:
 
 	uint32_t Id();
 	uint32_t GetType();
+	uint32_t GetElapsedSecondSinceLastAction();
 	int CurrentTarget();
 	uint32_t CurrentAnimation();
 	uint32_t CurrentSpotAnimation();
