@@ -110,7 +110,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLUT_STATIC_LIB;GLEW_STATIC;_DEBUG;NXTBOT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLUT_STATIC_LIB;GLEW_STATIC;_DEBUG;NXTBOT_EXPORTS;SODIUM_STATIC;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -121,7 +121,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;Lib\64libsodium.lib;Opengl32.lib;C:\Users\Node\source\repos\NXTBot\NXTBot\Lib\64libsodium.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -152,7 +152,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLUT_STATIC_LIB;GLEW_STATIC;NDEBUG;NXTBOT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLUT_STATIC_LIB;GLEW_STATIC;NDEBUG;NXTBOT_EXPORTS;SODIUM_STATIC;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -165,16 +165,21 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;Opengl32.lib;C:\Users\Node\source\repos\NXTBot\NXTBot\Lib\64libsodium.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AbyssCrafting.h" />
+    <ClInclude Include="AnachroniaAgility.h" />
+    <ClInclude Include="Auth.h" />
+    <ClInclude Include="Common.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="Experience.h" />
     <ClInclude Include="fn_hook.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameClasses.h" />
+    <ClInclude Include="GeneralCombat.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Hooks.h" />
     <ClInclude Include="Inventory.h" />
@@ -184,19 +189,90 @@
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Patterns.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="picosha2.h" />
     <ClInclude Include="PlayableEntity.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="Scan.h" />
+    <ClInclude Include="sodium.h" />
+    <ClInclude Include="sodium\core.h" />
+    <ClInclude Include="sodium\crypto_aead_aes256gcm.h" />
+    <ClInclude Include="sodium\crypto_aead_chacha20poly1305.h" />
+    <ClInclude Include="sodium\crypto_aead_xchacha20poly1305.h" />
+    <ClInclude Include="sodium\crypto_auth.h" />
+    <ClInclude Include="sodium\crypto_auth_hmacsha256.h" />
+    <ClInclude Include="sodium\crypto_auth_hmacsha512.h" />
+    <ClInclude Include="sodium\crypto_auth_hmacsha512256.h" />
+    <ClInclude Include="sodium\crypto_box.h" />
+    <ClInclude Include="sodium\crypto_box_curve25519xchacha20poly1305.h" />
+    <ClInclude Include="sodium\crypto_box_curve25519xsalsa20poly1305.h" />
+    <ClInclude Include="sodium\crypto_core_ed25519.h" />
+    <ClInclude Include="sodium\crypto_core_hchacha20.h" />
+    <ClInclude Include="sodium\crypto_core_hsalsa20.h" />
+    <ClInclude Include="sodium\crypto_core_ristretto255.h" />
+    <ClInclude Include="sodium\crypto_core_salsa20.h" />
+    <ClInclude Include="sodium\crypto_core_salsa2012.h" />
+    <ClInclude Include="sodium\crypto_core_salsa208.h" />
+    <ClInclude Include="sodium\crypto_generichash.h" />
+    <ClInclude Include="sodium\crypto_generichash_blake2b.h" />
+    <ClInclude Include="sodium\crypto_hash.h" />
+    <ClInclude Include="sodium\crypto_hash_sha256.h" />
+    <ClInclude Include="sodium\crypto_hash_sha512.h" />
+    <ClInclude Include="sodium\crypto_kdf.h" />
+    <ClInclude Include="sodium\crypto_kdf_blake2b.h" />
+    <ClInclude Include="sodium\crypto_kx.h" />
+    <ClInclude Include="sodium\crypto_onetimeauth.h" />
+    <ClInclude Include="sodium\crypto_onetimeauth_poly1305.h" />
+    <ClInclude Include="sodium\crypto_pwhash.h" />
+    <ClInclude Include="sodium\crypto_pwhash_argon2i.h" />
+    <ClInclude Include="sodium\crypto_pwhash_argon2id.h" />
+    <ClInclude Include="sodium\crypto_pwhash_scryptsalsa208sha256.h" />
+    <ClInclude Include="sodium\crypto_scalarmult.h" />
+    <ClInclude Include="sodium\crypto_scalarmult_curve25519.h" />
+    <ClInclude Include="sodium\crypto_scalarmult_ed25519.h" />
+    <ClInclude Include="sodium\crypto_scalarmult_ristretto255.h" />
+    <ClInclude Include="sodium\crypto_secretbox.h" />
+    <ClInclude Include="sodium\crypto_secretbox_xchacha20poly1305.h" />
+    <ClInclude Include="sodium\crypto_secretbox_xsalsa20poly1305.h" />
+    <ClInclude Include="sodium\crypto_secretstream_xchacha20poly1305.h" />
+    <ClInclude Include="sodium\crypto_shorthash.h" />
+    <ClInclude Include="sodium\crypto_shorthash_siphash24.h" />
+    <ClInclude Include="sodium\crypto_sign.h" />
+    <ClInclude Include="sodium\crypto_sign_ed25519.h" />
+    <ClInclude Include="sodium\crypto_sign_edwards25519sha512batch.h" />
+    <ClInclude Include="sodium\crypto_stream.h" />
+    <ClInclude Include="sodium\crypto_stream_chacha20.h" />
+    <ClInclude Include="sodium\crypto_stream_salsa20.h" />
+    <ClInclude Include="sodium\crypto_stream_salsa2012.h" />
+    <ClInclude Include="sodium\crypto_stream_salsa208.h" />
+    <ClInclude Include="sodium\crypto_stream_xchacha20.h" />
+    <ClInclude Include="sodium\crypto_stream_xsalsa20.h" />
+    <ClInclude Include="sodium\crypto_verify_16.h" />
+    <ClInclude Include="sodium\crypto_verify_32.h" />
+    <ClInclude Include="sodium\crypto_verify_64.h" />
+    <ClInclude Include="sodium\export.h" />
+    <ClInclude Include="sodium\randombytes.h" />
+    <ClInclude Include="sodium\randombytes_internal_random.h" />
+    <ClInclude Include="sodium\randombytes_sysrandom.h" />
+    <ClInclude Include="sodium\runtime.h" />
+    <ClInclude Include="sodium\utils.h" />
+    <ClInclude Include="sodium\version.h" />
     <ClInclude Include="Tile.h" />
+    <ClInclude Include="Varpbit.h" />
     <ClInclude Include="VMT.h" />
     <ClInclude Include="Widgets.h" />
     <ClInclude Include="Wisp.h" />
+    <ClInclude Include="XEvent.h" />
+    <ClInclude Include="XSocket.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AbyssCrafting.cpp" />
+    <ClCompile Include="AnachroniaAgility.cpp" />
+    <ClCompile Include="Common.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Experience.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameClasses.cpp" />
+    <ClCompile Include="GeneralCombat.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Hooks.cpp" />
     <ClCompile Include="Inventory.cpp" />
@@ -213,9 +289,16 @@
     <ClCompile Include="PlayableEntity.cpp" />
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="Scan.cpp" />
+    <ClCompile Include="Auth.cpp" />
     <ClCompile Include="Tile.cpp" />
+    <ClCompile Include="Varpbit.cpp" />
     <ClCompile Include="Widgets.cpp" />
     <ClCompile Include="Wisp.cpp" />
+    <ClCompile Include="XEvent.cpp" />
+    <ClCompile Include="XSocket.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

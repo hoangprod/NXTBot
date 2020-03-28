@@ -36,7 +36,6 @@ public:
 	bool Move(Tile2D tile);
 	bool Attack(uint32_t Entity);
 	bool Talk(uint32_t Entity);
-	bool BankUsingNPC(uint32_t Entity);
 	bool Loot(FakeItemEX lootItem);
 	bool StaticInteract(StaticObjEX obj);
 	bool StaticInteract2(StaticObjEX obj);
@@ -50,14 +49,10 @@ public:
 	bool WindClockWork();
 	bool ReleaseClockWork();
 
-	bool DepositActionNPC(uint32_t Entity);
-	bool DepositAllThroughBank();
-	bool ConfirmChat(int64_t param3 = 77594639);
-	bool DepositAll();
-	bool BankInteractItem(int slot, int option);
-	bool BankLoadPreset(int preset);
 
-	bool TeleportToAbyssThroughMage();
+	bool DepositAllThroughBank();
+	bool DepositAll();
+
 
 	bool isMining();
 	bool inCombat();

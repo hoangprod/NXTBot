@@ -1,7 +1,7 @@
 #pragma once
 
 
-enum class SkillType {
+enum class Stat {
 	ATTACK,
 	DEFENCE,
 	STRENGTH,
@@ -25,11 +25,18 @@ enum class SkillType {
 	RUNECRAFT,
 	HUNTER,
 	CONSTRUCTION,
+	SUMMONING,
+	DUNGEONEERING,
+	DIVINATION,
+	INVENTION,
+	ARCHEOLOGY
 };
 
 class Exp
 {
 public:
 	static UINT_PTR GetCharacterInfoClass();
-	static int GetCurrentExp(SkillType type);
+	static int GetCurrentExp(Stat type);
+	static int GetSkillLevel(Stat type);
+
 };

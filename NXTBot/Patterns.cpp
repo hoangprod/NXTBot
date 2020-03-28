@@ -411,15 +411,6 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Func_GetContainer is at %llx\n", Patterns.Func_GetContainer); };
 
-	Patterns.Func_StrCopy = (UINT_PTR)PatternScan(Rs2Client, 0x300000, "\x40\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\xCC\xCC\xCC\xCC\xCC\xfb\xff\xff", "xxxxxxxxxxxx?????xxx");
-
-	if (!Patterns.Func_StrCopy)
-	{
-		printf("[Error] Patterns.Func_StrCopy failed to pattern scan.\n");
-		return FALSE;
-	}
-	else { printf("[Pattern Scan]  Patterns.Func_StrCopy is at %llx\n", Patterns.Func_StrCopy); };
-
 	printf("\n------------------ [ END PATTERN SCAN ] ------------------\n\n");
 
 	return true;

@@ -12,7 +12,7 @@ class GameContextPtr
 {
 public:
 	char pad_0000[8]; //0x0000
-	class GameContext* N0000016F; //0x0008
+	class GameContext* gContext; //0x0008
 	char pad_0010[728]; //0x0010
 	float worldX; //0x02E8
 	char pad_02EC[4]; //0x02EC
@@ -77,14 +77,26 @@ public:
 class GameContext
 {
 public:
-	char pad_0000[4536]; //0x0000
-
-	// NPC Related
-	class NpcEntityPtr* EntityPtr; //0x11B8
-	char pad_11C0[24]; //0x11C0
+	char pad_0000[1168]; //0x0000
+	class VarpWrap* VarpWrap; //0x0490
+	char pad_0498[3184]; //0x0498
+	class DestinationFlag* DestinationFlag; //0x1108
+	char pad_1110[112]; //0x1110
+	class WidgetUI* WidgetUI; //0x1180
+	char pad_1188[32]; //0x1188
+	class CharacterInfo* CharacterInfo; //0x11A8
+	char pad_11B0[8]; //0x11B0
+	class EntityPtr* EntityPtr; //0x11B8
+	class TileList* N00001FBE; //0x11C0
+	char pad_11C8[16]; //0x11C8
 	class PlayerListWrapper* PlayerListWrapper; //0x11D8
-	char pad_11E0[24]; //0x11E0
-}; //Size: 0x11F8
+	char pad_11E0[64]; //0x11E0
+	class WorldClass* WorldClass; //0x1220
+	char pad_1228[1384]; //0x1228
+	class VarpInstance* VarpVtable; //0x1790
+	char pad_1798[2672]; //0x1798
+}; //Size: 0x2208
+
 
 class NpcEntityPtr
 {
@@ -157,10 +169,19 @@ public:
 class VarpWrap
 {
 public:
-	char pad_0000[440]; //0x0000
-	class VarpWrap2* VarpWrap2; //0x01B8
-	char pad_01C0[72]; //0x01C0
-}; //Size: 0x0208
+	char pad_0000[104]; //0x0000
+	uint32_t isReady; //0x0068
+	char pad_006C[276]; //0x006C
+	class DomainClass* PlayerDomain; //0x0180
+	class DomainClass* NpcDomain; //0x0188
+	class DomainClass* ClientDomain; //0x0190
+	class DomainClass* ObjectDomain; //0x0198
+	class DomainClass* ClanDomain; //0x01A0
+	class DomainClass* ClanSettingDomain; //0x01A8
+	class DomainClass* PlayerGroupDomain; //0x01B0
+	class DomainClass* VarpWrap2; //0x01B8
+	char pad_01C0[64]; //0x01C0
+}; //Size: 0x0200
 
 class VarpWrap2
 {
@@ -172,18 +193,54 @@ public:
 class VarpWrap3
 {
 public:
-
-	virtual void Function0();
-	virtual void Function1();
-	virtual void Function2();
-	virtual void Function3();
-	virtual void Function4();
-	virtual void Function5();
-	virtual void Function6();
-	virtual void GetVarpWrap();
-	virtual void Function8();
-	virtual void Function9();
+	class GetVarpVTable* GetVarpTable; //0x0000
 }; //Size: 0x0008
+
+class VarpInstance
+{
+public:
+	char pad_0000[8]; //0x0000
+	uint64_t GetVarp; //0x0008
+	char pad_0010[8]; //0x0010
+	uint64_t GetVarpbitFunc; //0x0018
+	char pad_0020[40]; //0x0020
+}; //Size: 0x0048
+
+class GetVarpVTable
+{
+public:
+	char pad_0000[56]; //0x0000
+	int64_t GetVarpPtr; //0x0038
+	char pad_0040[8]; //0x0040
+}; //Size: 0x0048
+
+class VarpClass
+{
+public:
+	char pad_0000[40]; //0x0000
+	uint16_t Value; //0x0028
+}; //Size: 0x002A
+
+class DomainClass
+{
+public:
+	char pad_0000[64]; //0x0000
+	class DomainClassTwo* DomainClass2; //0x0040
+}; //Size: 0x0048
+
+class DomainClassTwo
+{
+public:
+	class DomainVTable* DomainVTable; //0x0000
+}; //Size: 0x0008
+
+class DomainVTable
+{
+public:
+	char pad_0000[56]; //0x0000
+	int64_t GetVarType; //0x0038
+	char pad_0040[8]; //0x0040
+}; //Size: 0x0048
 
 class Dispatcher
 {
@@ -213,7 +270,6 @@ public:
 	uint32_t ItemQuantity; //0x0004
 }; //Size: 0x0008
 
-
 class ContainerObj
 {
 public:
@@ -223,6 +279,7 @@ public:
 	FakeItem* ContainerContent; //0x0010
 	char pad_0018[16]; //0x0018
 }; //Size: 0x0028
+
 
 class FullObjectClass
 {
@@ -254,10 +311,6 @@ public:
 	virtual uint32_t GetId(UINT_PTR* itemPtr_1);
 	virtual void Function12();
 	virtual uint32_t GetQuantity();
-	virtual void Function14();
-	virtual void Function15();
-	virtual void Function16();
-	virtual void Function17();
 }; //Size: 0x0440
 
 class StaticObjCore
@@ -422,6 +475,42 @@ public:
 	Tile3D Pos;
 }; //Size: 0x0008
 
+class WorldClass
+{
+public:
+	char pad_0000[32]; //0x0000
+	class CurrentWorld* CurrentWorld; //0x0020
+	char pad_0028[32]; //0x0028
+}; //Size: 0x0048
+
+class CurrentWorld
+{
+public:
+	char pad_0000[8]; //0x0000
+	uint32_t CurrentWorld; //0x0008
+	char pad_000C[4]; //0x000C
+	char* WorldUrl; //0x0010
+	char pad_0018[48]; //0x0018
+}; //Size: 0x0048
+
+struct AgilityCourse
+{
+	AgilityCourse() {};
+
+	AgilityCourse(uint32_t _objId)
+	{
+		objId = _objId;
+	}
+
+	AgilityCourse(uint32_t _objId, Tile2D end) {
+		objId = _objId;
+		EndPos = end;
+	}
+	uint32_t objId;
+	Tile2D EndPos;
+};
+
+
 enum class ContainerType : uint32_t {
 	Trade = 90,
 	Backpack = 93,
@@ -455,7 +544,6 @@ enum class GameState {
 };
 
 
-
 #pragma pack(push)
 struct dataStruct {
 	uint64_t unk1;
@@ -481,3 +569,162 @@ typedef char* (__fastcall* fn_CopyString)(UINT_PTR string, int a2, int a3);
 #define CONVERSATION_WIDGET 0x5C502B2
 #define DEPOSIT_WIDGET 0x5C502A5
 #define BANKING_WIDGET 0x5C5027B
+#define CHANGE_WORLD_WIDGET 0x5C5029C
+
+// Varps
+
+#define RUN_MODE 463
+#define PRAYER_POINTS 3274
+#define ABYSS_ENTERABLE 101
+#define ADRENALINE 679
+#define ANAGOGIC_ORTS 2006
+#define AUTO_CASTING 0
+#define CHARGE_PACK_COUNT 5984
+#define DUNGEON_TOKENS 1097
+#define ECTO_TOKENS 6533
+#define FAMILIAR_SPECIAL_POINTS 1787
+#define MTA_ALCHEMIST_POINTS 1347
+#define MTA_ENCHANTMENT_POINTS 1348
+#define MTA_GRAVEYARD_POINTS 1348
+#define MTA_TELEKINETIC_POINTS 1347
+#define RUN_ENABLED 463
+#define RUNECRAFTING_POUCHES_FILLED 3214
+#define RUNESPAN_POINTS 3220
+#define SLAYER_MONSTER_CATEGORY 185
+#define SLAYER_POINTS 2092
+#define SLAYER_TASK_KILLS_LEFT 183
+#define TOKKUL 6526
+#define WARRIORS_GUILD_ATTACK_POINTS 3066
+#define WARRIORS_GUILD_BALANCE_POINTS 3067
+#define WARRIORS_GUILD_COMBAT_POINTS 3067
+#define WARRIORS_GUILD_DEFENCE_POINTS 3066
+#define WARRIORS_GUILD_STRENGTH_POINTS 3068
+#define CHIMES 6528
+#define ANTIFIRE 1299
+#define ATTACK_POT 3561
+#define AUTO_RETALIATE 462
+#define CURRENT_SETTINGS_TAB 3709
+#define DEFENCE_POT 3563
+#define EOC_COMBAT_MODE 3711
+#define EOC_INTERFACE_MODE 3814
+#define FOLLOWER_SETTINGS 1790
+#define GAMEPLAY_SETTINGS_CATEGORY 5839
+#define GRAND_EXCHANGE_ITEM_PRICE 137
+#define GRAND_EXCHANGE_ITEM_QUANTITY 136
+#define GRAND_EXCHANGE_OFFER_AMOUNT 136
+#define GRAND_EXCHANGE_OFFER_ITEM 135
+#define GRAND_EXCHANGE_OFFER_PRICE 137
+#define GRAND_EXCHANGE_STATE 139
+#define JUJU 4908
+#define LOOT_INVENTORY 5413
+#define STRENGTH_POT 3531
+#define SUPER_JUJU 4908
+#define PRIMARY_ACTION_BAR_NUMBER 682);
+
+/*
+	SHIELD(22842), // Might also be offhand, not sure
+	EXCALIBUR(35309),
+	SUMMONING_FAMILIAR_PRESENCE(6051),
+	SUMMONING_POINTS(41524),
+	FAMILIAR_SPECIAL_POINTS(26474),
+	ASPHYXIATE(2099),
+	ASSAULT(2093),
+	ATTACK_XP(33076),
+	AUTO_CAST_SPELL(43),
+	BOSS_HEALTH(28663),
+	COMBAT_STYLE(7618),
+	COMBUST(1933),
+	CRYSTAL_MASK(29116),
+	CURSES(16789),
+	DEBILITATE(35400),
+	DEFENCE_MAGIC_XP(33082),
+	DEFLECT_MAGIC(16768),
+	DEFLECT_MELEE(16770),
+	DEFLECT_RANGE(16769),
+	DESTROY(2075),
+	DEVOTION(21023),
+	DISMEMBER_ON_PLAYER(1668),
+	DREADNIP(35312),
+	METAMORPHOSIS(2081),
+	SLAUGHTER(1913),
+	PROTECT_MAGIC(16745),
+	PROTECT_MELEE(16744),
+	PROTECT_RANGE(16746),
+	QUICK_PRAYER(5941),
+	RANGED_XP(33079),
+	RAPID_FIRE(2096),
+	REFLECT(2067),
+	RESONANCE(2065),
+	REVOLUTION_SLOTS_USED(38639),
+	SLAYER_MASTER(9072),
+	SLAYER_TASK_AMOUNT(521),
+	SLAYER_TASK_ID(7219),
+	SLAYER_TASK_KILLS_DONE(516),
+	SNIPE(2095),
+	STRENGTH_XP(33077),
+	SOUL_SPLIT(16779),
+	MAGIC_COMBAT_XP(1908),
+	MAGIC_XP(33081),
+	LOCAL_HEALTH(1668),
+	FINISHING_BLOW_UNLOCKED(9085),
+	FREEDOM(2063),
+	VULNERABILITY(1939),
+
+	//prayers
+
+
+	//potions
+	ANTIFIRE(497),
+	SUPER_ANTIFIRE(498),
+	SUPER_PRAYER_RENEWAL(25852),
+	AGGRESSION(33448),
+	WEAPON_POISON(2102),
+	PRAYER_RENEWAL(25852),
+	OVERLOAD(500),
+	PERFECT_AGILITY_JUJU(25857),
+	PERFECT_MINING_JUJU(25855),
+	PERFECT_PLUS(26026),
+
+	//reputation/points/score/currency
+	MEMORY_STRANDS(34807),
+	ZAMORAK_REPUTATION(30861),
+	ZAROS_REPUTATION(30856),
+	SLISKE_REPUTATION(30860),
+	SEREN_REPUTATION(30864),
+	PEST_CONTROL_REWARD_POINTS(4861),
+
+	//other
+	ACTION_BAR_LOCKED(1892),
+	ABILITY_COOLDOWN_TEXT_ON(25401),
+	AREA_LOOT(32132),
+	ARTISANS_WORKSHOP_ADAMANT(366),
+	ARTISANS_WORKSHOP_COAL(369),
+	ARTISANS_WORKSHOP_CURRENT_ITEM(28416),
+	ARTISANS_WORKSHOP_IRON(361),
+	ARTISANS_WORKSHOP_MITHRIL(363),
+	ARTISANS_WORKSHOP_RUNE(367),
+	AUTO_TELEPORT_TO_URNS(30673),
+	BUILDING_MODE_RS3(1537),
+	CAMERA_ZOOM_LOCKED(19926),
+
+	FAIRY_RING_LEFT_DIAL(12072),
+	FAIRY_RING_MIDDLE_DIAL(12073),
+	FAIRY_RING_RIGHT_DIAL(12074),
+	GAMEPLAY_SETTINGS_OPEN_WINDOW(29043),
+	GRIM_REAPER(28112),
+	INFINITY_ETHEREAL_OUTFIT(25475),
+	INSIDE_BOSS_INSTANCE(204),
+	LEGACY_MODE(21682),
+	LIGHT_FORM(29066),
+	LOOT_INVENTORY(27942),
+	PEST_CONTROL_DAMAGE_DEALT(4863),
+	PLAYER_ATTACK_OPTION(35185),
+	PRIFDDINAS_AGILITY_OBSTACLE(25926),
+	PRIFDDINAS_AGILITY_REWARDS(25930),
+	RUNECRAFTING_POUCH_GIANT(16500),
+	RUNECRAFTING_POUCH_LARGE(16499),
+	RUNECRAFTING_POUCH_MEDIUM(16498),
+	RUNECRAFTING_POUCH_SMALL(16497),
+	SETTINGS_TAB_TOP_MENU(19001),
+
+*/

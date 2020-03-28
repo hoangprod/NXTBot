@@ -16,6 +16,15 @@
     <Filter Include="Hide">
       <UniqueIdentifier>{d328d3e2-685d-416e-8bce-8824ad2302f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Bots">
+      <UniqueIdentifier>{1f5cbbaa-3006-4044-957b-feee26ea393d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Auth">
+      <UniqueIdentifier>{c6e30603-f6b7-4d95-8eaa-6a3f3fc46dc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Auth\Sodium">
+      <UniqueIdentifier>{8699c6bc-a3aa-4a44-8929-5f3e0d6d5434}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scan.h">
@@ -84,6 +93,222 @@
     <ClInclude Include="fn_hook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Varpbit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneralCombat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AbyssCrafting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Auth.h">
+      <Filter>Auth</Filter>
+    </ClInclude>
+    <ClInclude Include="picosha2.h">
+      <Filter>Auth</Filter>
+    </ClInclude>
+    <ClInclude Include="AnachroniaAgility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium.h">
+      <Filter>Auth</Filter>
+    </ClInclude>
+    <ClInclude Include="XEvent.h">
+      <Filter>Auth</Filter>
+    </ClInclude>
+    <ClInclude Include="XSocket.h">
+      <Filter>Auth</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_auth.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_auth_hmacsha256.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_auth_hmacsha512.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_auth_hmacsha512256.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_box.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_box_curve25519xchacha20poly1305.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_box_curve25519xsalsa20poly1305.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_core_ed25519.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_core_hchacha20.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_core_hsalsa20.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_core_ristretto255.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_core_salsa20.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_core_salsa208.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_core_salsa2012.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_generichash.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_generichash_blake2b.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_hash.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_hash_sha256.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_hash_sha512.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_kdf.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_kdf_blake2b.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_kx.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_onetimeauth.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_onetimeauth_poly1305.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_pwhash.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_pwhash_argon2i.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_pwhash_argon2id.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_pwhash_scryptsalsa208sha256.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_scalarmult.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_scalarmult_curve25519.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_scalarmult_ed25519.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_scalarmult_ristretto255.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_secretbox.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_secretbox_xchacha20poly1305.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_secretbox_xsalsa20poly1305.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_secretstream_xchacha20poly1305.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_shorthash.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_shorthash_siphash24.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_sign.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_sign_ed25519.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_sign_edwards25519sha512batch.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_stream.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_stream_chacha20.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_stream_salsa20.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_stream_salsa208.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_stream_salsa2012.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_stream_xchacha20.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_stream_xsalsa20.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_verify_16.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_verify_32.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_verify_64.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\export.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\randombytes.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\randombytes_internal_random.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\randombytes_sysrandom.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\runtime.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\utils.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\version.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\core.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_aead_aes256gcm.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_aead_chacha20poly1305.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
+    <ClInclude Include="sodium\crypto_aead_xchacha20poly1305.h">
+      <Filter>Auth\Sodium</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -128,17 +353,41 @@
     <ClCompile Include="Tile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Wisp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Widgets.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Experience.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Varpbit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wisp.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneralCombat.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="AbyssCrafting.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="Manager.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="Common.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="Auth.cpp">
+      <Filter>Auth</Filter>
+    </ClCompile>
+    <ClCompile Include="AnachroniaAgility.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="XEvent.cpp">
+      <Filter>Auth</Filter>
+    </ClCompile>
+    <ClCompile Include="XSocket.cpp">
+      <Filter>Auth</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

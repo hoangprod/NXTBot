@@ -3,7 +3,11 @@
 #include "GameClasses.h"
 #include "PlayableEntity.h"
 #include "Wisp.h"
+#include "GeneralCombat.h"
+#include "AbyssCrafting.h"
+#include "AnachroniaAgility.h"
 #include "Game.h"
+#include "Auth.h"
 #include "Manager.h"
 
 extern HWND hWnd;
@@ -25,6 +29,8 @@ extern int SelectedWood;
 extern int SelectedOre;
 extern std::vector<std::string> TreeNames;
 extern std::vector<std::string> OreNode;
+
+int extraDelay = 0;
 
 void Manager::Manage()
 {
@@ -96,8 +102,11 @@ void Manager::Manage()
 		static uint32_t randomTick = 0;
 
 		// If X ticks have not past yet + a random of 30-300~ ticks
-		if ((last_tick + tick + randomTick) < GetTickCount64())
+		if ((last_tick + tick + randomTick + extraDelay) < GetTickCount64())
 		{
+
+			extraDelay = 0;
+
 			randomTick = (rand() % 200 + 200);
 
 			if (randomTick % 22 == 0)
@@ -185,97 +194,134 @@ void Manager::Keystates(WPARAM wParam)
 
 	if (wParam == VK_NUMPAD8)
 	{
+		Player player = RS::GetLocalPlayer();
 		if (!abyssCrafting)
 		{
 			abyssCrafting = new AbyssCrafting();
+			AIOAuth("AbyssCrafting", "Start", player.GetName());
 		}
 		else if (abyssCrafting)
 		{
+			AIOAuth("AbyssCrafting", "Stop", player.GetName());
 			delete abyssCrafting; abyssCrafting = 0;
 		}
 	}
 
 	if (wParam == VK_NUMPAD9)
 	{
+		Player player = RS::GetLocalPlayer();
+
 		switch (SelectedBot)
 		{
 		case 0 :
 			if (!wisp)
 			{
+				AIOAuth("Wisp", "Start", player.GetName());
+
 				wisp = new Wisp();
 			}
 			else if (wisp)
 			{
+				AIOAuth("Wisp", "Stop", player.GetName());
+
 				delete wisp; wisp = 0;
 			}
 			break;
 		case 1:
 			if (!rabbit)
 			{
+				AIOAuth("Rabbit", "Start", player.GetName());
+
 				rabbit = new Rabbit();
 			}
 			else if (rabbit)
 			{
+				AIOAuth("Rabbit", "Stop", player.GetName());
+
 				delete rabbit; rabbit = 0;
 			}
 			break;
 		case 2:
 			if (!genCombat)
 			{
+				AIOAuth("GeneralCombat", "Start", player.GetName());
+
 				genCombat = new GeneralCombat();
 			}
 			else if (genCombat)
 			{
+				AIOAuth("GeneralCombat", "Stop", player.GetName());
+
 				delete genCombat; genCombat = 0;
 			}
 			break;
 		case 3:
 			if (!genMining)
 			{
+				AIOAuth("GeneralMining", "Start", player.GetName());
+
 				genMining = new GenMining();
 			}
 			else if (genMining)
 			{
+				AIOAuth("GeneralMining", "Stop", player.GetName());
+
 				delete genMining; genMining = 0;
 			}
 			break;
 		case 4:
 			if (!peng)
 			{
+				AIOAuth("PenguinSuits", "Start", player.GetName());
+
 				peng = new Penguins();
 			}
 			else if (peng)
 			{
+				AIOAuth("PenguinSuits", "Stop", player.GetName());
+
 				delete peng; peng = 0;
 			}
 			break;
 		case 5:
 			if (!WoodCutting)
 			{
+				AIOAuth("WoodCutting", "Start", player.GetName());
+
 				WoodCutting = new Woodcutting();
 			}
 			else if (WoodCutting)
 			{
+				AIOAuth("WoodCutting", "Stop", player.GetName());
+
 				delete WoodCutting; WoodCutting = 0;
 			}
 			break;
 		case 6:
 			if (!AnachAgi)
 			{
+				AIOAuth("AnachAgi", "Start", player.GetName());
+
 				AnachAgi = new MoneyAgi();
 			}
 			else if (AnachAgi)
 			{
+				AIOAuth("AnachAgi", "Stop", player.GetName());
+
 				delete AnachAgi; AnachAgi = 0;
 			}
 			break;
 		case 7:
 			if (!abyssCrafting)
 			{
+				AIOAuth("abyssCrafting", "Stop", player.GetName());
+
 				abyssCrafting = new AbyssCrafting();
 			}
 			else if (abyssCrafting)
 			{
+				AIOAuth("abyssCrafting", "Start", player.GetName());
+
 				delete abyssCrafting; abyssCrafting = 0;
 			}
 			break;

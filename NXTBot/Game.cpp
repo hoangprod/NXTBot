@@ -3,6 +3,7 @@
 #include "Patterns.h"
 #include "ItemDef.h"
 #include "PlayableEntity.h"
+#include "Common.h"
 #include "Game.h"
 
 extern UINT_PTR* g_GameContext;
@@ -26,7 +27,7 @@ NpcEntityPtr* RS::GetEntityPtr()
 	if(!GameContext)
 		return nullptr;
 	
-	return GameContext->EntityPtr;
+	return (NpcEntityPtr*)GameContext->EntityPtr;
 }
 
 uint32_t RS::GetEntityCount()
@@ -518,6 +519,51 @@ EntityObj* RS::GetClosestMonsterNPCByNameFromOrigin(const char* name, Tile2D fro
 
 	if (ret && strlen(ret->Name) > 0)
 		return ret;
+
+	return 0;
+}
+
+EntityObj* RS::GetValidWildernessPlayerEnemy()
+{
+	auto Count = GetPlayerEntityCount();
+
+	EntityObj* ret = 0;
+
+	if (!Count)
+		return 0;
+
+	auto player = GetLocalPlayer();
+
+	int WildernessLevel = Common::GetCurrentWildernessLevel();
+
+	auto localPlayerTile = GetLocalPlayerTilePos();
+
+	for (uint32_t i = 0; i < Count + 20; i++)
+	{
+
+		auto entity = GetPlayerObjByIndex(i);
+
+		if (!entity || *(UINT_PTR*)entity == 0 || RS::GetEntityTilePos(entity).y < 3525)
+			continue;
+
+
+		if (strlen(entity->Name) > 0 && entity->EntityId != player->EntityId)
+		{
+			int levelDif = std::abs((int)entity->Level - (int)player->Level);
+
+			if (levelDif <= WildernessLevel + 2)
+			{
+				float distance = GetDistance(localPlayerTile, GetEntityTilePos(entity));
+
+				if (distance < 35.0f)
+				{
+					return entity;
+				}
+			}
+
+
+		}
+	}
 
 	return 0;
 }

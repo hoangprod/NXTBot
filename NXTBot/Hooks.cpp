@@ -14,7 +14,8 @@
 #include "Manager.h"
 #include "Experience.h"
 #include "Helper.h"
-#include "fn_hook.h"
+#include "Varpbit.h"
+#include "Common.h"
 
 #define _CRTDBG_MAP_ALLOC
 
@@ -33,8 +34,6 @@ fn_CursorWorldContextMenu o_CursorWorldConextMenu;
 fn_OnDispatchNetMessage o_OnDispatchNetMessage;
 fn_GUIManagerRender o_Render;
 fn_CopyString o_CopyString;
-
-char* healthStr = 0;
 
 using nlohmann::json;
 json itemList;
@@ -105,39 +104,11 @@ UINT_PTR h_CursorWorldContextMenu(UINT_PTR* GameContext, int a2, int a3, int a4,
 	return o_CursorWorldConextMenu(GameContext, a2, a3, a4, a5);
 }
 
-char* h_CopyString(UINT_PTR string, int a2, int a3)
-{
-	UINT_PTR StrStart = *(UINT_PTR*)(string + 0x1c0);
-	UINT_PTR StrEnd = *(UINT_PTR*)(string + 0x1c8);
-
-	if (StrStart && StrEnd && (UINT_PTR)healthStr != StrStart)
-	{
-		UINT_PTR StrSize = StrEnd - StrStart;
-		
-		if (StrSize > 7 && StrSize < 10)
-		{
-			const char* temp = (const char*)StrStart;
-
-			if (temp[3] == 0x2f && temp[6] == 0x30 && temp[7] == 0x30)
-			{
-				healthStr = (char*)StrStart;
-			}
-			else if (temp[4] == 0x2f && temp[7] == 0x30 && temp[8] == 0x30)
-			{
-				healthStr = (char*)StrStart;
-			}
-
-		}
-	}
-
-	return o_CopyString(string, a2, a3);
-}
-
 std::map<int, HGLRC> contexts;
 
 bool h_wglSwapBuffers(HDC hdc)
 {
-	
+	/*
 	int pixelformat = GetPixelFormat(hdc);
 	if (!contexts.count(pixelformat))
 	{
@@ -216,11 +187,7 @@ bool h_wglSwapBuffers(HDC hdc)
 	auto status = "They_Call_Me_Heph =  " + botStatus;
 	//r.PrintCStr(100.0f, 70.0f, 0xFF, 0x00, 0x00, status.data());
 
-	if (SelectedBot == (int)BotType::GeneralCombat && healthStr && RS::IsInGame())
-	{
-		std::string Health = "Health: " + std::string(healthStr);
-		font.Print(100.f, 80.0f, Health.data());
-	}
+	font.Print(100.f, 80.0f, std::to_string((int)RS::GetGameState()).data());
 
 	font.Print(100.f, 100.0f, status.data());
 	
@@ -258,9 +225,9 @@ bool h_wglSwapBuffers(HDC hdc)
 	glPopAttrib();
 
 	wglMakeCurrent(oldhdc, oldctx);
-
 	
 	
+	*/
 	// Botting
 	Manager::Manage();
 
@@ -337,22 +304,13 @@ void UpdateTest()
 	if(cmonster)
 		printf("Closest Player Info. Name: %s  X: %f  Y: %f Level: %d\n", cmonster->Name, cmonster->GetPos()[0], cmonster->GetPos()[2], cmonster->Level);
 
+	printf("Varp check: Health [%d] Prayer [%d]\n", Varpbit::GetVarpBit(1668), Varpbit::GetVarp(3274));
+
+	printf("Exp for Health: [%d] HealthLvl [%d] Exp for Summoning: [%d]  Summoning level [%d]\n", Exp::GetCurrentExp(Stat::HITPOINTS), Exp::GetSkillLevel(Stat::HITPOINTS), Exp::GetCurrentExp(Stat::SUMMONING), Exp::GetSkillLevel(Stat::SUMMONING));
+
+	printf("Current World [%d]  [%s]\n", Common::GetCurrentWorld(), Common::GetCurrentWorldString());
 }
 
-
-
-__int64 * GetVarType(__int64 a1, __int64 DomainType, unsigned int VarType)
-{
-	typedef __int64* (__cdecl* _GetVarType)(__int64 a1, __int64 DomainType, unsigned int VarType);
-	return reinterpret_cast<_GetVarType>(0x07FF79FDEF550)(a1, DomainType, VarType);
-}
-
-
-__int64* GetVarWrap(__int64 a1, unsigned int a2, UINT_PTR* a3)
-{
-	typedef __int64* (__cdecl* _GetVarWrap)(__int64 a1, unsigned int a2, UINT_PTR* a3);
-	return reinterpret_cast<_GetVarWrap>(0x7FF79FDFC8C0)(a1, a2, a3);
-}
 
 
 LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -382,35 +340,8 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			if (wParam == VK_NUMPAD2)
 			{
-				__int64 v4; // rax
-				__int64* v5; // rax
-				int v6; // [rsp+20h] [rbp-18h]
-				int v7; // [rsp+20h] [rbp-18h]
 
-				v4 = *(UINT_PTR*)(*(UINT_PTR*)(g_GameContext + 8) + 0x490);
-				if (*(DWORD*)(v4 + 0x68) == 4)
-				{
-					printf("test\n");
-
-					v5 = (__int64*)(*(__int64(__fastcall**)(UINT_PTR, UINT_PTR, UINT_PTR))(**(UINT_PTR**)(*(UINT_PTR*)(v4 + 0x1B8) + 0x40)
-						+ 0x38))(
-							*(UINT_PTR*)(*(UINT_PTR*)(v4 + 0x1B8) + 0x40),
-							0x9B7A,
-							0);
-
-					printf("v5: %p\n", v5);
-
-					/*
-					if (v5[1])
-					{
-						v6 = (*(__int64(__fastcall**)(__int64, __int64*))(*(UINT_PTR*)(*(UINT_PTR*)(g_GameContext + 8) + 0x1790)
-							+ 0x18))(
-								*(UINT_PTR*)(g_GameContext + 8) + 0x1790,
-								v5);
-
-						printf("Varp %d %d\n", 0x9B7A, v6);
-					}*/
-				}
+				UpdateTest();
 
 				/*
 				auto v5 = GetVarType(*(UINT_PTR*)(g_GameContext[1] + 0x490), *(UINT_PTR*)0x7FF7A0358890, 3);
@@ -433,6 +364,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			if (wParam == VK_NUMPAD3)
 			{
+				Common::HopRandomWorld();
 				//Player player = RS::GetLocalPlayer();
 
 				/*
@@ -443,9 +375,12 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			if (wParam == VK_NUMPAD4)
 			{
+				Common::HopWorldGUI();
+
 			}
 			if (wParam == VK_NUMPAD5)
 			{
+				printf("%p\n", RS::GetValidWildernessPlayerEnemy());
 			}
 
 			if (wParam == VK_OEM_3)
@@ -519,10 +454,6 @@ bool hooks()
 	o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)Patterns.Func_OnDispatchMessage;
 
 	o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)detours.Hook(o_OnDispatchNetMessage, h_OnDispatchNetMessage, 18);
-
-	o_CopyString = (fn_CopyString)Patterns.Func_StrCopy;
-
-	o_CopyString = (fn_CopyString)detours.Hook(o_CopyString, h_CopyString, 20);
 
 	o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", h_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
 

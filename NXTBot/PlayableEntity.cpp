@@ -70,33 +70,6 @@ bool Player::Talk(uint32_t Entity)
 	return false;
 }
 
-bool Player::BankUsingNPC(uint32_t targetEntity)
-{
-	auto ent = RS::GetEntityObjectByEntityId(targetEntity);
-
-	if (!ent)
-		return false;
-
-	uint8_t data[100] = { 0 };
-
-	*reinterpret_cast<int*>(&data[0x58]) = ent->EntityId;
-	*reinterpret_cast<int*>(&data[0x5c]) = 0;
-	*reinterpret_cast<int*>(&data[0x60]) = 0;
-
-	uint64_t func_ptr = g_Module + 0x9c160;
-
-	if (!func_ptr)
-		return false;
-
-
-	dataStruct dt;
-	dt.dataPtr = data;
-
-	typedef void(__cdecl* _Loot)(uint64_t* _this, void* dataPtr);
-	reinterpret_cast<_Loot>(func_ptr)(g_GameContext, &dt);
-
-	return true;
-}
 
 bool Player::Loot(FakeItemEX ObjectId)
 {
@@ -337,28 +310,6 @@ bool Player::ReleaseClockWork()
 }
 
 
-
-bool Player::DepositActionNPC(uint32_t Entity)
-{
-	uint8_t data[100] = { 0 };
-
-	*reinterpret_cast<int*>(&data[0x58]) = Entity;
-
-	uint64_t func_ptr = g_Module + 0x9c1a0;
-
-	if (!func_ptr)
-		return false;
-
-
-	dataStruct dt;
-	dt.dataPtr = data;
-
-	typedef uintptr_t(__cdecl* _InteractionDepositNPC)(uint64_t* _this, void* dataPtr);
-	auto test = reinterpret_cast<_InteractionDepositNPC>(func_ptr)(g_GameContext, &dt);
-
-	return true;
-}
-
 bool Player::DepositAllThroughBank()
 {
 	uint8_t data[100] = { 0 };
@@ -382,28 +333,7 @@ bool Player::DepositAllThroughBank()
 	return true;
 }
 
-bool Player::ConfirmChat(int64_t param3)
-{
-	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x58]) = 0;
-	*reinterpret_cast<int*>(&data[0x5c]) = -1;
-	*reinterpret_cast<int*>(&data[0x60]) = param3; // Hardcoded
-
-	uint64_t func_ptr = g_Module + 0x9c020;
-
-	if (!func_ptr)
-		return false;
-
-
-	dataStruct dt;
-	dt.dataPtr = data;
-
-	typedef uintptr_t(__cdecl* _InteractionDepositNPC)(uint64_t* _this, void* dataPtr);
-	reinterpret_cast<_InteractionDepositNPC>(func_ptr)(g_GameContext, &dt);
-
-	return true;
-}
 
 bool Player::DepositAll()
 {
@@ -427,71 +357,8 @@ bool Player::DepositAll()
 	return true;
 }
 
-bool Player::BankInteractItem(int slot, int option)
-{
-	uint8_t data[100] = { 0 };
-
-	*reinterpret_cast<int*>(&data[0x58]) = option;
-	*reinterpret_cast<int*>(&data[0x5c]) = slot;
-	*reinterpret_cast<int*>(&data[0x60]) = 0x205000E; // Hardcoded
-
-	uint64_t func_ptr = g_Module + 0x9c030;
-
-	if (!func_ptr)
-		return false;
 
 
-	dataStruct dt;
-	dt.dataPtr = data;
-
-	typedef uintptr_t(__cdecl* _BankDepositAll)(uint64_t* _this, void* dataPtr);
-	reinterpret_cast<_BankDepositAll>(func_ptr)(g_GameContext, &dt);
-	return true;
-}
-
-bool Player::BankLoadPreset(int preset)
-{
-	uint8_t data[100] = { 0 };
-
-	*reinterpret_cast<int*>(&data[0x58]) = 1;
-	*reinterpret_cast<int*>(&data[0x5c]) = preset;
-	*reinterpret_cast<int*>(&data[0x60]) = 0x2050070;// Hardcoded
-
-	uint64_t func_ptr = g_Module + 0x9c030;
-
-	if (!func_ptr)
-		return false;
-
-
-	dataStruct dt;
-	dt.dataPtr = data;
-
-	typedef uintptr_t(__cdecl* _BankDepositAll)(uint64_t* _this, void* dataPtr);
-	reinterpret_cast<_BankDepositAll>(func_ptr)(g_GameContext, &dt);
-	return true;
-}
-
-bool Player::TeleportToAbyssThroughMage()
-{
-	uint8_t data[100] = { 0 };
-
-	*reinterpret_cast<int*>(&data[0x58]) = 18546; // UPDATE PLEASE MageOfZamorak
-	*reinterpret_cast<int*>(&data[0x5c]) = 0;
-	*reinterpret_cast<int*>(&data[0x60]) = 0;// Hardcoded
-
-	uint64_t func_ptr = g_Module + 0x9c1c0;
-
-	if (!func_ptr)
-		return false;
-
-
-	dataStruct dt;
-	dt.dataPtr = data;
-
-	typedef uintptr_t(__cdecl* _BankDepositAll)(uint64_t* _this, void* dataPtr);
-	reinterpret_cast<_BankDepositAll>(func_ptr)(g_GameContext, &dt);
-	return true;
-}
 
 
 bool Player::isMining()

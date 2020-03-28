@@ -14,6 +14,9 @@
 #include <TlHelp32.h>
 #include <strsafe.h>
 #include <vector>
+#include <cctype>
+#include <iostream>
+#include <iomanip>
 #include <stdio.h>
 #include <detours.h>
 #include <string>
@@ -22,6 +25,7 @@
 #include <set>
 #include <random>>
 #include <iterator>
+#include <cmath>
 
 #include "glew/GL/glew.h"
 #include <gl\glut.h>

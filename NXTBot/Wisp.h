@@ -33,21 +33,6 @@ public:
 	Tile2D origin;
 };
 
-class GeneralCombat
-{
-public:
-	void FSM();
-	void Combat(EntityObj* Enemy);
-	void Looting(FakeItemEX loot);
-	void ConsumeFood();
-	bool NeedHeal();
-	
-
-	Player* player;
-	std::string monsterTargetName;
-	Tile2D origin;
-};
-
 
 class GenMining
 {
@@ -94,53 +79,3 @@ public:
 	std::string TargetLog;
 };
 
-struct AgilityCourse
-{
-	AgilityCourse() {};
-
-	AgilityCourse(uint32_t _objId)
-	{
-		objId = _objId;
-	}
-
-	AgilityCourse(uint32_t _objId, Tile2D end) {
-		objId = _objId;
-		EndPos = end;
-	}
-	uint32_t objId;
-	Tile2D EndPos;
-};
-
-
-
-class MoneyAgi
-{
-public:
-	void FSM();
-	AgilityCourse GetNextCourse();
-
-	Player* player;
-	uint32_t currentObstacle;
-};
-
-
-
-
-class AbyssCrafting
-{
-public:
-	void FSM();
-	void FillPouches();
-	void RepairPouches();
-	bool FinishedCrafting();
-	bool IsInAbyss();
-	bool IsInAltar();
-	bool isOuterAbyss();
-	bool isInnerAbyss();
-	bool NeedToRepairPouches();
-
-	Player* player;
-	bool justTeleported = false;
-	std::string SelectedRune;
-	std::string SelectedRift;
-};
