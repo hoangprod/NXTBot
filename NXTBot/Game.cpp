@@ -1082,8 +1082,6 @@ StaticObjEX Static::GetCStaticObjectById(uint32_t id)
 	for (const uint64_t& entity_ptr : static_entities) {
 		EntityType type = *reinterpret_cast<EntityType*>(entity_ptr + 0x40);
 
-		
-
 		if (type == EntityType::Object)
 		{
 			auto staticObj = (StaticObj1Wrapper*)entity_ptr;

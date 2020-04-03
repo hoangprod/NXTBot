@@ -13,11 +13,11 @@
 
 extern int extraDelay;
 
-std::vector<std::pair<std::string, int>> ArcheologyNodes = { std::pair<std::string, int>("Oikos studio debris", 72),std::pair<std::string, int>("Dominion games podium", 69),std::pair<std::string, int>("Inferno art", 65),std::pair<std::string, int>("Stadio debris", 61),std::pair<std::string, int>("Ceramics studio debris", 56),std::pair<std::string, int>("Amphitheatre debris", 51), std::pair<std::string, int>("Monoceros remains", 48), std::pair<std::string, int>("Prodromoi remains", 42), std::pair<std::string, int>("Sacrificial altar", 36), std::pair<std::string, int>("Cultist footlocker", 29), std::pair<std::string, int>("Lodge art storage", 24), std::pair<std::string, int>("Lodge bar storage", 20), std::pair<std::string, int>("Venator remains", 1) };
+std::vector<std::pair<std::string, int>> ArcheologyNodes = { std::pair<std::string, int>("Oikos studio debris", 72),std::pair<std::string, int>("Dominion games podium", 69), std::pair<std::string, int>("Infernal art", 65), std::pair<std::string, int>("Stadio debris", 61),std::pair<std::string, int>("Ceramics studio debris", 56),std::pair<std::string, int>("Amphitheatre debris", 51), std::pair<std::string, int>("Monoceros remains", 48), std::pair<std::string, int>("Prodromoi remains", 42), std::pair<std::string, int>("Sacrificial altar", 36), std::pair<std::string, int>("Cultist footlocker", 29), std::pair<std::string, int>("Lodge art storage", 24), std::pair<std::string, int>("Lodge bar storage", 20), std::pair<std::string, int>("Venator remains", 1) };
 
 std::vector<int> ArcheologySoil = { 49517 , 49521, 49519, 49523, 49525 };
 
-std::vector<int> ArcheologyArtefacts = { 49767 , 49765, 49769, 49773, 49775, 49753, 49755, 49761 };
+std::vector<int> ArcheologyArtefacts = { 49833, 49839, 49767 , 49765, 49769, 49773, 49775, 49753, 49755, 49761 };
 
 void Archeology::FSM()
 {

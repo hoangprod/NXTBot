@@ -71,7 +71,7 @@ void AbyssCrafting::FSM()
 			if (Common::IsWorldWidgetUp())
 			{
 				Common::HopRandomWorld();
-				extraDelay = 2000;
+				extraDelay = 4000;
 			}
 			else
 			{

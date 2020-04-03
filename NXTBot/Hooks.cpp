@@ -55,7 +55,7 @@ enum class BotType {
 	AnachroniaAgility
 };
 
-std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility", "Abyss Crafting", "Watch Tower Agility"};
+std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility", "Abyss Crafting", "Watch Tower Agility", "Wilderness Agility"};
 
 std::vector<std::string> OreNode = { "Copper rock", "Tin rock", "Iron rock", "Coal", "Mithril rock", "Adamantite rock", "Runite rock", "Orichalcite rock" };
 std::vector<std::string> OreName = { "Copper ore", "Tin ore", "Iron ore", "Coal", "Mithril ore", "Adamantite ore", "Runite ore", "Orichalcite ore" };
@@ -257,7 +257,7 @@ bool __stdcall Unload()
 
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)OriginalWndProcHandler);
 
-		printf("Unhook and unloaded\n");
+		printf("[+]  Successfully unhook and unloaded\n");
 
 		return true;
 	}
@@ -293,10 +293,13 @@ static BOOL CALLBACK enumWindowCallback(HWND hWndv, LPARAM lparam) {
 void UpdateTest()
 {
 	auto cplayer = RS::GetClosestPlayer();
-
+	Tile2D localplayerPos = RS::GetLocalPlayerTilePos();
+	printf("============================================\n");
+	printf("PID: %d %x\n", GetCurrentProcessId(), GetCurrentProcessId());
 	printf("LocalPlayer: %p\n",  RS::GetLocalPlayer());
 	printf("EntityCount: %d\n", RS::GetEntityCount());
 	printf("PlayerName: %s\n", RS::GetLocalPlayer()->Name);
+	printf("LocalPlayer is currently on tile (%d, %d)\n", localplayerPos.x, localplayerPos.y);
 	printf("Inventory Free Slot: %d\n", Inventory::GetFreeSlot());
 	printf("Inventory Container: %p\n", Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack)));
 	printf("Widget Conversation: %p\n", Widgets::GetWidgetUI(CONVERSATION_WIDGET));
@@ -315,6 +318,8 @@ void UpdateTest()
 	printf("Exp for Health: [%d] HealthLvl [%d] Exp for Summoning: [%d]  Summoning level [%d]\n", Exp::GetCurrentExp(Stat::HITPOINTS), Exp::GetSkillLevel(Stat::HITPOINTS), Exp::GetCurrentExp(Stat::SUMMONING), Exp::GetSkillLevel(Stat::SUMMONING));
 
 	printf("Current World [%d]  [%s]\n", Common::GetCurrentWorld(), Common::GetCurrentWorldString());
+	printf("============================================\n");
+
 }
 
 
@@ -342,31 +347,38 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (wParam == VK_NUMPAD1)
 			{
-				
+				/*
+				printf("std::vector<AgilityCourse> WildernessAgi = { ");
+				for (auto i : agiList)
+				{
+					printf("AgilityCourse(%d, Tile2D(%d, %d)), ", i.objId, i.EndPos.x, i.EndPos.y);
+				}
+				printf(" };");
+				*/
 			}
 			if (wParam == VK_NUMPAD2)
 			{
 
-				//UpdateTest();
+				UpdateTest();
 
 
-				
+				/*
 				auto player = RS::GetLocalPlayerTilePos();
 				agiList[agiList.size() - 1].EndPos = player;
 
 				printf("Added (%d, %d) as player pos.\n", player.x, player.y);
-				
+				*/
 			}
 			if (wParam == VK_NUMPAD3)
 			{
 
 				//Player player = RS::GetLocalPlayer();
 
-				
+				/*
 				RecordAgility = !RecordAgility;
 
 				printf("Record Agi: %d\n", RecordAgility);
-
+				*/
 			}
 			if (wParam == VK_NUMPAD4)
 			{
@@ -374,7 +386,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			if (wParam == VK_NUMPAD5)
 			{
-				printf("%p\n", RS::GetValidWildernessPlayerEnemy());
+				printf("Player: %f\n", RS::GetLocalPlayerPos()[1]);
 			}
 
 			if (wParam == VK_OEM_3)
