@@ -71,7 +71,7 @@ bool Inventory::HaveItemName(std::string name)
 	return false;
 }
 
-bool Inventory::HaveItemId(uint32_t Id)
+int Inventory::GetItemById(uint32_t Id)
 {
 	std::vector<FakeItem> Result;
 
@@ -87,10 +87,10 @@ bool Inventory::HaveItemId(uint32_t Id)
 		FakeItem item = inventory->ContainerContent[i];
 
 		if (item.ItemId == Id)
-			return true;
+			return i;
 	}
 
-	return false;
+	return -1;
 }
 
 int Inventory::GetItemNameSlot(std::string name)

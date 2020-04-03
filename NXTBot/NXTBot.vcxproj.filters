@@ -309,6 +309,12 @@
     <ClInclude Include="sodium\crypto_aead_xchacha20poly1305.h">
       <Filter>Auth\Sodium</Filter>
     </ClInclude>
+    <ClInclude Include="Archeology.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WatchTowerAgi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -388,6 +394,12 @@
     </ClCompile>
     <ClCompile Include="XSocket.cpp">
       <Filter>Auth</Filter>
+    </ClCompile>
+    <ClCompile Include="Archeology.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="WatchTowerAgi.cpp">
+      <Filter>Source Files\Bots</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

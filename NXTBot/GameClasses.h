@@ -573,6 +573,8 @@ typedef char* (__fastcall* fn_CopyString)(UINT_PTR string, int a2, int a3);
 #define CHANGE_WORLD_WIDGET 0x5C5029C
 
 // Varps
+#define SOIL_BOX_GRAVEL 9370
+#define SOIL_BOX_FIERY 9372
 
 #define RUN_MODE 463
 #define PRAYER_POINTS 3274

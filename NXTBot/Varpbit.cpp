@@ -61,8 +61,13 @@ int Varpbit::GetVarp(int VarpId)
 		typedef VarpClass*(__fastcall* _GetVarClass)(uint64_t a1, uint64_t* a2);
 		VarpClass* varpClass = reinterpret_cast<_GetVarClass>(g_context->VarpVtable->GetVarp)((uint64_t)&g_context->VarpVtable, Varptype);
 
+		if (!varpClass || (UINT_PTR)varpClass < 0x100000 || IsBadReadPtr(varpClass, 0x28))
+			return -1;
+
 		return varpClass->Value;
 	}
+	else
+		return -1;
 }
 
 UINT_PTR* Varpbit::GetVarpType(VarDomain domain, int VarpId)

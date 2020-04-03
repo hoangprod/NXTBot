@@ -8,6 +8,7 @@
 #include "Widgets.h"
 #include "Experience.h"
 #include "Varpbit.h"
+#include "Common.h"
 #include "GeneralCombat.h"
 
 extern std::string botStatus;
@@ -32,7 +33,7 @@ void GeneralCombat::ConsumeFood()
 
 		if (eat >= 0)
 		{
-			player->InteractWithEquipment(1, eat, 0x5C10007);
+			Common::InteractWithEquipment(1, eat, 0x5C10007);
 			return;
 		}
 	}

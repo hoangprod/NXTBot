@@ -54,8 +54,8 @@ struct Static
 {
 	static UINT_PTR GetFullEntityList();
 
-	static StaticObjEX GetClosestStaticObjectByName(const char* name, bool useSecondary = false);
-	static StaticObjEX GetClosestStaticTreeObjectByName(const char* name);
+	static StaticObjEX GetClosestStaticObjectByName(const char* name, bool useSecondary = false, bool closest = true);
+	static StaticObjEX GetClosestStaticObjectByNameWithOption(const char* name, const char* option, bool closest = true);
 	static StaticObjEX GetClosestStaticTreeObjectByNameWithOrigin(const char* name, Tile2D origin);
 
 	static StaticObjEX GetClosestAbyssEntrance();

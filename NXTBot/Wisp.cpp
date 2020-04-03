@@ -143,7 +143,7 @@ void Wisp::Banking()
 		else if (Widgets::GetWidgetUI(DEPOSIT_WIDGET))
 		{
 			botStatus = "Clicking deposit all items";
-			player->DepositAll();
+			Common::DepositAll();
 		}
 
 		return;
@@ -263,11 +263,12 @@ void Rabbit::Banking()
 		if (Widgets::GetWidgetUI(BANKING_WIDGET))
 		{
 			botStatus = "Depositing all inventory to bank";
-			player->DepositAllThroughBank();
+			Common::DepositAllThroughBank();
 		}
 		return;
 	}
 }
+
 
 void Rabbit::Looting(FakeItemEX loot)
 {
@@ -306,7 +307,7 @@ void GenMining::FSM()
 	if (!player->isMining())
 	{
 		botStatus = ("Start mining.");
-		player->StaticInteract(Node);
+		Common::StaticInteract(Node);
 		return;
 	}
 
@@ -315,7 +316,7 @@ void GenMining::FSM()
 	if (CurrentExp > MiningExp)
 	{
 		botStatus = "Clicking on Mining node";
-		player->StaticInteract(Node);
+		Common::StaticInteract(Node);
 		MiningExp = CurrentExp;
 
 		if (Inventory::HaveItemName(TargetOre.data()))
@@ -385,7 +386,7 @@ void BikeAgi::FSM()
 
 	if (curAnimation != 29609)
 	{
-		player->StaticInteract(Bike);
+		Common::StaticInteract(Bike);
 		return;
 	}
 
@@ -401,7 +402,7 @@ void BikeAgi::FSM()
 		if (distance > 2.0f)
 		{
 			botStatus = "Going to new empowered bike";
-			player->StaticInteract(Bike);
+			Common::StaticInteract(Bike);
 			return;
 		}
 		else
@@ -476,7 +477,7 @@ void Woodcutting::FSM()
 		else {
 			botStatus = "Switching tree";
 
-			player->StaticInteract(Closest);
+			Common::StaticInteract(Closest);
 		}
 	}
 	else

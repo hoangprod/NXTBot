@@ -767,7 +767,7 @@ UINT_PTR Static::GetFullEntityList()
 	return g_entityListFull;
 }
 
-StaticObjEX Static::GetClosestStaticObjectByName(const char* name, bool useSecondary)
+StaticObjEX Static::GetClosestStaticObjectByName(const char* name, bool useSecondary, bool closest)
 {
 	std::set<uint64_t> static_entities;
 	GetStaticEntities(&static_entities);
@@ -800,6 +800,9 @@ StaticObjEX Static::GetClosestStaticObjectByName(const char* name, bool useSecon
 				{
 					closestDistance = curDistance;
 					closestEnt = entity_ptr;
+
+					if (!closest)
+						break;
 				}
 			}
 
@@ -858,7 +861,7 @@ StaticObjEX Static::GetClosestStaticObjectByName(const char* name, bool useSecon
 	return returnObj;
 }
 
-StaticObjEX Static::GetClosestStaticTreeObjectByName(const char* name)
+StaticObjEX Static::GetClosestStaticObjectByNameWithOption(const char* name, const char * option, bool closest)
 {
 	std::set<uint64_t> static_entities;
 	GetStaticEntities(&static_entities);
@@ -882,12 +885,15 @@ StaticObjEX Static::GetClosestStaticTreeObjectByName(const char* name)
 			Tile2D Pos = Tile2D(staticObj->TileX, staticObj->TileY);
 
 			float curDistance = RS::GetDistance(player.GetTilePosition(), Pos);
-			if (strcmp(name, staticObj->Definition->Name) == 0 && strcmp("Chop down", staticObj->Definition->Op0) == 0)
+			if (strcmp(name, staticObj->Definition->Name) == 0 && strcmp(option, staticObj->Definition->Op0) == 0)
 			{
 				if (curDistance < closestDistance)
 				{
 					closestDistance = curDistance;
 					closestEnt = entity_ptr;
+
+					if (!closest)
+						break;
 				}
 			}
 		}

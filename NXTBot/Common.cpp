@@ -297,11 +297,161 @@ bool Common::TeleportToAbyssThroughMage()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x58]) = 18546; // UPDATE PLEASE MageOfZamorak
+	*reinterpret_cast<int*>(&data[0x58]) = 18639; // UPDATE PLEASE MageOfZamorak
 	*reinterpret_cast<int*>(&data[0x5c]) = 0;
 	*reinterpret_cast<int*>(&data[0x60]) = 0;// Hardcoded
 
 	uint64_t func_ptr = g_Module + 0x9c1c0;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef uintptr_t(__cdecl* _BankDepositAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_BankDepositAll>(func_ptr)(g_GameContext, &dt);
+	return true;
+}
+
+bool Common::InteractWithEquipment(int slot, int option, int64_t param3)
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x58]) = slot;
+	*reinterpret_cast<int*>(&data[0x5c]) = option;
+	*reinterpret_cast<int*>(&data[0x60]) = param3;
+
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Common::StaticInteract2(StaticObjEX obj)
+{
+	uint8_t data[100] = { 0 };
+
+	if (obj.SecondId)
+		*reinterpret_cast<int*>(&data[0x58]) = obj.SecondId;
+	else
+		*reinterpret_cast<int*>(&data[0x58]) = obj.Definition->Id;
+
+	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
+	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
+
+	uint64_t func_ptr = g_Module + 0x9c0a0;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _Loot)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_Loot>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Common::DepositAllThroughBank()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x58]) = 1;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 0x2050025;
+
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+bool Common::StaticInteract(StaticObjEX obj)
+{
+	uint8_t data[100] = { 0 };
+
+	if (obj.SecondId)
+		*reinterpret_cast<int*>(&data[0x58]) = obj.SecondId;
+	else
+		*reinterpret_cast<int*>(&data[0x58]) = obj.Definition->Id;
+
+	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
+	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
+
+	uint64_t func_ptr = g_Module + 0x9c080;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _Loot)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_Loot>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+
+bool Common::DepositAll()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x58]) = 1;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 0xb0005; // Hardcoded
+
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
 		return false;

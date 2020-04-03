@@ -6,6 +6,8 @@
 #include "GeneralCombat.h"
 #include "AbyssCrafting.h"
 #include "AnachroniaAgility.h"
+#include "WatchTowerAgi.h"
+#include "Archeology.h"
 #include "Game.h"
 #include "Auth.h"
 #include "Manager.h"
@@ -21,6 +23,8 @@ BikeAgi* bikeagi = 0;
 Woodcutting* WoodCutting = 0;
 MoneyAgi* AnachAgi = 0;
 AbyssCrafting* abyssCrafting = 0;
+Archeology* archelogy = 0;
+WatchTowerAgi* watchtoweragi = 0;
 
 extern std::vector<const char*> botList;
 extern std::string botStatus;
@@ -97,7 +101,7 @@ void Manager::Manage()
 			last_tick = GetTickCount64();
 		}
 	}
-	else if (peng || AnachAgi || abyssCrafting)
+	else if (peng || AnachAgi || abyssCrafting || archelogy || watchtoweragi)
 	{
 		static uint32_t randomTick = 0;
 
@@ -123,6 +127,10 @@ void Manager::Manage()
 					AnachAgi->FSM();
 				else if (abyssCrafting)
 					abyssCrafting->FSM();
+				else if (archelogy)
+					archelogy->FSM();
+				else if (watchtoweragi)
+					watchtoweragi->FSM();
 			}
 
 			last_tick = GetTickCount64();
@@ -189,6 +197,21 @@ void Manager::Keystates(WPARAM wParam)
 					SelectedOre--;
 				}
 			}
+		}
+	}
+
+	if (wParam == VK_NUMPAD7)
+	{
+		Player player = RS::GetLocalPlayer();
+		if (!archelogy)
+		{
+			archelogy = new Archeology();
+			AIOAuth("Archeology", "Start", player.GetName());
+		}
+		else if (archelogy)
+		{
+			AIOAuth("Archeology", "Stop", player.GetName());
+			delete archelogy; archelogy = 0;
 		}
 	}
 
@@ -314,15 +337,29 @@ void Manager::Keystates(WPARAM wParam)
 		case 7:
 			if (!abyssCrafting)
 			{
-				AIOAuth("abyssCrafting", "Stop", player.GetName());
+				AIOAuth("abyssCrafting", "Start", player.GetName());
 
 				abyssCrafting = new AbyssCrafting();
 			}
 			else if (abyssCrafting)
 			{
-				AIOAuth("abyssCrafting", "Start", player.GetName());
+				AIOAuth("abyssCrafting", "Stop", player.GetName());
 
 				delete abyssCrafting; abyssCrafting = 0;
+			}
+			break;
+		case 8:
+			if (!watchtoweragi)
+			{
+				AIOAuth("Watchtower_Agility", "Start", player.GetName());
+
+				watchtoweragi = new WatchTowerAgi();
+			}
+			else if (watchtoweragi)
+			{
+				AIOAuth("Watchtower_Agility", "Stop", player.GetName());
+
+				delete watchtoweragi; watchtoweragi = 0;
 			}
 			break;
 		default:

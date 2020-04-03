@@ -171,6 +171,7 @@
   <ItemGroup>
     <ClInclude Include="AbyssCrafting.h" />
     <ClInclude Include="AnachroniaAgility.h" />
+    <ClInclude Include="Archeology.h" />
     <ClInclude Include="Auth.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Exception.h" />
@@ -259,6 +260,7 @@
     <ClInclude Include="Tile.h" />
     <ClInclude Include="Varpbit.h" />
     <ClInclude Include="VMT.h" />
+    <ClInclude Include="WatchTowerAgi.h" />
     <ClInclude Include="Widgets.h" />
     <ClInclude Include="Wisp.h" />
     <ClInclude Include="XEvent.h" />
@@ -267,6 +269,7 @@
   <ItemGroup>
     <ClCompile Include="AbyssCrafting.cpp" />
     <ClCompile Include="AnachroniaAgility.cpp" />
+    <ClCompile Include="Archeology.cpp" />
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Experience.cpp" />
@@ -292,6 +295,7 @@
     <ClCompile Include="Auth.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="Varpbit.cpp" />
+    <ClCompile Include="WatchTowerAgi.cpp" />
     <ClCompile Include="Widgets.cpp" />
     <ClCompile Include="Wisp.cpp" />
     <ClCompile Include="XEvent.cpp" />

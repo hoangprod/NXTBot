@@ -35,7 +35,7 @@ void MoneyAgi::FSM()
 		//botStatus = "Going to start of course with id" + std::to_string(AnachroniaAgi[0].objId);
 		auto obstacle = Static::GetCStaticObjectById(AnachroniaAgi[0].objId);
 
-		player->StaticInteract(obstacle);
+		Common::StaticInteract(obstacle);
 
 		return;
 	}
@@ -70,7 +70,7 @@ void MoneyAgi::FSM()
 		currentObstacle = obstacle.Definition->Id;
 		botStatus = "Clicking on next obstacle";
 		//printf("Clicking on %d\n", currentObstacle);
-		player->StaticInteract(obstacle);
+		Common::StaticInteract(obstacle);
 
 	}
 	else

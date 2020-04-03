@@ -38,22 +38,14 @@ public:
 	bool Attack(uint32_t Entity);
 	bool Talk(uint32_t Entity);
 	bool Loot(FakeItemEX lootItem);
-	bool StaticInteract(StaticObjEX obj);
-	bool StaticInteract2(StaticObjEX obj);
 	bool StaticInteractManual(uint32_t id, uint32_t x, uint32_t y);
 
 	bool LootAllConfirm();
-	bool InteractWithEquipment(int slot, int option, int64_t param3 = 0x5B8000F);
 	bool QuickDropSlot1();
 	bool ExitToLobby();
 
 	bool WindClockWork();
 	bool ReleaseClockWork();
-
-
-	bool DepositAllThroughBank();
-	bool DepositAll();
-
 
 	bool isMining();
 	bool inCombat();

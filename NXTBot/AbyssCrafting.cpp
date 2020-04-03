@@ -40,7 +40,7 @@ void AbyssCrafting::FSM()
 		SelectedRift = "Cosmic rift";
 	}
 	
-	if (Inventory::GetFreeSlot() == 28)
+	if (Inventory::GetFreeSlot() == 28) 
 	{
 		Beep(500, 200);
 		return;
@@ -56,7 +56,7 @@ void AbyssCrafting::FSM()
 		}
 		else
 		{
-			Inventory::InteractItemOption(3, 8);
+			Inventory::InteractItemOption(item, 8);
 		}
 	}
 
@@ -81,6 +81,13 @@ void AbyssCrafting::FSM()
 
 			return;
 		}
+		else
+		{
+			if (Common::IsWorldWidgetUp())
+			{
+				Common::InteractWithEquipment(1, -1, 0x6330072);
+			}
+		}
 	}
 
 
@@ -88,7 +95,7 @@ void AbyssCrafting::FSM()
 	if (player.GetTilePosition().y > 3521 && !IsInAbyss() && RS::GetInCombatNPCwithMe().size() > 0)
 	{
 		botStatus = "Being attacked, teleporting out!";
-		player.InteractWithEquipment(2, 3);
+		Common::InteractWithEquipment(2, 3);
 		Beep(523, 100);
 		return;
 	}
@@ -145,8 +152,8 @@ void AbyssCrafting::FSM()
 			botStatus = "Going to the Mage.";
 			//player.TeleportToAbyssThroughMage();
 
-			if (player.GetTilePosition().y > 3521 && player.GetTilePosition().y < 3524)
-				player.InteractWithEquipment(1, -1, 0x59600B5); // Surge
+			//if (player.GetTilePosition().y > 3520 && player.GetTilePosition().y < 3524)
+			//	player.InteractWithEquipment(1, -1, 0x59600B5); // Surge
 
 			Common::TeleportToAbyssThroughMage();
 			return;
@@ -159,7 +166,7 @@ void AbyssCrafting::FSM()
 		if (widget.Definition)
 		{
 			botStatus = "Trying to go to inner circle.";
-			player.StaticInteract(widget);
+			Common::StaticInteract(widget);
 			return;
 		}
 		else
@@ -182,13 +189,13 @@ void AbyssCrafting::FSM()
 			if (runeGate.Definition)
 			{
 				botStatus = "Going to the Rune Rift";
-				player.StaticInteract(runeGate);
+				Common::StaticInteract(runeGate);
 
 				//if(RS::GetDistance(player.GetTilePosition(), Tile2D(runeGate.TileX, runeGate.TileY)) > 6.0f)
 				//	player.InteractWithEquipment(1, -1, 0x59600B5); // Surge
 
 				botStatus = "Going to the Rune Rift";
-				player.StaticInteract(runeGate);
+				Common::StaticInteract(runeGate);
 				return;
 			}
 		}
@@ -203,7 +210,7 @@ void AbyssCrafting::FSM()
 			if (Altar.Definition)
 			{
 				botStatus = "Crafting rune at altar";
-				player.StaticInteract(Altar);
+				Common::StaticInteract(Altar);
 				return;
 			}
 		}
@@ -211,7 +218,7 @@ void AbyssCrafting::FSM()
 		{
 			// Means we already crafted, time to TP home
 			botStatus = "Teleporting back to Edgevile";
-			player.InteractWithEquipment(2, 3);
+			Common::InteractWithEquipment(2, 3);
 			return;
 		}
 	}
@@ -377,7 +384,7 @@ bool AbyssCrafting::isInnerAbyss()
 
 bool AbyssCrafting::NeedToRepairPouches()
 {
-	if (Inventory::HaveItemId(5511) || Inventory::HaveItemId(5513) || Inventory::HaveItemId(5515))
+	if (Inventory::GetItemById(5511) > -1 || Inventory::GetItemById(5513) > -1 || Inventory::GetItemById(5515) > -1)
 		return true;
 
 	return false;

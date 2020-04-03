@@ -55,7 +55,7 @@ enum class BotType {
 	AnachroniaAgility
 };
 
-std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility", "Abyss Crafting"};
+std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility", "Abyss Crafting", "Watch Tower Agility"};
 
 std::vector<std::string> OreNode = { "Copper rock", "Tin rock", "Iron rock", "Coal", "Mithril rock", "Adamantite rock", "Runite rock", "Orichalcite rock" };
 std::vector<std::string> OreName = { "Copper ore", "Tin ore", "Iron ore", "Coal", "Mithril ore", "Adamantite ore", "Runite ore", "Orichalcite ore" };
@@ -111,8 +111,8 @@ std::map<int, HGLRC> contexts;
 
 bool h_wglSwapBuffers(HDC hdc)
 {
-	/*
 	int pixelformat = GetPixelFormat(hdc);
+
 	if (!contexts.count(pixelformat))
 	{
 		HGLRC ctx = wglCreateContext(hdc);
@@ -187,12 +187,12 @@ bool h_wglSwapBuffers(HDC hdc)
 	CFont font(15, 0xff, 0, 0);
 
 	
-	auto status = "They_Call_Me_Heph =  " + botStatus;
+	//auto status = "They_Call_Me_Heph =  " + botStatus;
 	//r.PrintCStr(100.0f, 70.0f, 0xFF, 0x00, 0x00, status.data());
 
-	font.Print(100.f, 80.0f, std::to_string((int)RS::GetGameState()).data());
+	//font.Print(100.f, 80.0f, std::to_string((int)RS::GetGameState()).data());
 
-	font.Print(100.f, 100.0f, status.data());
+	//font.Print(100.f, 100.0f, status.data());
 	
 	if (SelectedBot == -1)
 	{
@@ -230,7 +230,7 @@ bool h_wglSwapBuffers(HDC hdc)
 	wglMakeCurrent(oldhdc, oldctx);
 	
 	
-	*/
+	
 	// Botting
 	Manager::Manage();
 
@@ -253,9 +253,11 @@ bool __stdcall Unload()
 
 	if (detours.Clearhook())
 	{
-		//o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", o_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
+		o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", o_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
 
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)OriginalWndProcHandler);
+
+		printf("Unhook and unloaded\n");
 
 		return true;
 	}
@@ -296,6 +298,7 @@ void UpdateTest()
 	printf("EntityCount: %d\n", RS::GetEntityCount());
 	printf("PlayerName: %s\n", RS::GetLocalPlayer()->Name);
 	printf("Inventory Free Slot: %d\n", Inventory::GetFreeSlot());
+	printf("Inventory Container: %p\n", Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack)));
 	printf("Widget Conversation: %p\n", Widgets::GetWidgetUI(CONVERSATION_WIDGET));
 	printf("Closest Player: %p\n", cplayer);
 
@@ -344,41 +347,30 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (wParam == VK_NUMPAD2)
 			{
 
-				UpdateTest();
+				//UpdateTest();
 
-				/*
-				auto v5 = GetVarType(*(UINT_PTR*)(g_GameContext[1] + 0x490), *(UINT_PTR*)0x7FF7A0358890, 3);
-				printf("%p\n", v5);
 
-				if (v5[1])
-				{
-					float* v6 = (float*)(*(__int64(__fastcall**)(__int64, __int64*))(*(UINT_PTR*)(*(UINT_PTR*)(g_GameContext + 8) + 0x1790)
-						+ 8))(
-							*(UINT_PTR*)(g_GameContext + 8) + 0x1790,
-							v5);
-				}*/
-
-				/*
+				
 				auto player = RS::GetLocalPlayerTilePos();
 				agiList[agiList.size() - 1].EndPos = player;
 
 				printf("Added (%d, %d) as player pos.\n", player.x, player.y);
-				*/
+				
 			}
 			if (wParam == VK_NUMPAD3)
 			{
 
 				//Player player = RS::GetLocalPlayer();
 
-				/*
+				
 				RecordAgility = !RecordAgility;
 
 				printf("Record Agi: %d\n", RecordAgility);
-				*/
+
 			}
 			if (wParam == VK_NUMPAD4)
 			{
-
+	
 			}
 			if (wParam == VK_NUMPAD5)
 			{
@@ -455,7 +447,7 @@ bool hooks()
 
 	//o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)detours.Hook(o_OnDispatchNetMessage, h_OnDispatchNetMessage, 18);
 
-	//o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", h_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
+	o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", h_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
 
 	OriginalWndProcHandler = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)hWndProc);
 

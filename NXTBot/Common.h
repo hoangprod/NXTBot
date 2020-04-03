@@ -25,4 +25,9 @@ public:
 	static bool BankInteractItem(int slot, int option);
 	static bool BankLoadPreset(int preset);
 	static bool TeleportToAbyssThroughMage();
+	static bool StaticInteract2(StaticObjEX obj);
+	static bool DepositAllThroughBank();
+	static bool StaticInteract(StaticObjEX obj);
+	static bool DepositAll();
+	static bool InteractWithEquipment(int slot, int option, int64_t param3 = 0x5B8000F);
 };
