@@ -14,6 +14,7 @@
 extern int extraDelay;
 
 extern std::vector<std::string> foodlist;
+extern WildernessAgilityCourse* wildernessagi;
 
 std::vector<AgilityCourse> WildernessAgi = { AgilityCourse(65362, Tile2D(3004, 3950)), AgilityCourse(64696, Tile2D(3005, 3958)), AgilityCourse(64699, Tile2D(2996, 3960)), AgilityCourse(64698, Tile2D(2994, 3945)), AgilityCourse(65734, Tile2D(2993, 3935))};
 
@@ -23,19 +24,23 @@ void WatchTowerAgi::FSM()
 	{
 		player = new Player(RS::GetLocalPlayer());
 		Stair = Static::GetClosestStaticObjectByNameWithOption("Ladder", "Climb-down", true);
-		Trellis = Static::GetClosestStaticObjectByName("Trellis");
+		Trellis = Static::GetClosestStaticObjectByNameWithOption("Trellis", "Climb-up", true);
 
 		if (!Stair.Definition || !Trellis.Definition || !player)
 		{
 			printf("Could not find stair, trellis or player\n");
 			return;
 		}
+		else
+		{
+			printf("Trellis: %d - %d (%d, %d)\n", Trellis.Definition->Id, Trellis.SecondId, Trellis.TileX, Trellis.TileY);
+			printf("Ladder: %d - %d (%d, %d)\n", Stair.Definition->Id, Stair.SecondId, Stair.TileX, Stair.TileY);
+		}
 	}
-
-
 
 	if (player->isMoving() || player->IsInAnimation())
 	{
+		//printf("In Animation / Moving\n");
 		return;
 	}
 
@@ -46,10 +51,12 @@ void WatchTowerAgi::FSM()
 
 		if (player2DPos[1] < 1000.0f)
 		{
+			//printf("Interact Trellis id %d - %d (%d , %d)\n", Trellis.Definition->Id, Trellis.SecondId, Trellis.TileX, Trellis.TileY);
 			Common::StaticInteract(Trellis);
 		}
 		else
 		{
+			//printf("Interact Stair\n");
 			Common::StaticInteract(Stair);
 		}
 
@@ -60,25 +67,53 @@ void WatchTowerAgi::FSM()
 
 void WildernessAgilityCourse::FSM()
 {
-	if (!player || !player->_base)
+	Player player = RS::GetLocalPlayer();
+
+	if (!player._base)
+		return;
+
+	if (Varpbit::GetPlayerHealth() <= 0)
 	{
-		player = new Player(RS::GetLocalPlayer());
+		Beep(500, 500);
+		delete wildernessagi;
+		wildernessagi = 0;
+		return;
 	}
 
-	auto enemy = RS::GetClosestPlayer();
+	if (Common::GetCurrentWildernessLevel() == 0)
+		return;
 
-	if (currentObstacle != 65734 && enemy)
+	if (player.IsInAnimation())
+		return;
+
+	auto playerPos = RS::GetLocalPlayerTilePos();
+
+	if (currentObstacle == 65734 || isUnderWorld())
 	{
+		if (Varpbit::GetPlayerHealth() < 400)
+		{
+			ConsumeFood();
+		}
+	}
 
+	enemy = RS::GetAnyPlayer();
+
+	if (playerPos.x == 2994 && playerPos.y == 3945)
+	{
+	}
+	else if (currentObstacle != 65734 && enemy)
+	{
+		printf("Hopping preq\n");
 		if (Common::IsWorldWidgetUp())
 		{
 			Common::HopRandomWorld();
-			extraDelay = 4000;
+			extraDelay = 2500;
 		}
 		else
 		{
-			printf("Trying to open world hop!\n");
+			printf("Trying to open world hop because of %s!\n", enemy->Name);
 			Common::HopWorldGUI();
+			extraDelay = 800;
 		}
 
 		return;
@@ -87,29 +122,22 @@ void WildernessAgilityCourse::FSM()
 	{
 		if (Common::IsWorldWidgetUp())
 		{
+			printf("Closing worldwidget\n");
 			Common::InteractWithEquipment(1, -1, 0x6330072);
 		}
 	}
 
-	if (player->isMoving() || player->IsInAnimation())
+
+	if (player.isMoving())
 	{
+		printf("moving\n");
 		return;
 	}
 
-
-	float playerZ = RS::GetLocalPlayerPos()[1];
-
-	if (currentObstacle == 65734 || playerZ > 600.0f)
-	{
-		if (Varpbit::GetPlayerHealth() < 500)
-		{
-			ConsumeFood();
-		}
-	}
-
 	// We fell down
-	if (playerZ > 600.0f)
+	if (isUnderWorld())
 	{
+		printf("is underworld\n");
 		auto Ladder = Static::GetClosestStaticObjectByNameWithOption("Ladder", "Climb-up", true);
 
 		if (Ladder.Definition)
@@ -123,6 +151,7 @@ void WildernessAgilityCourse::FSM()
 
 	if (next.objId < 2)
 	{
+		printf("can't find course!\n");
 		return;
 	}
 
@@ -133,16 +162,26 @@ void WildernessAgilityCourse::FSM()
 
 		if (next.objId == currentObstacle)
 		{
+			printf("Elapsed Second = %d\n", player.GetElapsedSecondSinceLastAction());
 
-			if (player->GetElapsedSecondSinceLastAction() < 5)
+			if (playerPos.x == 3002 && playerPos.y == 3963)
 			{
-				return;
+				printf("Failed skipping pillar obstacle?\n");
 			}
+			else
+			{
+				if (player.GetElapsedSecondSinceLastAction() < 6)
+				{
+					return;
+				}
+			}
+
 		}
+
+		//printf("%d == %d && ( !%d && !%d)\n", next.objId, currentObstacle, playerPos.x, playerPos.y);
 
 		currentObstacle = obstacle.Definition->Id;
 
-		printf("Clicking on next Agility obstacle.\n");
 
 		if (currentObstacle == 65362)
 		{
@@ -150,9 +189,13 @@ void WildernessAgilityCourse::FSM()
 			obstacle.TileY = 3938;
 		}
 
+
+		printf("Clicking on next Agility obstacle ( %d ). Currently at (%d, %d)\n", currentObstacle, playerPos.x, playerPos.y);
+
+
 		Common::StaticInteract(obstacle);
 
-		extraDelay = 1500;
+		extraDelay = 1700;
 	}
 	else
 	{
@@ -164,9 +207,11 @@ void WildernessAgilityCourse::FSM()
 
 AgilityCourse WildernessAgilityCourse::GetNextCourse()
 {
-	auto playerPos = player->GetTilePosition();
+	Player player = RS::GetLocalPlayer();
 
-	if (playerPos.x == 3005 && playerPos.y == 3962)
+	auto playerPos = player.GetTilePosition();
+
+	if ((playerPos.x == 3005 && playerPos.y == 3962) || (playerPos.x == 3002 && playerPos.y == 3963))
 	{
 		return WildernessAgi[2];
 	}
@@ -194,13 +239,22 @@ AgilityCourse WildernessAgilityCourse::GetNextCourse()
 	}
 
 
-	if (!player->isMoving())
+	if (!enemy && !player.isMoving())
 	{
 		return currentObstacle;
 	}
 
-
 	return 0;
+}
+
+bool WildernessAgilityCourse::isUnderWorld()
+{
+	float playerZ = RS::GetLocalPlayerPos()[1];
+
+	if (playerZ == 1471.0f || playerZ == 1511.0f || playerZ == 1421.0f || playerZ == 1551.0f || playerZ == 1491.0f)
+		return true;
+	else
+		return false;
 }
 
 void WildernessAgilityCourse::ConsumeFood()

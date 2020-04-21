@@ -144,7 +144,44 @@ int Varpbit::GetPlayerIsPoison()
 	return GetVarpBit(2104);
 }
 
+
 int Varpbit::GetPlayerPrayerToggle()
 {
 	return GetVarpBit(5941);
+}
+
+std::vector<int> Varpbit::ScanVarpValue(std::vector<int> varps, int value)
+{
+	std::vector<int> result;
+
+	if (varps.size() > 0)
+	{
+		for (auto varp : varps)
+		{
+			auto varpValue = GetVarpBit(varp);
+
+			if (varpValue == value)
+			{
+				result.push_back(varp);
+				printf("Varp: %d, value: %d\n", varp, varpValue);
+			}
+		}
+	}
+	else
+	{
+		for (int varp = 10; varp < 200000; varp++)
+		{
+			auto varpValue = GetVarpBit(varp);
+
+			if (varpValue == value)
+			{
+				result.push_back(varp);
+				printf("Varp: %d, value: %d\n", varp, varpValue);
+			}
+		}
+	}
+
+	printf("-----------------------------------------------\n\n");
+
+	return result;
 }

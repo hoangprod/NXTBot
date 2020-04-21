@@ -390,6 +390,42 @@ EntityObj* RS::GetClosestPlayer()
 	return 0;
 }
 
+std::vector<std::string> friendlyList = { "B0RAVlR", "MOCHlBUN", "3_HEPH_YEETY", "BlackPEARLZ", "22ricecakess", "wotyoproblem", "redenvlope"};
+
+EntityObj* RS::GetAnyPlayer()
+{
+	auto Count = GetPlayerEntityCount();
+
+	EntityObj* ret = 0;
+
+	if (!Count)
+		return 0;
+
+	auto player = GetLocalPlayer();
+
+	for (uint32_t i = 0; i < Count + 20; i++)
+	{
+		auto entity = GetPlayerObjByIndex(i);
+
+		if (!entity || *(UINT_PTR*)entity == 0)
+			continue;
+
+
+		if (strlen(entity->Name) > 0 && entity->EntityId != player->EntityId)
+		{
+			if (std::find(friendlyList.begin(), friendlyList.end(), std::string(entity->Name)) != friendlyList.end())
+			{
+				printf("Found Friendly %s\n", entity->Name);
+				continue;
+			}
+
+			return entity;
+		}
+	}
+
+	return 0;
+}
+
 EntityObj* RS::GetClosestMonster()
 {
 	auto Count = GetEntityCount();
@@ -483,7 +519,7 @@ EntityObj* RS::GetClosestMonsterNPCByName(const char* name)
 }
 
 
-EntityObj* RS::GetClosestMonsterNPCByNameFromOrigin(const char* name, Tile2D from)
+EntityObj* RS::GetClosestMonsterNPCByNameFromOrigin(const char* name, Tile2D from, float maxDistance)
 {
 	auto Count = GetEntityCount();
 
@@ -504,7 +540,7 @@ EntityObj* RS::GetClosestMonsterNPCByNameFromOrigin(const char* name, Tile2D fro
 
 		float distance = GetDistance(from, GetEntityTilePos(entity));
 
-		if (distance < closest && strcmp(entity->Name, name) == 0)
+		if (distance <= maxDistance && distance < closest && strcmp(entity->Name, name) == 0)
 		{
 			auto npcdef = NpcDef(entity);
 
@@ -568,7 +604,7 @@ EntityObj* RS::GetValidWildernessPlayerEnemy()
 	return 0;
 }
 
-EntityObj* RS::GetClosestEntityNPCByName(const char* name)
+EntityObj* RS::GetClosestEntityNPCByName(const char* name, bool bClosest)
 {
 	Player player = RS::GetLocalPlayer();
 
@@ -595,6 +631,48 @@ EntityObj* RS::GetClosestEntityNPCByName(const char* name)
 		{
 			closest = distance;
 			ret = entity;
+
+			if (!bClosest)
+				break;
+		}
+	}
+
+	if (ret && strlen(ret->Name) > 0)
+		return ret;
+
+	return 0;
+}
+
+EntityObj* RS::GetClosestEntityNPCByNameStrStr(const char* name, bool bClosest)
+{
+	Player player = RS::GetLocalPlayer();
+
+	auto Count = GetEntityCount();
+
+	EntityObj* ret = 0;
+
+	float closest = 99999.0f;
+
+	if (!Count)
+		return 0;
+
+	for (uint32_t i = 0; i < Count + 20; i++)
+	{
+		auto entity = GetEntityObjByIndex(i);
+
+
+		if (!entity || *(UINT_PTR*)entity == 0 || entity->EntityType != 1)
+			continue;
+
+		float distance = GetDistance(player.GetTilePosition(), GetEntityTilePos(entity));
+
+		if (distance < closest && strstr(entity->Name, name) != 0)
+		{
+			closest = distance;
+			ret = entity;
+
+			if (!bClosest)
+				break;
 		}
 	}
 
@@ -724,6 +802,18 @@ Tile2D RS::WorldToTilePos(const int32_t wX, const int32_t wY) {
 	return tile;
 }
 
+Tile2D RS::GetEntityObjTile2d(EntityObj* entity)
+{
+	if(!entity)
+	{
+		return Tile2D(0, 0);
+	}
+
+	float* pos = entity->GetPos();
+
+	return WorldToTilePos(pos[0], pos[2]);
+}
+
 
 std::string RS::ItemIdToString(uint32_t itemId)
 {
@@ -801,8 +891,11 @@ StaticObjEX Static::GetClosestStaticObjectByName(const char* name, bool useSecon
 					closestDistance = curDistance;
 					closestEnt = entity_ptr;
 
+					//printf("%p\n", entity_ptr);
+
 					if (!closest)
 						break;
+
 				}
 			}
 
@@ -826,6 +919,11 @@ StaticObjEX Static::GetClosestStaticObjectByName(const char* name, bool useSecon
 				{
 					closestDistance = curDistance;
 					closestEnt = entity_ptr;
+
+					//printf("%p\n", entity_ptr);
+
+					if (!closest)
+						break;
 				}
 			}
 		}
@@ -926,7 +1024,7 @@ StaticObjEX Static::GetClosestStaticObjectByNameWithOption(const char* name, con
 	return returnObj;
 }
 
-StaticObjEX Static::GetClosestStaticTreeObjectByNameWithOrigin(const char* name, Tile2D origin)
+StaticObjEX Static::GetClosestStaticHarvestableObjectByNameWithOrigin(const char* name, const char * option, Tile2D origin)
 {
 	std::set<uint64_t> static_entities;
 	GetStaticEntities(&static_entities);
@@ -948,7 +1046,7 @@ StaticObjEX Static::GetClosestStaticTreeObjectByNameWithOrigin(const char* name,
 			Tile2D Pos = Tile2D(staticObj->TileX, staticObj->TileY);
 
 			float curDistance = RS::GetDistance(origin, Pos);
-			if (strcmp(name, staticObj->Definition->Name) == 0 && strcmp("Chop down", staticObj->Definition->Op0) == 0)
+			if (strcmp(name, staticObj->Definition->Name) == 0 && strcmp(option, staticObj->Definition->Op0) == 0)
 			{
 				if (curDistance < closestDistance)
 				{

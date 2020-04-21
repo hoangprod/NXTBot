@@ -30,20 +30,25 @@ struct RS {
 	static std::vector<EntityObj*> GetNPCEntityList();
 	static std::vector<EntityObj*> GetPlayerEntityList();
 	static EntityObj* GetClosestPlayer();
+	static EntityObj* GetAnyPlayer();
 	static EntityObj* GetClosestMonster();
 	static EntityObj* GetEntityNPCByName(const char* name);
 	static EntityObj* GetClosestMonsterNPCByName(const char* name);
-	static EntityObj* GetClosestMonsterNPCByNameFromOrigin(const char* name, Tile2D from);
+	static EntityObj* GetClosestMonsterNPCByNameFromOrigin(const char* name, Tile2D from, float maxDistance = 999.0f);
 
 	static EntityObj* GetValidWildernessPlayerEnemy();
 
-	static EntityObj* GetClosestEntityNPCByName(const char* name);
+	static EntityObj* GetClosestEntityNPCByName(const char* name, bool bClosest = true);
+	static EntityObj* GetClosestEntityNPCByNameStrStr(const char* name, bool bClosest = true);
+
 	static EntityObj* GetEntityObjectByEntityId(uint32_t EntityId);
 	static EntityObj* GetMonsterWithinRadius(Tile2D from, float MaxDistance);
 	static EntityObj* GetMonsterWithinRadiusWithName(const char* monsterName, Tile2D from, float MaxDistance);
 	static EntityObj* GetClosestMonsterWithinRadius(Tile2D from, float MaxDistance);
 
 	static Tile2D WorldToTilePos(const int32_t wX, const int32_t wY);
+	static Tile2D GetEntityObjTile2d(EntityObj* entity);
+
 
 	static std::string ItemIdToString(uint32_t itemId);
 	static int ItemNameToId(std::string itemName);
@@ -56,7 +61,7 @@ struct Static
 
 	static StaticObjEX GetClosestStaticObjectByName(const char* name, bool useSecondary = false, bool closest = true);
 	static StaticObjEX GetClosestStaticObjectByNameWithOption(const char* name, const char* option, bool closest = true);
-	static StaticObjEX GetClosestStaticTreeObjectByNameWithOrigin(const char* name, Tile2D origin);
+	static StaticObjEX GetClosestStaticHarvestableObjectByNameWithOrigin(const char* name, const char* option, Tile2D origin);
 
 	static StaticObjEX GetClosestAbyssEntrance();
 

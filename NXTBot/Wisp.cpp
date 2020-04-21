@@ -169,20 +169,27 @@ void Wisp::Looting(FakeItemEX loot)
 
 void Rabbit::FSM()
 {
-	if (!player || !player->_base)
+	Player player = RS::GetLocalPlayer();
+
+	if (!player._base)
+		return;
+
+	if (!runOnce)
 	{
-		player = new Player(RS::GetLocalPlayer());
-		origin = player->GetTilePosition();
+		origin = player.GetTilePosition();
+
+		runOnce = !runOnce;
 	}
 
+
 	// If I am moving around or targeting something, do not fuck with it
-	if (player->isMoving() || (player->bTargeting() && player->CurrentTarget() != 25688)) // Hardcode bank id
+	if (player.isMoving() || (player.bTargeting() && player.CurrentTarget() != 25688)) // Hardcode bank id
 	{
 		botStatus = "Current moving or fighting";
 		return;
 	}
 
-	if (player->inCombat())
+	if (player.inCombat())
 	{
 		// If already fighting, leave it alone.
 		botStatus = "Current fighting";
@@ -196,9 +203,10 @@ void Rabbit::FSM()
 	if (attackingEnemies.size() > 0)
 	{
 		botStatus = "Attacking Monster";
+		player.Attack(attackingEnemies[0]->EntityId);
 
 		// Attack the first monster in the list that is attacking us
-		return Combat(attackingEnemies[0]);
+		return;
 	}
 
 	if (Inventory::isInventoryFull())
@@ -229,18 +237,14 @@ void Rabbit::FSM()
 	{
 		botStatus = "Fight monster";
 
-		return Rabbit::Combat(EnemyMonsters);
+		player.Attack(EnemyMonsters->EntityId);
+		return;
 	}
 
 	// If not in combat, not being attacked, not full inventory and not have anything to loot
 	botStatus = "Doing nothing, shouldn't really be here";
 }
 
-void Rabbit::Combat(EntityObj* Enemies)
-{
-	player->Attack(Enemies->EntityId);
-	return;
-}
 
 void Rabbit::Banking()
 {
@@ -272,16 +276,18 @@ void Rabbit::Banking()
 
 void Rabbit::Looting(FakeItemEX loot)
 {
+	Player player = RS::GetLocalPlayer();
+
 	auto areaLoot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::AreaLoot));
 
 	if (areaLoot)
 	{
-		player->LootAllConfirm();
+		player.LootAllConfirm();
 		return;
 	}
 	else if (loot.ItemQuantity != 0)
 	{
-		player->Loot(loot);
+		player.Loot(loot);
 		return;
 	}
 }
@@ -461,7 +467,7 @@ void Woodcutting::FSM()
 		return;
 	}
 
-	auto Closest = Static::GetClosestStaticTreeObjectByNameWithOrigin(TargetTree.data(), origin);
+	auto Closest = Static::GetClosestStaticHarvestableObjectByNameWithOrigin(TargetTree.data(), "Chop down", origin);
 
 	if (Closest.Definition)
 	{

@@ -24,13 +24,11 @@ class Rabbit
 public:
 	// Prioritize Current Combat -> Banking -> Looting -> New Combat
 	void FSM();
-	void Combat(EntityObj* Enemies);
 	void Banking();
 	void Looting(FakeItemEX loots);
 
-
-	Player* player;
 	Tile2D origin;
+	bool runOnce = false;
 };
 
 

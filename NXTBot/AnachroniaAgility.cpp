@@ -16,25 +16,27 @@ std::vector<AgilityCourse> AnachroniaAgi = { AgilityCourse(113687, Tile2D(5414, 
 
 void MoneyAgi::FSM()
 {
-	if (!player || !player->_base)
+	Player player = RS::GetLocalPlayer();
+
+	if (!player._base)
 	{
-		player = new Player(RS::GetLocalPlayer());
-		botStatus = "Money Agi initiated.";
+		printf("Player base is invalid");
+		return;
 	}
 
-
-	if (player->isMoving() || player->IsInAnimation())
+	if (player.isMoving() || player.IsInAnimation())
 	{
 		botStatus = "Moving or doing animation";
+		printf("Moving or doing animation\n");
 		return;
 	}
 
 	// Start of the course
-	if (RS::GetDistance(player->GetTilePosition(), Tile2D(5418, 2348)) < 7.0f)
+	if (RS::GetDistance(player.GetTilePosition(), Tile2D(5418, 2348)) < 7.0f)
 	{
 		//botStatus = "Going to start of course with id" + std::to_string(AnachroniaAgi[0].objId);
 		auto obstacle = Static::GetCStaticObjectById(AnachroniaAgi[0].objId);
-
+		printf("Starting the course\n");
 		Common::StaticInteract(obstacle);
 
 		return;
@@ -44,6 +46,7 @@ void MoneyAgi::FSM()
 
 	if (next.objId < 2)
 	{
+		printf("Invalid next course\n");
 		return;
 	}
 
@@ -56,19 +59,20 @@ void MoneyAgi::FSM()
 		{
 			//printf("Elapsed: %d\n", player->GetElapsedSecondSinceLastAction());
 
-			if (player->GetElapsedSecondSinceLastAction() < 10 && next.objId != 113735)
+			if (player.GetElapsedSecondSinceLastAction() < 10 && next.objId != 113735)
 			{
 				return;
 			}
 			// Unique spot
-			else if (player->GetElapsedSecondSinceLastAction() < 2)
+			else if (player.GetElapsedSecondSinceLastAction() < 2)
 			{
 				return;
 			}
 		}
 
 		currentObstacle = obstacle.Definition->Id;
-		botStatus = "Clicking on next obstacle";
+		//botStatus = "Clicking on next obstacle";
+		printf("Clicking on %d obstacle\n", currentObstacle);
 		//printf("Clicking on %d\n", currentObstacle);
 		Common::StaticInteract(obstacle);
 
@@ -76,12 +80,16 @@ void MoneyAgi::FSM()
 	else
 	{
 		botStatus = "Could not find the next obstacle. Maybe you are doing a course?";
+		printf("Could not find a course.\n");
 	}
 }
 
 AgilityCourse MoneyAgi::GetNextCourse()
 {
-	auto playerPos = player->GetTilePosition();
+	Player player = RS::GetLocalPlayer();
+
+
+	auto playerPos = player.GetTilePosition();
 
 	auto lastCourse = AnachroniaAgi[AnachroniaAgi.size() - 1];
 
@@ -89,7 +97,7 @@ AgilityCourse MoneyAgi::GetNextCourse()
 	if (playerPos.x == lastCourse.EndPos.x && playerPos.y == lastCourse.EndPos.y)
 	{
 		//botStatus = "Starting the course again :D";
-		player->Move(Tile2D(rand() % 2 + 5417, rand() % 5 + 2344));
+		player.Move(Tile2D(rand() % 2 + 5417, rand() % 5 + 2344));
 		return AgilityCourse();
 	}
 
@@ -131,7 +139,7 @@ AgilityCourse MoneyAgi::GetNextCourse()
 	}*/
 
 
-	if (!player->isMoving())
+	if (!player.isMoving())
 	{
 		return currentObstacle;
 	}

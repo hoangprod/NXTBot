@@ -344,7 +344,7 @@ int AIOAuth(std::string Username, std::string Password, std::string HWID)
 	{
 		int nError = ClientSocket.GetLastError();
 		printf("[-] Failed to connect to server with error %d (%p).\n", nError, nError);
-		return 0;
+		return -1;
 	}
 
 	if (!PerformKeyExchange())

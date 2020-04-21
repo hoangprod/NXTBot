@@ -5,14 +5,17 @@ class Archeology
 public:
 	// Prioritize Current Combat -> Banking -> Looting -> New Combat
 	void FSM();
+	void Initializer();
 	void Banking();
 	void Banking20();
+	void CacheHandler();
 
 	bool isSoilBoxFull();
 	int getSoilBoxAmount();
 
+	bool isCache;
+	int ArcheLevel;
 	int ArcheologyExp;
-	Player* player;
 	StaticObjEX Node;
 	std::string NodeName;
 

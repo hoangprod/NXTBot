@@ -25,6 +25,7 @@
 #include <set>
 #include <random>>
 #include <iterator>
+#include <string_view>
 #include <cmath>
 
 #include "glew/GL/glew.h"
@@ -41,3 +42,10 @@
 
 #endif
 #endif //PCH_H
+
+
+
+#ifdef NDEBUG
+#define printf(fmt, ...) (0)
+#define wprintf(fmt, ...) (0)
+#endif

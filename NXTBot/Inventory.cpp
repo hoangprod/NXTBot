@@ -79,7 +79,7 @@ int Inventory::GetItemById(uint32_t Id)
 
 	if (!inventory || inventory->ContainerContent == 0)
 	{
-		return false;
+		return -1;
 	}
 
 	for (int i = 0; i < 28; i++)

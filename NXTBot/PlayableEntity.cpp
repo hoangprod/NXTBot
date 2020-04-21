@@ -456,6 +456,16 @@ bool Entity::IsInAnimation()
 	return (entity->DefautAni != entity->CurrentAni);
 }
 
+int Entity::CurrentUsefulAni()
+{
+	if (!_base)
+		return 0;
+
+	auto entity = (EntityObj*)_base;
+
+	return entity->UsefulAni;
+}
+
 bool Entity::bTargeting()
 {
 	if (!_base)

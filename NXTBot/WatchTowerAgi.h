@@ -18,8 +18,8 @@ class WildernessAgilityCourse
 public:
 	void FSM();
 	AgilityCourse GetNextCourse();
+	bool isUnderWorld();
 	void ConsumeFood();
-
-	Player* player;
+	EntityObj* enemy;
 	uint32_t currentObstacle;
 };

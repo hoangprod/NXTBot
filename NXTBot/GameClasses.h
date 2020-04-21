@@ -29,6 +29,7 @@ public:
 	char pad_001C[44]; //0x001C
 }; //Size: 0x0048
 
+
 class EntityObj
 {
 public:
@@ -54,10 +55,10 @@ public:
 	void* DirectionPtr; //0x0A20
 	char pad_0A28[68]; //0x0A28
 	uint32_t ElapsedLastAction; //0x0A6C
-	char pad_0A70[1284]; //0x0A70
+	char pad_0A70[120]; //0x0A70
+	int32_t UsefulAni; //0x0AE8
+	char pad_0AEC[1160]; //0x0AEC
 	uint32_t Level; //0x0F74
-	char pad_0F78[1272]; //0x0F78
-
 
 	virtual void Function0();
 	virtual void Function1();
@@ -71,8 +72,8 @@ public:
 	virtual void Function9();
 	virtual void Function10();
 	virtual float* GetPos();
+}; //Size: 0x0F78
 
-}; //Size: 0x0448
 
 class GameContext
 {
@@ -354,7 +355,7 @@ public:
 	EntityType Type; //0x0040
 	int32_t TileX; //0x00EC
 	int32_t TileY; //0x00F0
-	int32_t SecondId;
+	int32_t SecondId = 0;
 	StaticObjCore* Definition; //0x0100
 };
 
@@ -427,9 +428,12 @@ public:
 class LootInfo
 {
 public:
-	char pad_0000[264]; //0x0000
-	class FakeItem* LootArray; //0x0108
-	void* LastLootPtr; //0x0110
+	char pad_0000[232]; //0x0000
+	class FakeItem* LootArray; //0x00E8
+	void* LastLootPtr; //0x00F0
+	char pad_00F8[16]; //0x00F8
+	class FakeItem* VisibleLootArray; //0x0108
+	void* VisibleLastLootPtr; //0x0110
 }; //Size: 0x0118
 
 class Tile3D
@@ -565,16 +569,17 @@ typedef char* (__fastcall* fn_CopyString)(UINT_PTR string, int a2, int a3);
 
 #define ReadPtrOffset(address, x) ((uint64_t)address == 0 || ((uint64_t)address % sizeof(uint64_t)) != 0) ? (0) : *(uint64_t*)((uint64_t)address + x)
 
-
 #define BANK_GROUP 0x5c5
-#define CONVERSATION_WIDGET 0x5C502B2
-#define DEPOSIT_WIDGET 0x5C502A5
-#define BANKING_WIDGET 0x5C5027B
-#define CHANGE_WORLD_WIDGET 0x5C5029C
+#define CONVERSATION_WIDGET 0x5C502B4
+#define DEPOSIT_WIDGET 0x5C502A7
+#define BANKING_WIDGET 0x5C5027D
+#define CHANGE_WORLD_WIDGET 0x5C5029E
+#define SELECT_AN_OPTION_TELEPORT_WIDGET 0x5C502A7
 
 // Varps
 #define SOIL_BOX_GRAVEL 9370
 #define SOIL_BOX_FIERY 9372
+#define SOIL_BOX_AERATED 9373
 
 #define RUN_MODE 463
 #define PRAYER_POINTS 3274
@@ -603,11 +608,8 @@ typedef char* (__fastcall* fn_CopyString)(UINT_PTR string, int a2, int a3);
 #define WARRIORS_GUILD_DEFENCE_POINTS 3066
 #define WARRIORS_GUILD_STRENGTH_POINTS 3068
 #define CHIMES 6528
-#define ANTIFIRE 1299
-#define ATTACK_POT 3561
 #define AUTO_RETALIATE 462
 #define CURRENT_SETTINGS_TAB 3709
-#define DEFENCE_POT 3563
 #define EOC_COMBAT_MODE 3711
 #define EOC_INTERFACE_MODE 3814
 #define FOLLOWER_SETTINGS 1790
@@ -618,11 +620,19 @@ typedef char* (__fastcall* fn_CopyString)(UINT_PTR string, int a2, int a3);
 #define GRAND_EXCHANGE_OFFER_ITEM 135
 #define GRAND_EXCHANGE_OFFER_PRICE 137
 #define GRAND_EXCHANGE_STATE 139
-#define JUJU 4908
 #define LOOT_INVENTORY 5413
+#define PRIMARY_ACTION_BAR_NUMBER 682);
+
+
+// Potions
+#define JUJU 4908
 #define STRENGTH_POT 3531
 #define SUPER_JUJU 4908
-#define PRIMARY_ACTION_BAR_NUMBER 682);
+#define DEFENCE_POT 3563
+#define ANTIFIRE 1299
+#define ATTACK_POT 3561
+#define AGGRESSION 33448
+
 
 /*
 	SHIELD(22842), // Might also be offhand, not sure

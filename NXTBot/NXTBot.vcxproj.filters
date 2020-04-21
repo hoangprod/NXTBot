@@ -315,6 +315,12 @@
     <ClInclude Include="WatchTowerAgi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Divination.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FungalMage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -399,6 +405,12 @@
       <Filter>Source Files\Bots</Filter>
     </ClCompile>
     <ClCompile Include="WatchTowerAgi.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="Divination.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="FungalMage.cpp">
       <Filter>Source Files\Bots</Filter>
     </ClCompile>
   </ItemGroup>

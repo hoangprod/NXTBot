@@ -8,8 +8,11 @@
 #include "AnachroniaAgility.h"
 #include "WatchTowerAgi.h"
 #include "Archeology.h"
+#include "Divination.h"
+#include "FungalMage.h"
 #include "Game.h"
 #include "Auth.h"
+#include "Common.h"
 #include "Manager.h"
 
 extern HWND hWnd;
@@ -26,6 +29,8 @@ AbyssCrafting* abyssCrafting = 0;
 Archeology* archelogy = 0;
 WildernessAgilityCourse* wildernessagi = 0;
 WatchTowerAgi* watchtoweragi = 0;
+Divination* divination = 0;
+FungalMage* fungalMage = 0;
 
 extern std::vector<const char*> botList;
 extern std::string botStatus;
@@ -36,6 +41,7 @@ extern std::vector<std::string> TreeNames;
 extern std::vector<std::string> OreNode;
 
 int extraDelay = 0;
+bool firstLog = false;
 
 void Manager::Manage()
 {
@@ -77,6 +83,7 @@ void Manager::Manage()
 				}
 			}
 
+
 			last_tick = GetTickCount64();
 		}
 	}
@@ -102,7 +109,7 @@ void Manager::Manage()
 			last_tick = GetTickCount64();
 		}
 	}
-	else if (peng || AnachAgi || abyssCrafting || archelogy || watchtoweragi || wildernessagi)
+	else if (peng || AnachAgi || abyssCrafting || archelogy || watchtoweragi || wildernessagi || divination || fungalMage)
 	{
 		static uint32_t randomTick = 0;
 
@@ -134,6 +141,26 @@ void Manager::Manage()
 					watchtoweragi->FSM();
 				else if (wildernessagi)
 					wildernessagi->FSM();
+				else if (divination)
+					divination->FSM();
+				else if (fungalMage)
+					fungalMage->FSM();
+			}
+			else if (RS::GetGameState() == GameState::Lobby)
+			{
+				if (firstLog)
+				{
+					firstLog = false;
+					Common::LoginFromLobby();
+					printf("Logging in from lobby\n");
+					extraDelay = 9000;
+				}
+				else
+				{
+					firstLog = true;
+					extraDelay = 5000;
+				}
+
 			}
 
 			last_tick = GetTickCount64();
@@ -162,6 +189,22 @@ void Manager::Keystates(WPARAM wParam)
 		if (SelectedBot > 0)
 		{
 			SelectedBot--;
+		}
+	}
+
+	if (archelogy)
+	{
+		if (wParam == VK_MULTIPLY)
+		{
+			archelogy->isCache = !archelogy->isCache;
+		}
+	}
+
+	if (genCombat)
+	{
+		if (wParam == VK_MULTIPLY)
+		{
+			genCombat->Manual = !genCombat->Manual;
 		}
 	}
 
@@ -208,8 +251,8 @@ void Manager::Keystates(WPARAM wParam)
 		Player player = RS::GetLocalPlayer();
 		if (!archelogy)
 		{
-			archelogy = new Archeology();
-			AIOAuth("Archeology_Farming", "Start", player.GetName());
+			if (AIOAuth("Archeology_Farming", "Start", player.GetName()) != -1)
+				archelogy = new Archeology();
 		}
 		else if (archelogy)
 		{
@@ -223,8 +266,8 @@ void Manager::Keystates(WPARAM wParam)
 		Player player = RS::GetLocalPlayer();
 		if (!abyssCrafting)
 		{
-			abyssCrafting = new AbyssCrafting();
-			AIOAuth("Abyss_RuneCrafting", "Start", player.GetName());
+			if(AIOAuth("Abyss_RuneCrafting", "Start", player.GetName()) != -1)
+				abyssCrafting = new AbyssCrafting();
 		}
 		else if (abyssCrafting)
 		{
@@ -242,51 +285,44 @@ void Manager::Keystates(WPARAM wParam)
 		case 0 :
 			if (!wisp)
 			{
-				AIOAuth("Wisp_Farming", "Start", player.GetName());
-
-				wisp = new Wisp();
+				if(AIOAuth("Wisp_Farming", "Start", player.GetName()) != -1)
+					wisp = new Wisp();
 			}
 			else if (wisp)
 			{
 				AIOAuth("Wisp_Farming", "Stop", player.GetName());
-
 				delete wisp; wisp = 0;
 			}
 			break;
 		case 1:
 			if (!rabbit)
 			{
-				AIOAuth("Rabbit_Killing", "Start", player.GetName());
-
-				rabbit = new Rabbit();
+				if(AIOAuth("Rabbit_Killing", "Start", player.GetName()) != -1)
+					rabbit = new Rabbit();
 			}
 			else if (rabbit)
 			{
 				AIOAuth("Rabbit_Killing", "Stop", player.GetName());
-
 				delete rabbit; rabbit = 0;
 			}
 			break;
 		case 2:
 			if (!genCombat)
 			{
-				AIOAuth("General_Combat", "Start", player.GetName());
-
-				genCombat = new GeneralCombat();
+				if(AIOAuth("General_Combat", "Start", player.GetName()) != -1)
+					genCombat = new GeneralCombat();
 			}
 			else if (genCombat)
 			{
 				AIOAuth("General_Combat", "Stop", player.GetName());
-
 				delete genCombat; genCombat = 0;
 			}
 			break;
 		case 3:
 			if (!genMining)
 			{
-				AIOAuth("General_Mining", "Start", player.GetName());
-
-				genMining = new GenMining();
+				if(AIOAuth("General_Mining", "Start", player.GetName()) != -1)
+					genMining = new GenMining();
 			}
 			else if (genMining)
 			{
@@ -298,9 +334,8 @@ void Manager::Keystates(WPARAM wParam)
 		case 4:
 			if (!peng)
 			{
-				AIOAuth("Penguin_Suits", "Start", player.GetName());
-
-				peng = new Penguins();
+				if(AIOAuth("Penguin_Suits", "Start", player.GetName()) != -1)
+					peng = new Penguins();
 			}
 			else if (peng)
 			{
@@ -312,9 +347,8 @@ void Manager::Keystates(WPARAM wParam)
 		case 5:
 			if (!WoodCutting)
 			{
-				AIOAuth("WoodCutting", "Start", player.GetName());
-
-				WoodCutting = new Woodcutting();
+				if(AIOAuth("WoodCutting", "Start", player.GetName()) != -1)
+					WoodCutting = new Woodcutting();
 			}
 			else if (WoodCutting)
 			{
@@ -326,9 +360,8 @@ void Manager::Keystates(WPARAM wParam)
 		case 6:
 			if (!AnachAgi)
 			{
-				AIOAuth("Anachronia_Agility", "Start", player.GetName());
-
-				AnachAgi = new MoneyAgi();
+				if(AIOAuth("Anachronia_Agility", "Start", player.GetName()) != -1)
+					AnachAgi = new MoneyAgi();
 			}
 			else if (AnachAgi)
 			{
@@ -340,9 +373,8 @@ void Manager::Keystates(WPARAM wParam)
 		case 7:
 			if (!abyssCrafting)
 			{
-				AIOAuth("Abyss_RuneCrafting", "Start", player.GetName());
-
-				abyssCrafting = new AbyssCrafting();
+				if(AIOAuth("Abyss_RuneCrafting", "Start", player.GetName()) != -1)
+					abyssCrafting = new AbyssCrafting();
 			}
 			else if (abyssCrafting)
 			{
@@ -354,9 +386,8 @@ void Manager::Keystates(WPARAM wParam)
 		case 8:
 			if (!watchtoweragi)
 			{
-				AIOAuth("Watchtower_Agility", "Start", player.GetName());
-
-				watchtoweragi = new WatchTowerAgi();
+				if(AIOAuth("Watchtower_Agility", "Start", player.GetName()) != -1)
+					watchtoweragi = new WatchTowerAgi();
 			}
 			else if (watchtoweragi)
 			{
@@ -368,15 +399,40 @@ void Manager::Keystates(WPARAM wParam)
 		case 9:
 			if (!wildernessagi)
 			{
-				AIOAuth("Wilderness_Agility", "Start", player.GetName());
-
-				wildernessagi = new WildernessAgilityCourse();
+				if(AIOAuth("Wilderness_Agility", "Start", player.GetName()) != -1)
+					wildernessagi = new WildernessAgilityCourse();
 			}
 			else if (wildernessagi)
 			{
 				AIOAuth("Wilderness_Agility", "Stop", player.GetName());
 
 				delete wildernessagi; wildernessagi = 0;
+			}
+			break;
+		case 10:
+			if (!divination)
+			{
+				if (AIOAuth("Divination_Bot", "Start", player.GetName()) != -1)
+					divination = new Divination();
+			}
+			else if (divination)
+			{
+				AIOAuth("Divination_Bot", "Stop", player.GetName());
+
+				delete divination; divination = 0;
+			}
+			break;
+		case 11:
+			if (!fungalMage)
+			{
+				if (AIOAuth("Fungal_Mage", "Start", player.GetName()) != -1)
+					fungalMage = new FungalMage();
+			}
+			else if (fungalMage)
+			{
+				AIOAuth("Fungal_Mage", "Stop", player.GetName());
+
+				delete fungalMage; fungalMage = 0;
 			}
 			break;
 		default:

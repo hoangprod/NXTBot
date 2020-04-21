@@ -116,6 +116,7 @@
       <ExceptionHandling>Async</ExceptionHandling>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,9 +156,10 @@
       <PreprocessorDefinitions>GLUT_STATIC_LIB;GLEW_STATIC;NDEBUG;NXTBOT_EXPORTS;SODIUM_STATIC;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExceptionHandling>Async</ExceptionHandling>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -174,10 +176,12 @@
     <ClInclude Include="Archeology.h" />
     <ClInclude Include="Auth.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="Divination.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="Experience.h" />
     <ClInclude Include="fn_hook.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="FungalMage.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameClasses.h" />
     <ClInclude Include="GeneralCombat.h" />
@@ -271,8 +275,10 @@
     <ClCompile Include="AnachroniaAgility.cpp" />
     <ClCompile Include="Archeology.cpp" />
     <ClCompile Include="Common.cpp" />
+    <ClCompile Include="Divination.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Experience.cpp" />
+    <ClCompile Include="FungalMage.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameClasses.cpp" />
     <ClCompile Include="GeneralCombat.cpp" />

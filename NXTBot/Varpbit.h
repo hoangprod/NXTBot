@@ -22,6 +22,9 @@ public:
 	static int GetPlayerPrayer();
 	static int GetPlayerAdrenaline();
 	static int GetPlayerIsPoison();
-
 	static int GetPlayerPrayerToggle();
+
+
+	static std::vector<int> ScanVarpValue(std::vector<int> varps, int value);
+
 };

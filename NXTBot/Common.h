@@ -13,6 +13,7 @@ public:
 	static int HopRandomWorld();
 	static int HopWorldGUI();
 	static int SwitchWorld(int World);
+	static int LoginFromLobby();
 
 	static int ConfirmGUI(int GUI_Id);
 	static int ConfirmSwitchWorld();

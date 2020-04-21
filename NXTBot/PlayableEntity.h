@@ -19,6 +19,7 @@ public:
 	uint32_t CurrentSpotAnimation();
 
 	bool IsInAnimation();
+	int CurrentUsefulAni();
 	bool bTargeting();
 	float* GetPosition();
 	Tile2D GetTilePosition();

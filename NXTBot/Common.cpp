@@ -125,6 +125,38 @@ int Common::SwitchWorld(int World)
 	return 1;
 }
 
+int Common::LoginFromLobby()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x58]) = 1;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 0x38A0082;
+
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+
+	return 1;
+}
+
 int Common::ConfirmGUI(int GUI_Id)
 {
 	uint8_t data[100] = { 0 };
@@ -297,7 +329,7 @@ bool Common::TeleportToAbyssThroughMage()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x58]) = 18639; // UPDATE PLEASE MageOfZamorak
+	*reinterpret_cast<int*>(&data[0x58]) = 18648; // UPDATE PLEASE MageOfZamorak
 	*reinterpret_cast<int*>(&data[0x5c]) = 0;
 	*reinterpret_cast<int*>(&data[0x60]) = 0;// Hardcoded
 
@@ -351,10 +383,14 @@ bool Common::StaticInteract2(StaticObjEX obj)
 {
 	uint8_t data[100] = { 0 };
 
-	if (obj.SecondId)
+	if (obj.SecondId > 0)
+	{
 		*reinterpret_cast<int*>(&data[0x58]) = obj.SecondId;
+	}
 	else
+	{
 		*reinterpret_cast<int*>(&data[0x58]) = obj.Definition->Id;
+	}
 
 	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
 	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
@@ -410,7 +446,7 @@ bool Common::StaticInteract(StaticObjEX obj)
 {
 	uint8_t data[100] = { 0 };
 
-	if (obj.SecondId)
+	if (obj.SecondId > 0)
 		*reinterpret_cast<int*>(&data[0x58]) = obj.SecondId;
 	else
 		*reinterpret_cast<int*>(&data[0x58]) = obj.Definition->Id;
