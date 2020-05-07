@@ -7,4 +7,5 @@ public:
 	static DialogInfoEx* GetWidgetUI(uint32_t FullIndex);
 	static DialogInfoEx* IsInDialogWidget();
 	static RSDialog GetDialogType();
+	static UIType GetUIType();
 };

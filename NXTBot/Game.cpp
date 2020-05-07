@@ -155,46 +155,46 @@ EntityObj* RS::GetEntityObjByIndex(uint32_t Index)
 	return EntityPtrWrap->EntityObj;
 }
 
-GameState RS::GetGameState()
+game_state RS::GetGameState()
 {
 	GameContext* context = RS::GetGameContext();
 
 	if (!context)
-		return GameState::Unknown;
+		return game_state::Unknown;
 
-	return *(GameState*)(((UINT_PTR)context) + Patterns.Offset_GameState);
+	return *(game_state*)(((UINT_PTR)context) + Patterns.Offset_GameState);
 }
 
 BOOL RS::IsInGame()
 {
-	return GetGameState() == GameState::Ingame;
+	return GetGameState() == game_state::Ingame;
 }
 
 std::string RS::GetGameStateStr()
 {
-	GameState state = RS::GetGameState();
+	game_state state = RS::GetGameState();
 
 	switch (state)
 	{
-	case GameState::LoginScreen:
+	case game_state::LoginScreen:
 		return "Login Screen";
 		break;
-	case GameState::Lobby:
+	case game_state::Lobby:
 		return "Lobby";
 		break;
-	case GameState::Ingame:
+	case game_state::Ingame:
 		return "Ingame";
 		break;
-	case GameState::Disconnected:
+	case game_state::Disconnected:
 		return "Disconnected";
 		break;
-	case GameState::Reconnecting:
+	case game_state::Reconnecting:
 		return "Reconnecting";
 		break;
-	case GameState::PleaseWait:
+	case game_state::PleaseWait:
 		return "Please Wait";
 		break;
-	case GameState::Unknown:
+	case game_state::Unknown:
 		return "Invalid Context";
 		break;
 	default:
@@ -591,7 +591,7 @@ EntityObj* RS::GetValidWildernessPlayerEnemy()
 			{
 				float distance = GetDistance(localPlayerTile, GetEntityTilePos(entity));
 
-				if (distance < 45.0f)
+				if (distance < 105.0f)
 				{
 					return entity;
 				}

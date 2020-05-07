@@ -1,8 +1,63 @@
 #include "pch.h"
 #include "Injection.h"
-#include <iostream>
+#include "Manager.h"
+
+
+enum sender
+{
+	CLIENT,
+	SERVER
+};
+
+enum bot_status
+{
+	OFF,
+	ON,
+	SHORT_BREAK,
+	LONG_BREAK
+};
+
+
+enum game_state {
+	LoginScreen = 10,
+	Lobby = 20,
+	Ingame = 30,
+	Disconnected = 40,
+	Reconnecting = 35,
+	PleaseWait = 37,
+	Unknown = 666
+};
+
+enum bot_type
+{
+	DIVINATION,
+	ARCHEOLOGY,
+	OTHER
+};
+
+struct account_info
+{
+	char email[30];
+	char password[20];
+};
+
+struct client_msg
+{
+	bot_type type;
+	bot_status status;
+	account_info info;
+	game_state gamestate;
+};
+
+struct Client
+{
+	sender type;
+	client_msg nsg;
+};
+
 
 std::vector<DWORD> HandleList;
+
 
 std::vector<DWORD> GetPIDs(std::wstring targetProcessName) {
 	std::vector<DWORD> pids;
@@ -20,7 +75,6 @@ std::vector<DWORD> GetPIDs(std::wstring targetProcessName) {
 	CloseHandle(snap);
 	return pids;
 }
-
 
 
 bool isInList(DWORD pid)

@@ -321,6 +321,18 @@
     <ClInclude Include="FungalMage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Summoning.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tiger.h">
+      <Filter>Auth</Filter>
+    </ClInclude>
+    <ClInclude Include="Antiban.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MoneyDrop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -374,9 +386,6 @@
     <ClCompile Include="Varpbit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Wisp.cpp">
-      <Filter>Source Files\Bots</Filter>
-    </ClCompile>
     <ClCompile Include="GeneralCombat.cpp">
       <Filter>Source Files\Bots</Filter>
     </ClCompile>
@@ -411,6 +420,18 @@
       <Filter>Source Files\Bots</Filter>
     </ClCompile>
     <ClCompile Include="FungalMage.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="Summoning.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="Wisp.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="Antiban.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="MoneyDrop.cpp">
       <Filter>Source Files\Bots</Filter>
     </ClCompile>
   </ItemGroup>

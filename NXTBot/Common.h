@@ -9,6 +9,8 @@ public:
 	static int GetCurrentWorld();
 	static const char* GetCurrentWorldString();
 
+
+	static void Login(const char * username, const char* password);
 	static int GetRandomWorld();
 	static int HopRandomWorld();
 	static int HopWorldGUI();

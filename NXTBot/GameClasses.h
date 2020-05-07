@@ -13,12 +13,10 @@ class GameContextPtr
 public:
 	char pad_0000[8]; //0x0000
 	class GameContext* gContext; //0x0008
-	char pad_0010[728]; //0x0010
-	float worldX; //0x02E8
-	char pad_02EC[4]; //0x02EC
-	float WorldY; //0x02F0
-	char pad_02F4[336]; //0x02F4
-}; //Size: 0x0444
+	char pad_0010[24]; //0x0010
+	class LoginScriptInstance* ScriptContext; //0x0028
+	char pad_0030[224]; //0x0030
+}; //Size: 0x0110
 
 class DestinationFlag
 {
@@ -84,19 +82,24 @@ public:
 	class DestinationFlag* DestinationFlag; //0x1108
 	char pad_1110[112]; //0x1110
 	class WidgetUI* WidgetUI; //0x1180
-	char pad_1188[32]; //0x1188
+	char pad_1188[16]; //0x1188
+	class LoginManager* LoginManager; //0x1198
+	char pad_11A0[8]; //0x11A0
 	class CharacterInfo* CharacterInfo; //0x11A8
 	char pad_11B0[8]; //0x11B0
 	class EntityPtr* EntityPtr; //0x11B8
 	class TileList* N00001FBE; //0x11C0
 	char pad_11C8[16]; //0x11C8
 	class PlayerListWrapper* PlayerListWrapper; //0x11D8
-	char pad_11E0[64]; //0x11E0
+	char pad_11E0[32]; //0x11E0
+	class GameContextPtr* GContext; //0x1200
+	char pad_1208[24]; //0x1208
 	class WorldClass* WorldClass; //0x1220
 	char pad_1228[1384]; //0x1228
 	class VarpInstance* VarpVtable; //0x1790
 	char pad_1798[2672]; //0x1798
 }; //Size: 0x2208
+
 
 
 class NpcEntityPtr
@@ -497,6 +500,54 @@ public:
 	char pad_0018[48]; //0x0018
 }; //Size: 0x0048
 
+class LoginScriptInstance
+{
+public:
+	char pad_0000[8]; //0x0000
+}; //Size: 0x0008
+
+class LoginManager
+{
+public:
+	char pad_0000[88]; //0x0000
+	class Subconnection* Subconnection; //0x0058
+	char pad_0060[80]; //0x0060
+	char* Email; //0x00B0
+	char pad_00B8[24]; //0x00B8
+	char* Password; //0x00D0
+	char pad_00D8[48]; //0x00D8
+}; //Size: 0x0108
+
+
+class Subconnection
+{
+public:
+	char pad_0000[4400]; //0x0000
+	class ConnectionTime* Time; //0x1130
+	char pad_1138[720]; //0x1138
+}; //Size: 0x1408
+
+class ConnectionTime
+{
+public:
+	char pad_0000[32]; //0x0000
+	void* SubTime; //0x0020
+	char pad_0028[32]; //0x0028
+}; //Size: 0x0048
+
+struct ActionMirror
+{
+	ActionMirror(uint32_t i, uint32_t p1, uint32_t p2, uint32_t p3, uint64_t addr)
+	{
+		index = i; param1 = p1; param2 = p2; param3 = p3; function = addr;
+	}
+	uint32_t index;
+	uint32_t param1;
+	uint32_t param2;
+	uint32_t param3;
+	uint64_t function;
+};
+
 struct AgilityCourse
 {
 	AgilityCourse() {};
@@ -514,6 +565,41 @@ struct AgilityCourse
 	Tile2D EndPos;
 };
 
+struct mouse_biometric
+{
+	mouse_biometric(UINT m, UINT w, UINT l, UINT d)
+	{
+		uMsg = m;
+		wParm = w;
+		lParm = l;
+		delay = d;
+	}
+
+	UINT uMsg;
+	UINT wParm;
+	UINT lParm;
+	UINT delay;
+};
+
+struct mouse_data_header
+{
+	mouse_data_header(uint32_t h, uint32_t w, size_t e)
+	{
+		height = h;
+		width = w;
+		elements = e;
+	};
+
+	uint32_t height;
+	uint32_t width;
+	size_t elements;
+};
+
+struct mouse_replay
+{
+	mouse_data_header header;
+	mouse_biometric points[]; // this is actually an array of points
+};
 
 enum class ContainerType : uint32_t {
 	Trade = 90,
@@ -521,8 +607,9 @@ enum class ContainerType : uint32_t {
 	Equipment = 94,
 	Bank = 95,
 	Familiar = 530,
-	ShopSell = 397, // 732
-	ShopBuy = 508,
+	ShopSell = 696969,  //There is no sell i think?
+	ShopBuy = 628,
+	ShopBuyFree = 629,
 	AreaLoot = 773,
 	CoinPouch = 623,
 	DeathReclaim = 676,
@@ -538,7 +625,16 @@ enum class RSDialog
 	ModernDestroy
 };
 
-enum class GameState {
+enum class UIType
+{
+	UNKNOWN,
+	DEPOSIT_BOX,
+	TELEPORT_OPTIONS,
+	SHOP_STORE,
+	OBELISK_WIDGET
+};
+
+enum class game_state {
 	LoginScreen = 10,
 	Lobby = 20,
 	Ingame = 30,
@@ -548,6 +644,25 @@ enum class GameState {
 	Unknown = 666
 };
 
+
+class eastlString
+{
+public:
+	eastlString(const char * text)
+	{
+		start = new char[256];
+		strcpy((char*)start, text);
+
+		end = start + strlen(text);
+	}
+	eastlString()
+	{
+		start = "";
+		end = start;
+	}
+	const char* start;
+	const char* end;
+};
 
 #pragma pack(push)
 struct dataStruct {
@@ -560,12 +675,18 @@ typedef bool(__stdcall* fn_wglSwapBuffers) (_In_ HDC hDc);
 typedef UINT_PTR* (__fastcall* fn_GetLocalPlayer)(UINT_PTR* PlayerEntityList);
 typedef DWORD* (__fastcall* fn_OnCursorDoAction) (UINT_PTR a1, ActionPtr actionPtr, float* postion);
 typedef UINT_PTR(__fastcall* fn_CursorWorldContextMenu) (UINT_PTR* GameContext, int a2, int a3, int a4, int a5);
+typedef int* (__fastcall* fn_ExecuteHookInner)(UINT_PTR* GameContext, unsigned int* a2, int a3);
 typedef bool(__fastcall* fn_OnDispatchNetMessage)(UINT_PTR* a1, UINT_PTR* a2);
 typedef float*(__fastcall* fn_GetWOrldTranslation)(UINT_PTR* camera);
 typedef void(__fastcall* fn_GUIManagerRender)(UINT_PTR* a1);
 typedef UINT_PTR*(__fastcall* fn_GetContainerPtr)(UINT_PTR* ContainerManager, uint32_t containerId, uint8_t idk);
 
 typedef char* (__fastcall* fn_CopyString)(UINT_PTR string, int a2, int a3);
+typedef void(__fastcall* fn_StartLogin)(__int64 a1, int a2, UINT_PTR a3, eastlString a4, eastlString a5, eastlString a6, char a7, char a8, char a9, char a10, UINT_PTR a11);
+typedef __int64* (__fastcall* fn_PrepareUUIDPacket)(__int64* uuid_struct, __int64 packet);
+
+typedef __int64* (__fastcall* fn_GetVarpType)(__int64 VarpWrap, __int64 VarpDomain, unsigned int varpid);
+typedef __int64 (__fastcall* fn_SetVarpValueFromServer)(__int64 player, __int64 varptype, VarpClass* varpclass);
 
 #define ReadPtrOffset(address, x) ((uint64_t)address == 0 || ((uint64_t)address % sizeof(uint64_t)) != 0) ? (0) : *(uint64_t*)((uint64_t)address + x)
 
@@ -575,6 +696,8 @@ typedef char* (__fastcall* fn_CopyString)(UINT_PTR string, int a2, int a3);
 #define BANKING_WIDGET 0x5C5027D
 #define CHANGE_WORLD_WIDGET 0x5C5029E
 #define SELECT_AN_OPTION_TELEPORT_WIDGET 0x5C502A7
+#define SHOP_WIDGET 0x5c502a7 //Secondary ID 0x4F1
+#define SUMMONING_WIDGET 0x5C502A7 // Secondary ID 0x55a 
 
 // Varps
 #define SOIL_BOX_GRAVEL 9370
@@ -621,7 +744,7 @@ typedef char* (__fastcall* fn_CopyString)(UINT_PTR string, int a2, int a3);
 #define GRAND_EXCHANGE_OFFER_PRICE 137
 #define GRAND_EXCHANGE_STATE 139
 #define LOOT_INVENTORY 5413
-#define PRIMARY_ACTION_BAR_NUMBER 682);
+#define PRIMARY_ACTION_BAR_NUMBER 682
 
 
 // Potions
@@ -633,6 +756,15 @@ typedef char* (__fastcall* fn_CopyString)(UINT_PTR string, int a2, int a3);
 #define ATTACK_POT 3561
 #define AGGRESSION 33448
 
+// BANK
+#define MAX_BANK_SLOT 8968
+#define CURRENT_BANKS_LOT 8971
+#define CURRENT_BANK_TAB 45141
+#define SLOT_BANK_TAB_1 45143
+
+
+// UI
+#define SHOP_TAB 303
 
 /*
 	SHIELD(22842), // Might also be offhand, not sure

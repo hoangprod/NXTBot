@@ -347,7 +347,10 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_DestinationFlag is at %llx\n", Patterns.Offset_DestinationFlag); };
 
-	printf("\n------------------ [ FUNCTIONS ] ------------------\n\n");
+
+
+
+	printf("\n------------------------------- [ FUNCTIONS ] -------------------------------\n\n");
 
 	Patterns.Func_OnCursorDoAction = (UINT_PTR)PatternScan(Rs2Client, 0x300000, "\x48\x89\x5c\x24\x10\x48\x89\x6c\x24\x18\x56\x48\x83\xec\x20\x48\x8b\x41\x08", "xxxxxxxxxxxxxxxxxxx");
 
@@ -410,6 +413,34 @@ bool __stdcall findPatterns()
 		return FALSE;
 	}
 	else { printf("[Pattern Scan]  Patterns.Func_GetContainer is at %llx\n", Patterns.Func_GetContainer); };
+
+	Patterns.Func_ExecuteHookInner = (UINT_PTR)PatternScan(Rs2Client, 0x300000, "\x44\x89\x44\x24\x18\x48\x89\x4c\x24\x08\x53\x55\x56\x57\x41\x54\x41\x55\x41\x56\x41\x57\x48\x81", "xxxxxxxxxxxxxxxxxxxxxxxx");
+
+	if (!Patterns.Func_ExecuteHookInner)
+	{
+		printf("[Error] Patterns.Func_ExecuteHookInner failed to pattern scan.\n");
+		return FALSE;
+	}
+	else { printf("[Pattern Scan]  Patterns.Func_ExecuteHookInner is at %llx\n", Patterns.Func_ExecuteHookInner); };
+
+
+	Patterns.Func_StartLogin = (UINT_PTR)PatternScan(Rs2Client, 0x300000, "\x48\x8b\xc4\x4c\x89\x40\x18\x55\x56\x57\x41\x56", "xxxxxxxxxxxx");
+
+	if (!Patterns.Func_StartLogin)
+	{
+		printf("[Error] Patterns.Func_StartLogin failed to pattern scan.\n");
+		return FALSE;
+	}
+	else { printf("[Pattern Scan]  Patterns.Func_StartLogin is at %llx\n", Patterns.Func_StartLogin); };
+
+	Patterns.Func_PrepareUUIDPacket = (UINT_PTR)PatternScan(Rs2Client, 0x300000, "\x48\x89\x5c\x24\x08\x57\x48\x83\xec\x20\x48\x8b\xda\xbf\x18\x00\x00\x00", "xxxxxxxxxxxxxxxxxx");
+
+	if (!Patterns.Func_PrepareUUIDPacket)
+	{
+		printf("[Error] Patterns.Func_PrepareUUIDPacket failed to pattern scan.\n");
+		return FALSE;
+	}
+	else { printf("[Pattern Scan]  Patterns.Func_PrepareUUIDPacket is at %llx\n", Patterns.Func_PrepareUUIDPacket); };
 
 	printf("\n------------------ [ END PATTERN SCAN ] ------------------\n\n");
 

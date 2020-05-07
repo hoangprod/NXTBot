@@ -20,13 +20,18 @@ std::vector<AgilityCourse> WildernessAgi = { AgilityCourse(65362, Tile2D(3004, 3
 
 void WatchTowerAgi::FSM()
 {
-	if (!player || !player->_base || !Stair.Definition || !Trellis.Definition)
+
+	Player player = RS::GetLocalPlayer();
+
+	if (!player._base)
+		return;
+
+	if (Stair.Definition || !Trellis.Definition)
 	{
-		player = new Player(RS::GetLocalPlayer());
 		Stair = Static::GetClosestStaticObjectByNameWithOption("Ladder", "Climb-down", true);
 		Trellis = Static::GetClosestStaticObjectByNameWithOption("Trellis", "Climb-up", true);
 
-		if (!Stair.Definition || !Trellis.Definition || !player)
+		if (!Stair.Definition || !Trellis.Definition)
 		{
 			printf("Could not find stair, trellis or player\n");
 			return;
@@ -38,13 +43,13 @@ void WatchTowerAgi::FSM()
 		}
 	}
 
-	if (player->isMoving() || player->IsInAnimation())
+	if (player.isMoving() || player.IsInAnimation())
 	{
 		//printf("In Animation / Moving\n");
 		return;
 	}
 
-	auto player2DPos = player->GetPosition();
+	auto player2DPos = player.GetPosition();
 
 	if (player2DPos)
 	{
@@ -72,7 +77,7 @@ void WildernessAgilityCourse::FSM()
 	if (!player._base)
 		return;
 
-	if (Varpbit::GetPlayerHealth() <= 0)
+	if (Common::GetCurrentWildernessLevel() == 0)
 	{
 		Beep(500, 500);
 		delete wildernessagi;
@@ -80,8 +85,14 @@ void WildernessAgilityCourse::FSM()
 		return;
 	}
 
-	if (Common::GetCurrentWildernessLevel() == 0)
+	/*
+	if (Varpbit::GetPlayerHealth() <= 0)
+	{
+		Beep(500, 500);
+		delete wildernessagi;
+		wildernessagi = 0;
 		return;
+	}*/
 
 	if (player.IsInAnimation())
 		return;

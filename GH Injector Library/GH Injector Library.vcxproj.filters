@@ -60,6 +60,9 @@
     <ClInclude Include="Manul Mapping.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="Manager.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Handle Hijacking.cpp">

@@ -9,6 +9,9 @@
 #include "Experience.h"
 #include "Common.h"
 
+extern fn_StartLogin o_StartLogin;
+
+
 extern UINT_PTR* g_GameContext;
 extern UINT_PTR g_Module;
 extern Addr Patterns;
@@ -36,6 +39,21 @@ const char* Common::GetCurrentWorldString()
 		return 0;
 
 	return g_Context->WorldClass->CurrentWorld->WorldUrl;
+}
+
+void Common::Login(const char* username, const char* password)
+{
+	eastlString email = username;
+	eastlString pass = password;
+	eastlString empty;
+
+	GameContextPtr* contextPtr = (GameContextPtr*)g_GameContext;
+	auto loginManager = contextPtr->gContext->LoginManager;
+	auto connection = loginManager->Subconnection->Time;
+
+	auto connect = (UINT_PTR)connection + 0x20;
+
+	o_StartLogin((UINT_PTR)loginManager, 1, connect, email, pass, empty, 0, 0, 0, 0, -1);
 }
 
 int Common::GetRandomWorld()
@@ -329,7 +347,7 @@ bool Common::TeleportToAbyssThroughMage()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x58]) = 18648; // UPDATE PLEASE MageOfZamorak
+	*reinterpret_cast<int*>(&data[0x58]) = 18596; // UPDATE PLEASE MageOfZamorak
 	*reinterpret_cast<int*>(&data[0x5c]) = 0;
 	*reinterpret_cast<int*>(&data[0x60]) = 0;// Hardcoded
 

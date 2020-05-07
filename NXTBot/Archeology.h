@@ -19,6 +19,7 @@ public:
 	StaticObjEX Node;
 	std::string NodeName;
 
+	bool runOnce = true;
 
 	StaticObjEX DepositBox;
 	StaticObjEX MaterialCart;

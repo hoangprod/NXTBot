@@ -9,6 +9,7 @@
 
 // add headers that you want to pre-compile here
 #include "framework.h"
+#include <new>
 #include <Windows.h>
 #include <tchar.h>
 #include <TlHelp32.h>
@@ -25,8 +26,8 @@
 #include <set>
 #include <random>>
 #include <iterator>
-#include <string_view>
 #include <cmath>
+#include <windowsx.h>
 
 #include "glew/GL/glew.h"
 #include <gl\glut.h>

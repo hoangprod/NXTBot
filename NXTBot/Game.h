@@ -13,7 +13,7 @@ struct RS {
 	static EntityObj* GetEntityObjByIndex(uint32_t Index);
 	static DestinationFlag* GetDestinationFlag();
 
-	static GameState GetGameState();
+	static game_state GetGameState();
 	static BOOL IsInGame();
 	static std::string GetGameStateStr();
 

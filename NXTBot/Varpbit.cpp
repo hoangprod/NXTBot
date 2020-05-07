@@ -150,20 +150,21 @@ int Varpbit::GetPlayerPrayerToggle()
 	return GetVarpBit(5941);
 }
 
-std::vector<int> Varpbit::ScanVarpValue(std::vector<int> varps, int value)
+std::vector<std::pair<int, int>> Varpbit::ScanNewVarpValue(std::vector<std::pair<int, int>> varps, int value)
 {
-	std::vector<int> result;
+	std::vector<std::pair<int, int>> result;
 
 	if (varps.size() > 0)
 	{
 		for (auto varp : varps)
 		{
-			auto varpValue = GetVarpBit(varp);
+			auto varpValue = GetVarpBit(varp.first);
 
 			if (varpValue == value)
 			{
-				result.push_back(varp);
-				printf("Varp: %d, value: %d\n", varp, varpValue);
+				std::pair<int, int> pair = std::make_pair(varp.first, varpValue);
+				result.push_back(pair);
+				printf("Varp: %d, value: %d\n", varp.first, varpValue);
 			}
 		}
 	}
@@ -175,7 +176,8 @@ std::vector<int> Varpbit::ScanVarpValue(std::vector<int> varps, int value)
 
 			if (varpValue == value)
 			{
-				result.push_back(varp);
+				std::pair<int, int> pair = std::make_pair(varp, varpValue);
+				result.push_back(pair);
 				printf("Varp: %d, value: %d\n", varp, varpValue);
 			}
 		}
@@ -184,4 +186,54 @@ std::vector<int> Varpbit::ScanVarpValue(std::vector<int> varps, int value)
 	printf("-----------------------------------------------\n\n");
 
 	return result;
+}
+
+std::vector<std::pair<int, int>> Varpbit::ScanNextVarpValue(std::vector<std::pair<int, int>> varps, bool bChanged, int value)
+{
+	std::vector<std::pair<int, int>> result;
+
+	if (varps.size() > 0)
+	{
+		for (auto varp : varps)
+		{
+			auto varpValue = GetVarpBit(varp.first);
+
+			if (bChanged)
+			{
+				if (value != 9999)
+				{
+					if (varpValue == value)
+					{
+						std::pair<int, int> pair = std::make_pair(varp.first, varpValue);
+						result.push_back(pair);
+						printf("Unchanged: Varp: %d, value: %d\n", varp.first, varpValue);
+					}
+				}
+				else
+				{
+					if (varpValue != varp.second)
+					{
+						std::pair<int, int> pair = std::make_pair(varp.first, varpValue);
+						result.push_back(pair);
+						printf("Unchanged: Varp: %d, value: %d\n", varp.first, varpValue);
+					}
+				}
+			}
+			else
+			{
+				if (varpValue == varp.second)
+				{
+					std::pair<int, int> pair = std::make_pair(varp.first, varpValue);
+					result.push_back(pair);
+					printf("Unchanged: Varp: %d, value: %d\n", varp.first, varpValue);
+				}
+			}
+
+
+		}
+	}
+
+	printf("-----------------------------------------------\n\n");
+	return result;
+
 }

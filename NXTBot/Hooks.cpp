@@ -6,7 +6,6 @@
 #include "Inventory.h"
 #include "ItemDef.h"
 #include "Render.h"
-#include "Matrix.h"
 #include "Tile.h"
 #include "PlayableEntity.h"
 #include "Widgets.h"
@@ -15,30 +14,53 @@
 #include "Experience.h"
 #include "Helper.h"
 #include "Varpbit.h"
+#include "Archeology.h"
 #include "Common.h"
+#include "Auth.h"
+#include "tiger.h"
+#include "Antiban.h"
+#include <detours.h>
 
 #define _CRTDBG_MAP_ALLOC
 
 Detour64 detours;
 HWND hWnd;
 extern Addr Patterns;
+extern Archeology* archelogy;
+extern std::vector<mouse_biometric> mouse_data;
+
+
 bool g_HijackCtrl = false;
 UINT_PTR* g_GameContext = 0;
 UINT_PTR g_Module = 0;
+HANDLE ghMutex;
+HANDLE hMapFile;
+uintptr_t sharedMemory;
+
 static WNDPROC OriginalWndProcHandler = nullptr;
 
 fn_wglSwapBuffers o_wglSwapBuffers;
 fn_GetLocalPlayer o_GetLocalPlayer;
 fn_OnCursorDoAction o_OnCursorDoAction;
 fn_CursorWorldContextMenu o_CursorWorldConextMenu;
+fn_ExecuteHookInner o_ExecuteHookInner;
 fn_OnDispatchNetMessage o_OnDispatchNetMessage;
 fn_GUIManagerRender o_Render;
 fn_CopyString o_CopyString;
+fn_StartLogin o_StartLogin;
+fn_PrepareUUIDPacket o_PrepareUUIDPacket;
 
-using nlohmann::json;
-json itemList;
+fn_GetVarpType o_GetVarpType = (fn_GetVarpType)0x7FF60F64F550;
+fn_SetVarpValueFromServer o_SetVarpValueFromServer = (fn_SetVarpValueFromServer)0x7FF60F5F9020;
+
+char* biometric_data = 0;
+nlohmann::json itemList;
 
 bool bMenu = false;
+bool recording = false;
+bool bMaster = false;
+bool bSlave = false;
+bool bIsFocus = false;
 
 std::string botStatus = "Not started.";
 
@@ -57,7 +79,7 @@ enum class BotType {
 	AnachroniaAgility
 };
 
-std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility", "Abyss Crafting", "Watch Tower Agility", "Wilderness Agility", "Divination", "Fungal Mage"};
+std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility", "Abyss Crafting", "Watch Tower Agility", "Wilderness Agility", "Divination", "Fungal Mage", "Taverly Summoning", "Drop Monei"};
 
 std::vector<std::string> OreNode = { "Copper rock", "Tin rock", "Iron rock", "Coal", "Mithril rock", "Adamantite rock", "Runite rock", "Orichalcite rock" };
 std::vector<std::string> OreName = { "Copper ore", "Tin ore", "Iron ore", "Coal", "Mithril ore", "Adamantite ore", "Runite ore", "Orichalcite ore" };
@@ -65,6 +87,104 @@ std::vector<std::string> OreName = { "Copper ore", "Tin ore", "Iron ore", "Coal"
 std::vector<std::string> TreeNames = { "Tree", "Oak", "Willow", "Teak", "Maple", "Acadia", "Mahogany", "Yew" };
 std::vector<std::string> LogNames = { "Logs", "Oak logs", "Willow logs", "Teak logs", "Maple logs", "Acadia logs", "Mahogany logs", "Yew logs" };
 
+
+void Mirroring(uint32_t param1 = 0, int32_t param2 = 0, int32_t param3 = 0, uint64_t function = 0)
+{
+	static uint32_t index = 0;
+
+	DWORD  dwWaitResult = WaitForSingleObject(
+		ghMutex,    // handle to mutex
+		200);  // no time-out interval
+
+	switch (dwWaitResult)
+	{
+		// The thread got ownership of the mutex
+	case WAIT_OBJECT_0:
+		try {
+			// MAP the Memory of the mirror action
+			if (sharedMemory)
+			{
+				if (bMaster)
+				{
+					index++;
+					ActionMirror* action = new ActionMirror(index, param1, param2, param3, function);
+
+					printf("Master sent %d %d %d %d %p\n", index, param1, param2, param3, function);
+
+					memcpy((void*)sharedMemory, action, sizeof(ActionMirror));
+
+					delete action;
+				}
+				else if (bSlave)
+				{
+					static int slaveIndex = 0;
+
+					ActionMirror* action = (ActionMirror*)sharedMemory;
+
+					//printf("Slave received %d %d %d %d %p\n", action->index, action->param1, action->param2, action->param3, action->function);
+
+					// If we haven't execute this mirror action yet, then do it
+					if (action->index > slaveIndex)
+					{
+						if (action->function > 0x10)
+						{
+							uint8_t data[100] = { 0 };
+
+							*reinterpret_cast<int*>(&data[0x58]) = action->param1;
+							*reinterpret_cast<int*>(&data[0x5c]) = action->param2;
+							*reinterpret_cast<int*>(&data[0x60]) = action->param3;
+
+							uint64_t func_ptr = action->function;
+
+							if (func_ptr)
+							{
+								dataStruct dt;
+								dt.dataPtr = data;
+
+								printf("Slave is calling function %p\n", func_ptr);
+
+								typedef void(__cdecl* _MirrorAction)(uint64_t* _this, void* dataPtr);
+								reinterpret_cast<_MirrorAction>(func_ptr)(g_GameContext, &dt);
+
+							}
+							
+						}
+						else if (action->function == 0x1) // Key press
+						{
+							SendMessageW(hWnd, action->param1, action->param2, action->param3);
+						}
+
+
+						slaveIndex = action->index;
+
+					}
+					else if(slaveIndex != action->index)
+					{
+						slaveIndex = action->index;
+					}
+
+				}
+			}
+		}
+		catch (...)
+		{
+			printf("Mirroring error occured %d\n", GetLastError());
+		}
+
+
+		if (!ReleaseMutex(ghMutex))
+		{
+			// Handle error.
+		}
+
+		break;
+
+		// The thread got ownership of an abandoned mutex
+		// The database is in an indeterminate state
+	case WAIT_ABANDONED:
+		return;
+	}
+}
 
 bool h_OnDispatchNetMessage(UINT_PTR* a1, UINT_PTR* a2)
 {
@@ -95,9 +215,66 @@ DWORD* h_OnCursorDoAction(UINT_PTR a1, ActionPtr actionPtr, float* position)
 
 		agiList.push_back(AgilityCourse(param1));
 	}
+
+	if(bMaster)
+		Mirroring(param1, param2, param3, (uint64_t)dispatcherFunc);
 	
 	return o_OnCursorDoAction(a1, actionPtr, position);
 }
+
+__int64* __fastcall h_GetVarpType(__int64 VarpWrap, __int64 VarpDomain, unsigned int varpid)
+{
+	if(bMenu)
+		printf("Getvarp domain %p  varpid %d\n", VarpDomain, varpid);
+	return o_GetVarpType(VarpWrap, VarpDomain, varpid);
+}
+
+__int64 __fastcall h_SetVarValueFromServer(__int64 Player, __int64 VarpType, VarpClass* a3)
+{
+	if (bMenu)
+		printf("Varp value set %d\n", a3->Value);
+
+	return o_SetVarpValueFromServer(Player, VarpType, a3);
+}
+
+int* h_ExecuteHookInner(UINT_PTR* GameContext, unsigned int* a2, int a3)
+{
+	g_GameContext = GameContext;
+
+
+	return o_ExecuteHookInner(GameContext, a2, a3);
+}
+
+__int64* h_PrepareUUIDPacket(__int64* uuid_struct, __int64 packet)
+{
+	auto contextPtr = (GameContextPtr*)g_GameContext;
+
+	if (uuid_struct)
+	{
+		BYTE* uuid = (BYTE*)((__int64)uuid_struct + 0xc8);
+
+		if (contextPtr)
+		{
+			const char* email =contextPtr->gContext->LoginManager->Email;
+			//printf("Email: %s\n", contextPtr->gContext->LoginManager->Email);
+			//print_bytes("=== Original UUID ===", uuid, 24, true);
+
+
+			word64* tiger_hash = new word64[3];
+			tiger((word64*)email, strlen(email), tiger_hash);
+
+			//print_bytes("=== Generated UUID ===", (byte*)tiger_hash, 24, true);
+
+			memcpy(uuid, tiger_hash, 24);
+
+			//print_bytes("=== New UUID ===", uuid, 24, true);
+
+		}
+	}
+
+	return o_PrepareUUIDPacket(uuid_struct, packet);
+}
+
 
 UINT_PTR h_CursorWorldContextMenu(UINT_PTR* GameContext, int a2, int a3, int a4, int a5)
 {
@@ -222,13 +399,23 @@ bool h_wglSwapBuffers(HDC hdc)
 
 		}
 
+		if(bMaster)
+			font.Print(100.f, 140.0f, "Master Mode Activated");
+		if (bSlave)
+			font.Print(100.f, 160.0f, "Slave Mode Activated");
+		if (recording)
+			font.Print(100.f, 180.0f, "Recording Mouse Data");
 
 		glPopMatrix();
 		glPopAttrib();
 
 		wglMakeCurrent(oldhdc, oldctx);
 	}
-	
+
+
+	if (bSlave)
+		Mirroring();
+
 	try {
 		// Botting
 		Manager::Manage();
@@ -238,9 +425,28 @@ bool h_wglSwapBuffers(HDC hdc)
 
 	}
 
+	if (GetActiveWindow())
+		bIsFocus = true;
+	else
+		bIsFocus = false;
+
 	return o_wglSwapBuffers(hdc);
 }
 
+
+BOOL unhook_function(PVOID& t1, PBYTE t2, const char* s = NULL)
+{
+	DetourTransactionBegin();
+	DetourUpdateThread(GetCurrentThread());
+	DetourDetach(&t1, t2);
+	if (DetourTransactionCommit() != NO_ERROR) {
+		printf("[Hook] - Failed to unhook %s.\n", s);
+		return false;
+	}
+	return true;
+}
+
+bool unloaded = false;
 
 bool __stdcall Unload()
 {
@@ -257,11 +463,18 @@ bool __stdcall Unload()
 
 	if (detours.Clearhook())
 	{
+
+		//unhook_function((PVOID&)o_GetVarpType, (PBYTE)h_GetVarpType, "GetVarpType");
+
 		o_wglSwapBuffers = (fn_wglSwapBuffers)detour_iat_ptr("SwapBuffers", o_wglSwapBuffers, (HMODULE)HdnGetModuleBase("rs2client.exe"));
 
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)OriginalWndProcHandler);
 
+		delete[] biometric_data; biometric_data = 0;
+
 		printf("[+]  Successfully unhook and unloaded\n");
+
+		unloaded = true;
 
 		return true;
 	}
@@ -300,13 +513,13 @@ void UpdateTest()
 	Tile2D localplayerPos = RS::GetLocalPlayerTilePos();
 	printf("============================================\n");
 	printf("PID: %d %x\n", GetCurrentProcessId(), GetCurrentProcessId());
-	printf("Gamestate: %d\n", RS::GetGameState());
+	printf("GameContext: %p   --   Gamestate: %d\n", g_GameContext, RS::GetGameState());
 	printf("LocalPlayer: %p\n",  RS::GetLocalPlayer());
 	printf("EntityCount: %d\n", RS::GetEntityCount());
 	printf("PlayerName: %s -- Current Target is: %d\n", RS::GetLocalPlayer()->Name, RS::GetLocalPlayer()->CurrentTarget);
 	printf("LocalPlayer is currently on tile (%d, %d) with z being %f\n", localplayerPos.x, localplayerPos.y, RS::GetLocalPlayerPos()[1]);
-	printf("Inventory Free Slot: %d\n", Inventory::GetFreeSlot());
-	printf("Current first id is %d\n", Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack))->ContainerContent[0].ItemId);
+	printf("Inventory Free Slot: %d  -- ", Inventory::GetFreeSlot());
+	printf("Current first id is %d  -- ", Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack))->ContainerContent[0].ItemId);
 	printf("Inventory Container: %p\n", Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack)));
 	printf("Widget Conversation: %p\n", Widgets::GetWidgetUI(CONVERSATION_WIDGET));
 	printf("Closest Player: %p\n", cplayer);
@@ -328,8 +541,7 @@ void UpdateTest()
 
 }
 
-static std::vector<int> varprange = {};
-
+static std::vector<std::pair<int, int>> varprange = { {5, 5},{5, 5} };
 
 LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -344,6 +556,57 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		Manager::Keystates(wParam);
 
+
+		if (wParam == VK_F1)
+		{
+			mouse_replay* bio = (mouse_replay*)biometric_data;
+
+			printf("%d %d %d %d\n", bio->points[0].uMsg, bio->points[0].delay, bio->points[1].uMsg, bio->points[1].delay);
+
+			
+
+		}
+
+		if (wParam == VK_END)
+		{
+			recording = !recording;
+
+			// if we just disabled recording
+			if (!recording)
+			{
+				time_t filename = std::time(0);
+
+				std::string str_filename = "C:\\ProgramData\\Jagex\\launcher\\" + std::to_string(filename) + "_mouse" + ".bin";
+
+				std::ofstream f(str_filename, std::ios::binary | std::ios::out);
+			
+				mouse_data[0].delay = 0;
+
+				const char* pointer = reinterpret_cast<const char*>(&mouse_data[0]);
+
+				size_t bytes = mouse_data.size() * sizeof(mouse_data[0]);
+
+				uint32_t width = 0, height = 0;
+
+				RECT r;
+				if (GetClientRect(hWnd, &r))
+				{
+					width = r.right - r.left;
+					height = r.bottom - r.top;
+				}
+
+				mouse_data_header header(height, width, mouse_data.size());
+
+				printf("Writing to file %s %d\n", str_filename.data(), bytes);
+
+				f.write((const char*)&header, sizeof mouse_data_header);
+
+				f.write(pointer, bytes);
+
+				f.close();
+			}
+		}
+
 		if (wParam == VK_NUMPAD0)
 		{
 			printf("gcontext = %p\n", g_GameContext);
@@ -352,9 +615,27 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		}
 
+		if (wParam == VK_NUMPAD1)
+		{
+			//Common::Login("heph_yeet@maildu.de", "poching29");
+		}
+
 		if (wParam == VK_OEM_3)
 		{
 			bMenu = !bMenu;
+		}
+
+		if (wParam == VK_NUMPAD2)
+		{
+			UpdateTest();
+
+
+			/*
+			auto player = RS::GetLocalPlayerTilePos();
+			agiList[agiList.size() - 1].EndPos = player;
+
+			printf("Added (%d, %d) as player pos.\n", player.x, player.y);
+			*/
 		}
 
 		if (RS::IsInGame())
@@ -362,13 +643,22 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (wParam == VK_NUMPAD1)
 			{
-				auto EnergyRift = Static::GetClosestStaticObjectByName("time sprite", true, true);
+				int items = 0;
 
-				if (EnergyRift.Definition)
+				auto storage = Inventory::GetContainerObj(95);
+				if (storage)
 				{
-					printf("%p %d %d %d\n", EnergyRift.Definition, EnergyRift.Definition->Id, EnergyRift.TileX, EnergyRift.TileY);
+					auto content = storage->ContainerContent;
+					for (int i = 0; i < Varpbit::GetVarp(MAX_BANK_SLOT); i++)
+					{
+						auto x = content[i];
+						if (x.ItemId != -1 && x.ItemQuantity > 0)
+							items++ ;
+					}
 				}
 
+
+				//printf("found %d valid items\n", items);
 				/*
 				printf("std::vector<AgilityCourse> WildernessAgi = { ");
 				for (auto i : agiList)
@@ -378,20 +668,8 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				printf(" };");
 				*/
 			}
-			if (wParam == VK_NUMPAD2)
-			{
 
-				UpdateTest();
-
-
-				/*
-				auto player = RS::GetLocalPlayerTilePos();
-				agiList[agiList.size() - 1].EndPos = player;
-
-				printf("Added (%d, %d) as player pos.\n", player.x, player.y);
-				*/
-			}
-			if (wParam == VK_NUMPAD3)
+			if (FALSE)
 			{
 				//Player player = RS::GetLocalPlayer();
 				//player.Move(player.GetTilePosition());
@@ -406,7 +684,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				printf("Record Agi: %d\n", RecordAgility);
 				*/
 			}
-			if (wParam == VK_NUMPAD4)
+			if (wParam == VK_NUMPAD3)
 			{
 				std::string line;
 				std::ifstream myfile("C:\\ProgramData\\Jagex\\launcher\\scan.txt");
@@ -422,6 +700,26 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				}
 			}
+
+			// New Scan
+			if (wParam == VK_NUMPAD4)
+			{
+				std::string line;
+				std::ifstream myfile("C:\\ProgramData\\Jagex\\launcher\\scan.txt");
+				if (myfile.is_open())
+				{
+					getline(myfile, line);
+					myfile.close();
+
+					int value = std::stoi(line);
+
+
+					varprange = Varpbit::ScanNewVarpValue(varprange, value);
+				}
+			}
+
+			// Changed Varp
+
 			if (wParam == VK_NUMPAD5)
 			{
 				std::string line;
@@ -434,13 +732,18 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					int value = std::stoi(line);
 
 
-					varprange = Varpbit::ScanVarpValue(varprange, value);
+					if(value != 9999)
+						varprange = Varpbit::ScanNextVarpValue(varprange, true, value);
+					else
+						varprange = Varpbit::ScanNextVarpValue(varprange, true);
 				}
-
 			}
+			// Unchanged
 			if (wParam == VK_NUMPAD6)
 			{
+				varprange = Varpbit::ScanNextVarpValue(varprange, false);
 			}
+
 			if (wParam == VK_OEM_3)
 			{
 				//UINT_PTR* PlayerObj = *(UINT_PTR**)(g_GameContext[1] + 0x1780);
@@ -451,14 +754,119 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 
 		}
+
+		if (wParam == VK_HOME)
+			Unload();
+
+
+
+
+		if (wParam == VK_PRIOR)
+		{
+			if (!bSlave)
+				bMaster = !bMaster;
+		}
+
+		else if (wParam == VK_NEXT)
+		{
+
+			if (!bMaster)
+				bSlave = !bSlave;
+		}
 	}
 
-	if (wParam == VK_HOME)
-		Unload();
+	if(bMaster && wParam >= 0x30 && wParam <= 0x5A)
+		Mirroring(uMsg, wParam, lParam, 0x1);
+
+	static bool isFocus = false;
+
+	if (uMsg == WM_SETFOCUS)
+	{
+		// do not focus if we are already focused
+		if (isFocus)
+		{
+			return 0;
+
+		}
+
+		printf("Set focus\n");
+
+		isFocus = true;
+	}
+
+
+	if (uMsg == WM_KILLFOCUS)
+	{
+		// if we are not focused, and menu is not on -1 OR archeology is running, then kill all natural KILLFOCUS
+		if (SelectedBot != -1 || archelogy || !isFocus)
+		{
+			return 0;
+		}
+
+		printf("lost focus\n");
+
+		isFocus = false;
+	}
+
+	
+	if (recording && (uMsg == WM_MOUSEMOVE || uMsg == WM_KILLFOCUS || uMsg == WM_SETFOCUS || wParam == VK_UP || wParam == VK_DOWN || wParam == VK_LEFT || wParam == VK_RIGHT))
+	{
+		antiban::mouse_record(uMsg, wParam, lParam);
+	}
+	
 
 	return CallWindowProc(OriginalWndProcHandler, hWnd, uMsg, wParam, lParam);
 }
 
+
+
+BOOL hook_function(PVOID& t1, PBYTE t2, const char* s = NULL)
+{
+	DetourTransactionBegin();
+	DetourUpdateThread(GetCurrentThread());
+	DetourAttach(&t1, t2);
+	if (DetourTransactionCommit() != NO_ERROR) {
+#ifdef _DEBUG
+		printf("[Hook] - Failed to hook %s.\n", s);
+#endif
+		return false;
+	}
+	else {
+#ifdef _DEBUG
+		printf("[Hook] - Successfully hooked %s.\n", s);
+#endif
+		return true;
+	}
+}
+
+
+
+DWORD WINAPI biometric_thread(LPVOID lpParameter)
+{
+	while (!unloaded)
+	{
+		if (!bIsFocus && biometric_data && Manager::is_botting())
+		{
+			uint32_t width = 0, height = 0;
+
+			RECT r;
+			if (GetClientRect(hWnd, &r))
+			{
+				width = r.right - r.left;
+				height = r.bottom - r.top;
+			}
+
+			mouse_replay* bio = (mouse_replay*)biometric_data;
+
+			antiban::mouse_playback(bio, height, width);
+		}
+
+		Sleep(5);
+	}
+
+	return 0;
+
+}
 
 bool hooks()
 {
@@ -497,6 +905,8 @@ bool hooks()
 	}
 #endif
 
+	o_StartLogin = (fn_StartLogin)Patterns.Func_StartLogin;
+
 	o_GetLocalPlayer = (fn_GetLocalPlayer)Patterns.Func_GetLocalPlayer;
 
 	o_OnCursorDoAction = (fn_OnCursorDoAction)Patterns.Func_OnCursorDoAction;
@@ -507,6 +917,20 @@ bool hooks()
 
 	o_CursorWorldConextMenu = (fn_CursorWorldContextMenu)detours.Hook(o_CursorWorldConextMenu, h_CursorWorldContextMenu, 15);
 
+	//o_SetVarpValueFromServer = (fn_SetVarpValueFromServer)detours.Hook(o_SetVarpValueFromServer, h_SetVarValueFromServer, 15);
+
+	//o_GetVarpType = (fn_GetVarpType)detours.Hook(o_GetVarpType, h_GetVarpType, 20);
+
+	//hook_function((PVOID&)o_GetVarpType, (PBYTE)h_GetVarpType, "h_GetVarpType");
+
+	o_ExecuteHookInner = (fn_ExecuteHookInner)Patterns.Func_ExecuteHookInner;
+
+	o_ExecuteHookInner = (fn_ExecuteHookInner)detours.Hook(o_ExecuteHookInner, h_ExecuteHookInner, 14);
+
+	o_PrepareUUIDPacket = (fn_PrepareUUIDPacket)Patterns.Func_PrepareUUIDPacket;
+
+	o_PrepareUUIDPacket = (fn_PrepareUUIDPacket)detours.Hook(o_PrepareUUIDPacket, h_PrepareUUIDPacket, 18);
+
 	//o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)Patterns.Func_OnDispatchMessage;
 
 	//o_OnDispatchNetMessage = (fn_OnDispatchNetMessage)detours.Hook(o_OnDispatchNetMessage, h_OnDispatchNetMessage, 18);
@@ -515,9 +939,66 @@ bool hooks()
 
 	OriginalWndProcHandler = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)hWndProc);
 
+	ghMutex = CreateMutex(
+		NULL,              // default security attributes
+		FALSE,             // initially not owned
+		L"Local\\svchost_srv");             // unnamed mutex
+
+	if (ghMutex == NULL)
+	{
+		printf("CreateMutex error: %d %d\n", GetLastError(), sizeof(ActionMirror));
+		return 1;
+	}
+
+	hMapFile = CreateFileMapping(
+		INVALID_HANDLE_VALUE,
+		NULL,
+		PAGE_READWRITE,
+		0,
+		sizeof(ActionMirror),
+		L"Local\\svchost_srv_mem");
+
+	if (!hMapFile)
+	{
+		printf("CreateFileMapping error: %d\n", GetLastError());
+		return 0;
+	}
+
+	sharedMemory = (uintptr_t)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ActionMirror));
+
+	if (!sharedMemory)
+	{
+		printf("MapViewOfFile failed with error: %d\n", GetLastError());
+		return 0;
+	}
+
+	std::ifstream mouse_data_file("C:\\ProgramData\\Jagex\\launcher\\mouse_data.bin", std::ios::binary | std::ios::ate);
+
+	if (!mouse_data_file.fail())
+	{
+		size_t FileSize = static_cast<size_t>(mouse_data_file.tellg());
+
+		biometric_data = new char[FileSize]();
+
+		mouse_data_file.seekg(0, std::ios::beg);
+
+		mouse_data_file.read(biometric_data, FileSize);
+
+		printf("[+] Successfully Read the biometric file at %p with size %d.\n", biometric_data, FileSize);
+
+		mouse_data_file.close();
+
+	}
+	else
+	{
+		printf("[!] Biometric file reading failed!\n");
+	}
+	CreateThread(0, 0, biometric_thread, 0, 0, 0);
+
 #ifdef NDEBUG
 	Beep(523, 200);
 #endif
 
 	return true;
 }
+

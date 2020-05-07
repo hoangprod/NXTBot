@@ -20,6 +20,7 @@
 
 //session shit
 #include <wtsapi32.h>
+#include <iostream>
 
 
 #pragma warning(disable: 6001) //uninitialized memory (bug with SAL notation)

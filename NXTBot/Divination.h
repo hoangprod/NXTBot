@@ -10,7 +10,6 @@ public:
 
 
 	bool runOnce = false;
-	bool isRifting = false;
 };
 
 

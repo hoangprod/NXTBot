@@ -13,15 +13,14 @@
 
 extern int extraDelay;
 
-std::vector<std::pair<std::string, int>> ArcheologyNodes = { std::pair<std::string, int>("Gravitron research debris", 91),std::pair<std::string, int>("Big High War God shrine", 89), std::pair<std::string, int>("Goblin dorm debris", 83), std::pair<std::string, int>("Gladiatorial goblin remains", 76), std::pair<std::string, int>("Oikos studio debris", 72),std::pair<std::string, int>("Ikovian memorial", 70), std::pair<std::string, int>("Dominion Games podium", 69), std::pair<std::string, int>("Infernal art", 65), std::pair<std::string, int>("Stadio debris", 61),std::pair<std::string, int>("Ceramics studio debris", 56),std::pair<std::string, int>("Amphitheatre debris", 51), std::pair<std::string, int>("Monoceros remains", 48), std::pair<std::string, int>("Prodromoi remains", 42), std::pair<std::string, int>("Sacrificial altar", 36), std::pair<std::string, int>("Cultist footlocker", 29), std::pair<std::string, int>("Lodge art storage", 24), std::pair<std::string, int>("Lodge bar storage", 20), std::pair<std::string, int>("Castra debris", 17), std::pair<std::string, int>("Venator remains", 1) };
+std::vector<std::pair<std::string, int>> ArcheologyNodes = { std::pair<std::string, int>("Destroyed golem", 98),std::pair<std::string, int>("Gravitron research debris", 91),std::pair<std::string, int>("Big High War God shrine", 89), std::pair<std::string, int>("Goblin dorm debris", 83), std::pair<std::string, int>("Gladiatorial goblin remains", 76), std::pair<std::string, int>("Oikos studio debris", 72),std::pair<std::string, int>("Ikovian memorial", 70), std::pair<std::string, int>("Dominion Games podium", 69), std::pair<std::string, int>("Infernal art", 65), std::pair<std::string, int>("Stadio debris", 61),std::pair<std::string, int>("Ceramics studio debris", 56),std::pair<std::string, int>("Amphitheatre debris", 51), std::pair<std::string, int>("Monoceros remains", 48), std::pair<std::string, int>("Prodromoi remains", 42), std::pair<std::string, int>("Sacrificial altar", 36), std::pair<std::string, int>("Cultist footlocker", 29), std::pair<std::string, int>("Lodge art storage", 24), std::pair<std::string, int>("Lodge bar storage", 20), std::pair<std::string, int>("Castra debris", 17), std::pair<std::string, int>("Venator remains", 1) };
 
 std::vector<std::pair<std::string, int>> ArcheologyCaches = { std::pair<std::string, int>("Material cache (Yu'biusk clay)", 83), std::pair<std::string, int>("Material cache (warforged bronze)", 76), std::pair<std::string, int>("Material cache (malachite green)", 76), std::pair<std::string, int>("Material cache (vulcanised rubber)", 76) };
 
 std::vector<int> ArcheologySoil = { 49517 , 49521, 49519, 49523, 49525 };
 
-std::vector<int> ArcheologyArtefacts = { 49747, 49745, 49676, 49666, 49837, 49829, 49736, 49732, 49690, 49714, 49722, 49927, 49933, 49833, 49839, 49767 , 49765, 49769, 49773, 49775, 49753, 49755, 49761, 49811, 49813, 49815 };
+std::vector<int> ArcheologyArtefacts = { 49644, 49642, 49747, 49745, 49676, 49666, 49837, 49829, 49736, 49732, 49690, 49714, 49722, 49927, 49933, 49833, 49839, 49767 , 49765, 49769, 49773, 49775, 49753, 49755, 49761, 49811, 49813, 49815 };
 
-bool runOnce = true;
 
 void Archeology::FSM()
 {
@@ -59,7 +58,7 @@ void Archeology::FSM()
 
 	if (Widgets::GetWidgetUI(BANKING_WIDGET))
 	{
-		if (Inventory::GetFreeSlot() < 25)
+		if (Inventory::GetFreeSlot() < 22)
 		{
 			Common::DepositAllThroughBank();
 			return;
@@ -154,6 +153,8 @@ void Archeology::FSM()
 			Common::StaticInteract(DepositBox);
 			return;
 		}
+
+		MaterialCart = Static::GetClosestStaticObjectByName("Materials cart", true);
 
 		if (MaterialCart.Definition)
 		{
@@ -282,7 +283,6 @@ void Archeology::Banking()
 
 		if (Inventory::GetFreeSlot() < 27)
 		{
-
 			Common::DepositAllThroughBank();
 			return;
 		}

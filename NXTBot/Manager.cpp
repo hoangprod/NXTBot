@@ -10,9 +10,12 @@
 #include "Archeology.h"
 #include "Divination.h"
 #include "FungalMage.h"
+#include "Summoning.h"
+#include "MoneyDrop.h"
 #include "Game.h"
 #include "Auth.h"
 #include "Common.h"
+#include "Antiban.h"
 #include "Manager.h"
 
 extern HWND hWnd;
@@ -31,6 +34,8 @@ WildernessAgilityCourse* wildernessagi = 0;
 WatchTowerAgi* watchtoweragi = 0;
 Divination* divination = 0;
 FungalMage* fungalMage = 0;
+TaverlySummoning* taverlySummon = 0;
+MoneyDrop* money_drop = 0;
 
 extern std::vector<const char*> botList;
 extern std::string botStatus;
@@ -55,10 +60,9 @@ void Manager::Manage()
 		{
 			randomTick = (rand() % 1000 + 300);
 
-			if (randomTick % 22 == 0)
+			if (randomTick % 99 == 0)
 			{
-				SendMessage(hWnd, WM_KEYDOWN, VK_INSERT, 0);
-				SendMessage(hWnd, WM_KEYUP, VK_INSERT, 0);
+				antiban::anti_afk();
 			}
 
 			if (RS::IsInGame())
@@ -82,6 +86,22 @@ void Manager::Manage()
 					WoodCutting->FSM();
 				}
 			}
+			else if (RS::GetGameState() == game_state::Lobby)
+			{
+				if (firstLog)
+				{
+					firstLog = false;
+					Common::LoginFromLobby();
+					printf("Logging in from lobby\n");
+					extraDelay = 9000;
+				}
+				else
+				{
+					firstLog = true;
+					extraDelay = 5000;
+				}
+
+			}
 
 
 			last_tick = GetTickCount64();
@@ -93,38 +113,41 @@ void Manager::Manage()
 		// If X ticks have not past yet + a random of 30-300~ ticks
 		if ((last_tick + tick + randomTick) < GetTickCount64())
 		{
-			randomTick = (rand() % 150);
+			randomTick = (rand() % 87);
 
-			if (randomTick % 22 == 0)
+			if (randomTick % 97 == 0)
 			{
-				SendMessage(hWnd, WM_KEYDOWN, VK_INSERT, 0);
-				SendMessage(hWnd, WM_KEYUP, VK_INSERT, 0);
+				antiban::anti_afk();
 			}
 
 			if (RS::IsInGame())
 			{
-				genMining->FSM();
+				if (genMining)
+					genMining->FSM();
 			}
 
 			last_tick = GetTickCount64();
 		}
 	}
-	else if (peng || AnachAgi || abyssCrafting || archelogy || watchtoweragi || wildernessagi || divination || fungalMage)
+	else if (peng || AnachAgi || abyssCrafting || archelogy || watchtoweragi || wildernessagi || divination || fungalMage || taverlySummon || money_drop)
 	{
 		static uint32_t randomTick = 0;
 
 		// If X ticks have not past yet + a random of 30-300~ ticks
 		if ((last_tick + tick + randomTick + extraDelay) < GetTickCount64())
 		{
-
 			extraDelay = 0;
 
 			randomTick = (rand() % 200 + 200);
 
-			if (randomTick % 22 == 0)
+			last_tick = GetTickCount64();
+
+			if (!abyssCrafting && !wildernessagi && !money_drop && (antiban::long_break_manager() || antiban::short_break_manager()))
+				return;
+
+			if (randomTick % 96 == 0)
 			{
-				SendMessage(hWnd, WM_KEYDOWN, VK_INSERT, 0);
-				SendMessage(hWnd, WM_KEYUP, VK_INSERT, 0);
+				antiban::anti_afk();
 			}
 
 			if (RS::IsInGame())
@@ -145,8 +168,12 @@ void Manager::Manage()
 					divination->FSM();
 				else if (fungalMage)
 					fungalMage->FSM();
+				else if (taverlySummon)
+					taverlySummon->FSM();
+				else if (money_drop)
+					money_drop->FSM();
 			}
-			else if (RS::GetGameState() == GameState::Lobby)
+			else if (RS::GetGameState() == game_state::Lobby)
 			{
 				if (firstLog)
 				{
@@ -163,7 +190,7 @@ void Manager::Manage()
 
 			}
 
-			last_tick = GetTickCount64();
+			//last_tick = GetTickCount64();
 		}
 	}
 	else
@@ -172,6 +199,14 @@ void Manager::Manage()
 	}
 
 
+}
+
+bool Manager::is_botting()
+{
+	if (peng || AnachAgi || abyssCrafting || archelogy || watchtoweragi || wildernessagi || divination || fungalMage || taverlySummon || money_drop || wisp || genCombat || rabbit || WoodCutting || genMining)
+		return true;
+
+	return false;
 }
 
 void Manager::Keystates(WPARAM wParam)
@@ -433,6 +468,32 @@ void Manager::Keystates(WPARAM wParam)
 				AIOAuth("Fungal_Mage", "Stop", player.GetName());
 
 				delete fungalMage; fungalMage = 0;
+			}
+			break;
+		case 12:
+			if (!taverlySummon)
+			{
+				if (AIOAuth("Taverly_Summoning", "Start", player.GetName()) != -1)
+					taverlySummon = new TaverlySummoning();
+			}
+			else if (taverlySummon)
+			{
+				AIOAuth("Taverly_Summoning", "Stop", player.GetName());
+
+				delete taverlySummon; taverlySummon = 0;
+			}
+			break;
+		case 13:
+			if (!money_drop)
+			{
+				if (AIOAuth("Money_Drop", "Start", player.GetName()) != -1)
+					money_drop = new MoneyDrop();
+			}
+			else if (money_drop)
+			{
+				AIOAuth("Money_Drop", "Stop", player.GetName());
+
+				delete money_drop; money_drop = 0;
 			}
 			break;
 		default:

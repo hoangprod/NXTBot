@@ -40,28 +40,20 @@ void Divination::FSM()
 
 	if (player.isMoving() || player.IsInAnimation() || player.CurrentUsefulAni() != -1)
 	{
-		printf("is moving\n");
+		//printf("is moving\n");
 		return;
 	}
 
-	if (isRifting)
+	auto haveMemory = HaveMemoryInInventory();
+
+	auto EnergyRift = Static::GetClosestStaticObjectByName("Energy Rift");
+
+	if (!EnergyRift.Definition)
+		EnergyRift = Static::GetClosestStaticObjectByName("Energy rift", true);
+
+
+	if (EnergyRift.Definition && ((Inventory::isInventoryFull() && haveMemory) || (haveMemory && RS::GetDistance(player.GetTilePosition(), Tile2D(EnergyRift.TileX, EnergyRift.TileY)) < 3.0f )))
 	{
-		// If we don't have any more memory in inventory, it maens we are done rifting
-		if (!Divination::HaveMemoryInInventory())
-			isRifting = false;
-
-
-		printf("is rifting\n");
-		return;
-	}
-
-	if (Inventory::isInventoryFull())
-	{
-		auto EnergyRift = Static::GetClosestStaticObjectByName("Energy Rift");
-
-		if(!EnergyRift.Definition)
-			EnergyRift = Static::GetClosestStaticObjectByName("Energy rift", true);
-		
 
 		if (EnergyRift.Definition)
 		{
@@ -69,9 +61,7 @@ void Divination::FSM()
 
 			printf("Depositing in rift\n");
 			Common::StaticInteract(EnergyRift);
-			extraDelay = 10000;
-
-			isRifting = true;
+			extraDelay = 5000;
 		}
 
 		return;
@@ -108,6 +98,12 @@ bool Divination::HaveMemoryInInventory()
 		if (Inventory::GetItemById(i) != -1)
 			return true;
 	}
+
+	if (Inventory::GetItemById(37946) != -1)
+		return true;
+
+	if (Inventory::GetItemById(29384) != -1)
+		return true;
 
 	return false;
 }

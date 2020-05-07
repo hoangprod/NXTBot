@@ -151,6 +151,7 @@
     <ClInclude Include="Handle Hijacking.h" />
     <ClInclude Include="Import Handler.h" />
     <ClInclude Include="Injection.h" />
+    <ClInclude Include="Manager.h" />
     <ClInclude Include="Manul Mapping.h" />
     <ClInclude Include="NT Stuff.h" />
     <ClInclude Include="pch.h" />

@@ -84,3 +84,27 @@ RSDialog Widgets::GetDialogType()
 		break;
 	}
 }
+
+UIType Widgets::GetUIType()
+{
+	// Just using summoning for now
+	auto UI = Widgets::GetWidgetUI(SUMMONING_WIDGET);
+
+	if (!UI)
+		return UIType::UNKNOWN;
+
+	switch (UI->SecondaryId)
+	{
+	case 0x4F1:
+		return UIType::SHOP_STORE;
+		break;
+	case 0x55a:
+		return UIType::OBELISK_WIDGET;
+		break;
+	default:
+		return UIType::UNKNOWN;
+		break;
+	}
+
+	return UIType();
+}

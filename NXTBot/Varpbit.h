@@ -25,6 +25,7 @@ public:
 	static int GetPlayerPrayerToggle();
 
 
-	static std::vector<int> ScanVarpValue(std::vector<int> varps, int value);
+	static std::vector<std::pair<int, int>> ScanNewVarpValue(static std::vector<std::pair<int, int>> varps, int value);
+	static std::vector<std::pair<int, int>> ScanNextVarpValue(static std::vector<std::pair<int, int>> varps, bool bChanged, int value = 9999);
 
 };

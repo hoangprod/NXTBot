@@ -79,6 +79,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\Users\Node\source\repos\NXTBot\NXTBot\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -86,6 +87,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Configuration)\$(PlatformShortName)\</OutDir>
+    <IncludePath>C:\Users\Node\source\repos\NXTBot\NXTBot\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -115,14 +117,16 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <ExceptionHandling>Async</ExceptionHandling>
       <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>ws2_32.lib;Lib\64libsodium.lib;Opengl32.lib;C:\Users\Node\source\repos\NXTBot\NXTBot\Lib\64libsodium.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;detours.lib;Lib\64libsodium.lib;Opengl32.lib;C:\Users\Node\source\repos\NXTBot\NXTBot\Lib\EASTL_d.lib;C:\Users\Node\source\repos\NXTBot\NXTBot\Lib\64libsodium.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalOptions>/NODEFAULTLIB:library %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -167,12 +171,15 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>ws2_32.lib;Opengl32.lib;C:\Users\Node\source\repos\NXTBot\NXTBot\Lib\64libsodium.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;detours.lib;Opengl32.lib;C:\Users\Node\source\repos\NXTBot\NXTBot\Lib\64libsodium.lib;C:\Users\Node\source\repos\NXTBot\NXTBot\Lib\eastl_r.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AbyssCrafting.h" />
     <ClInclude Include="AnachroniaAgility.h" />
+    <ClInclude Include="Antiban.h" />
     <ClInclude Include="Archeology.h" />
     <ClInclude Include="Auth.h" />
     <ClInclude Include="Common.h" />
@@ -192,6 +199,7 @@
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Manager.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="MoneyDrop.h" />
     <ClInclude Include="Patterns.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="picosha2.h" />
@@ -261,6 +269,8 @@
     <ClInclude Include="sodium\runtime.h" />
     <ClInclude Include="sodium\utils.h" />
     <ClInclude Include="sodium\version.h" />
+    <ClInclude Include="Summoning.h" />
+    <ClInclude Include="tiger.h" />
     <ClInclude Include="Tile.h" />
     <ClInclude Include="Varpbit.h" />
     <ClInclude Include="VMT.h" />
@@ -271,8 +281,11 @@
     <ClInclude Include="XSocket.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AbyssCrafting.cpp" />
+    <ClCompile Include="AbyssCrafting.cpp">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
     <ClCompile Include="AnachroniaAgility.cpp" />
+    <ClCompile Include="Antiban.cpp" />
     <ClCompile Include="Archeology.cpp" />
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="Divination.cpp" />
@@ -288,6 +301,7 @@
     <ClCompile Include="ItemDef.cpp" />
     <ClCompile Include="Manager.cpp" />
     <ClCompile Include="Matrix.cpp" />
+    <ClCompile Include="MoneyDrop.cpp" />
     <ClCompile Include="Patterns.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -299,6 +313,7 @@
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="Scan.cpp" />
     <ClCompile Include="Auth.cpp" />
+    <ClCompile Include="Summoning.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="Varpbit.cpp" />
     <ClCompile Include="WatchTowerAgi.cpp" />
