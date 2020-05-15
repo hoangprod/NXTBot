@@ -7,10 +7,12 @@
 #include "Tile.h"
 #include "Widgets.h"
 #include "Experience.h"
+#include "client_ipc.h"
 #include "Common.h"
 
-extern fn_StartLogin o_StartLogin;
 
+extern fn_StartLogin o_StartLogin;
+extern fn_RequestLoginToGameFromLogin o_RequestLoginToGameFromLogin;
 
 extern UINT_PTR* g_GameContext;
 extern UINT_PTR g_Module;
@@ -41,19 +43,39 @@ const char* Common::GetCurrentWorldString()
 	return g_Context->WorldClass->CurrentWorld->WorldUrl;
 }
 
+struct login_con
+{
+	UINT_PTR a1;
+	UINT_PTR a2;
+
+};
+
 void Common::Login(const char* username, const char* password)
 {
-	eastlString email = username;
-	eastlString pass = password;
+	if (!username || !password)
+	{
+		log("Username or password is invalid.");
+		return;
+	}
+
+	eastlString email = eastlString(username);
+	eastlString pass = eastlString(password);
 	eastlString empty;
 
 	GameContextPtr* contextPtr = (GameContextPtr*)g_GameContext;
 	auto loginManager = contextPtr->gContext->LoginManager;
 	auto connection = loginManager->Subconnection->Time;
 
-	auto connect = (UINT_PTR)connection + 0x20;
+	login_con connect;
+	connect.a1 = *(UINT_PTR*)((UINT_PTR)connection + 0x20);
+	connect.a2 = *(UINT_PTR*)((UINT_PTR)connection + 0x28);
 
-	o_StartLogin((UINT_PTR)loginManager, 1, connect, email, pass, empty, 0, 0, 0, 0, -1);
+	if (connect.a1)
+	{
+		_InterlockedExchangeAdd((LONG*)(connect.a1 + 8), 1u);
+	}
+
+	return o_StartLogin((UINT_PTR)loginManager, 1, (UINT_PTR)&connect, email, pass, empty, 0, 0, 0, 0, -1);
 }
 
 int Common::GetRandomWorld()
@@ -231,13 +253,45 @@ int Common::GetCurrentWildernessLevel()
 	return 0;
 }
 
+bool Common::SelectFavoriteWorld()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x58]) = 1;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 0x38A008D;// Hardcoded
+
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return false;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return false;
+
+	uint64_t func_ptr = handler_vtable[2];
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef uintptr_t(__cdecl* _SelectFavoriteWorld)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_SelectFavoriteWorld>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
 bool Common::DepositActionNPC(uint32_t Entity)
 {
 	uint8_t data[100] = { 0 };
 
 	*reinterpret_cast<int*>(&data[0x58]) = Entity;
 
-	uint64_t func_ptr = g_Module + 0x9c1a0;
+	uint64_t func_ptr = g_Module + 0x9c1a0; // HARDCODED
 
 	if (!func_ptr)
 		return false;
@@ -266,7 +320,7 @@ bool Common::BankUsingNPC(uint32_t targetEntity)
 	*reinterpret_cast<int*>(&data[0x5c]) = 0;
 	*reinterpret_cast<int*>(&data[0x60]) = 0;
 
-	uint64_t func_ptr = g_Module + 0x9c160;
+	uint64_t func_ptr = g_Module + 0x9c160; // HARDCODED
 
 	if (!func_ptr)
 		return false;
@@ -391,8 +445,8 @@ bool Common::InteractWithEquipment(int slot, int option, int64_t param3)
 	dataStruct dt;
 	dt.dataPtr = data;
 
-	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
-	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+	typedef void(__cdecl* _InteractWithEquipment)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_InteractWithEquipment>(func_ptr)(g_GameContext, &dt);
 
 	return true;
 }

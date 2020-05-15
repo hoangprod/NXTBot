@@ -124,7 +124,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>ws2_32.lib;detours.lib;Lib\64libsodium.lib;Opengl32.lib;C:\Users\Node\source\repos\NXTBot\NXTBot\Lib\EASTL_d.lib;C:\Users\Node\source\repos\NXTBot\NXTBot\Lib\64libsodium.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;Lib\64libsodium.lib;Opengl32.lib;C:\Users\Node\source\repos\NXTBot\NXTBot\Lib\64libsodium.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <AdditionalOptions>/NODEFAULTLIB:library %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -195,6 +195,7 @@
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Hooks.h" />
     <ClInclude Include="Inventory.h" />
+    <ClInclude Include="client_ipc.h" />
     <ClInclude Include="ItemDef.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Manager.h" />
@@ -298,6 +299,7 @@
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Hooks.cpp" />
     <ClCompile Include="Inventory.cpp" />
+    <ClCompile Include="client_ipc.cpp" />
     <ClCompile Include="ItemDef.cpp" />
     <ClCompile Include="Manager.cpp" />
     <ClCompile Include="Matrix.cpp" />

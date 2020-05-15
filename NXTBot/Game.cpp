@@ -155,46 +155,46 @@ EntityObj* RS::GetEntityObjByIndex(uint32_t Index)
 	return EntityPtrWrap->EntityObj;
 }
 
-game_state RS::GetGameState()
+_game_state RS::GetGameState()
 {
 	GameContext* context = RS::GetGameContext();
 
 	if (!context)
-		return game_state::Unknown;
+		return _game_state::Unknown;
 
-	return *(game_state*)(((UINT_PTR)context) + Patterns.Offset_GameState);
+	return *(_game_state*)(((UINT_PTR)context) + Patterns.Offset_GameState);
 }
 
 BOOL RS::IsInGame()
 {
-	return GetGameState() == game_state::Ingame;
+	return GetGameState() == _game_state::Ingame;
 }
 
 std::string RS::GetGameStateStr()
 {
-	game_state state = RS::GetGameState();
+	_game_state state = RS::GetGameState();
 
 	switch (state)
 	{
-	case game_state::LoginScreen:
+	case _game_state::LoginScreen:
 		return "Login Screen";
 		break;
-	case game_state::Lobby:
+	case _game_state::Lobby:
 		return "Lobby";
 		break;
-	case game_state::Ingame:
+	case _game_state::Ingame:
 		return "Ingame";
 		break;
-	case game_state::Disconnected:
+	case _game_state::Disconnected:
 		return "Disconnected";
 		break;
-	case game_state::Reconnecting:
+	case _game_state::Reconnecting:
 		return "Reconnecting";
 		break;
-	case game_state::PleaseWait:
+	case _game_state::PleaseWait:
 		return "Please Wait";
 		break;
-	case game_state::Unknown:
+	case _game_state::Unknown:
 		return "Invalid Context";
 		break;
 	default:
@@ -476,6 +476,8 @@ EntityObj* RS::GetEntityNPCByName(const char* name)
 	return nullptr;
 }
 
+
+// Return 0 if cannot find
 EntityObj* RS::GetClosestMonsterNPCByName(const char* name)
 {
 	Player player = RS::GetLocalPlayer();
@@ -667,6 +669,47 @@ EntityObj* RS::GetClosestEntityNPCByNameStrStr(const char* name, bool bClosest)
 		float distance = GetDistance(player.GetTilePosition(), GetEntityTilePos(entity));
 
 		if (distance < closest && strstr(entity->Name, name) != 0)
+		{
+			closest = distance;
+			ret = entity;
+
+			if (!bClosest)
+				break;
+		}
+	}
+
+	if (ret && strlen(ret->Name) > 0)
+		return ret;
+
+	return 0;
+}
+
+// Get closest Non-enriched wisp, return 0 if cannot find 1
+EntityObj* RS::GetClosestNonEnrichedWisp(bool bClosest)
+{
+	Player player = RS::GetLocalPlayer();
+
+	auto Count = GetEntityCount();
+
+	EntityObj* ret = 0;
+
+	float closest = 99999.0f;
+
+	if (!Count)
+		return 0;
+
+	for (uint32_t i = 0; i < Count + 20; i++)
+	{
+		auto entity = GetEntityObjByIndex(i);
+
+
+		if (!entity || *(UINT_PTR*)entity == 0 || entity->EntityType != 1)
+			continue;
+
+		float distance = GetDistance(player.GetTilePosition(), GetEntityTilePos(entity));
+
+		// closest, have wisp in its name but not Enriched
+		if (distance < closest && strstr(entity->Name, "wisp") != 0 && strstr(entity->Name, "Enriched") == 0)
 		{
 			closest = distance;
 			ret = entity;
@@ -981,6 +1024,76 @@ StaticObjEX Static::GetClosestStaticObjectByNameWithOption(const char* name, con
 			}
 
 			Tile2D Pos = Tile2D(staticObj->TileX, staticObj->TileY);
+
+			float curDistance = RS::GetDistance(player.GetTilePosition(), Pos);
+			if (strcmp(name, staticObj->Definition->Name) == 0 && strcmp(option, staticObj->Definition->Op0) == 0)
+			{
+				if (curDistance < closestDistance)
+				{
+					closestDistance = curDistance;
+					closestEnt = entity_ptr;
+
+					if (!closest)
+						break;
+				}
+			}
+		}
+	}
+
+	StaticObjEX returnObj = StaticObjEX();
+
+	if (closestEnt)
+	{
+		returnObj.Type = *reinterpret_cast<EntityType*>(closestEnt + 0x40);
+
+		if (returnObj.Type == EntityType::Object)
+		{
+			auto staticObj = (StaticObj1Wrapper*)closestEnt;
+			returnObj.TileX = staticObj->TileX;
+			returnObj.TileY = staticObj->TileY;
+			returnObj.Definition = staticObj->Definition;
+
+		}
+		else if (returnObj.Type == EntityType::Object2)
+		{
+			auto staticObj = (StaticObj2Wrapper*)closestEnt;
+			returnObj.TileX = staticObj->TileX;
+			returnObj.TileY = staticObj->TileY;
+			returnObj.Definition = staticObj->Definition;
+		}
+	}
+
+
+	return returnObj;
+}
+
+StaticObjEX Static::GetClosestStaticObjectByNameWithOptionAtPosition(const char* name, const char* option, Tile2D pos, bool closest)
+{
+
+	std::set<uint64_t> static_entities;
+	GetStaticEntities(&static_entities);
+
+	Player player = RS::GetLocalPlayer();
+
+	uint64_t closestEnt = 0;
+	float closestDistance = 99999.0f;
+
+	for (const uint64_t& entity_ptr : static_entities) {
+		EntityType type = *reinterpret_cast<EntityType*>(entity_ptr + 0x40);
+
+		if (type == EntityType::Object2)
+		{
+			auto staticObj = (StaticObj2Wrapper*)entity_ptr;
+
+			if (staticObj->Definition == 0 || staticObj->IsHarvested) {
+				continue;
+			}
+
+			Tile2D Pos = Tile2D(staticObj->TileX, staticObj->TileY);
+
+			if (Pos.x != pos.x || Pos.y != pos.y)
+				continue;
+
 
 			float curDistance = RS::GetDistance(player.GetTilePosition(), Pos);
 			if (strcmp(name, staticObj->Definition->Name) == 0 && strcmp(option, staticObj->Definition->Op0) == 0)

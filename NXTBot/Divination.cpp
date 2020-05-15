@@ -12,7 +12,7 @@
 #include "Divination.h"
 
 extern int extraDelay;
-
+extern bool to_suicide;
 extern Divination* divination;
 
 void Divination::FSM()
@@ -24,7 +24,7 @@ void Divination::FSM()
 
 	if (!runOnce)
 	{
-		auto wisp = RS::GetClosestMonster();
+		auto wisp = RS::GetClosestNonEnrichedWisp();
 
 		if (!wisp)
 			return;
@@ -36,7 +36,12 @@ void Divination::FSM()
 		runOnce = !runOnce;
 	}
 
-
+	if (to_suicide)
+	{
+		delete this;
+		divination = 0;
+		return;
+	}
 
 	if (player.isMoving() || player.IsInAnimation() || player.CurrentUsefulAni() != -1)
 	{

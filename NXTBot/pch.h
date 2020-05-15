@@ -50,3 +50,5 @@
 #define printf(fmt, ...) (0)
 #define wprintf(fmt, ...) (0)
 #endif
+
+#define log( format, ... ) printf("[ c2s ] " format "\n", ##__VA_ARGS__ )

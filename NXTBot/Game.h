@@ -13,7 +13,7 @@ struct RS {
 	static EntityObj* GetEntityObjByIndex(uint32_t Index);
 	static DestinationFlag* GetDestinationFlag();
 
-	static game_state GetGameState();
+	static _game_state GetGameState();
 	static BOOL IsInGame();
 	static std::string GetGameStateStr();
 
@@ -40,6 +40,8 @@ struct RS {
 
 	static EntityObj* GetClosestEntityNPCByName(const char* name, bool bClosest = true);
 	static EntityObj* GetClosestEntityNPCByNameStrStr(const char* name, bool bClosest = true);
+	static EntityObj* GetClosestNonEnrichedWisp( bool bClosest = true);
+
 
 	static EntityObj* GetEntityObjectByEntityId(uint32_t EntityId);
 	static EntityObj* GetMonsterWithinRadius(Tile2D from, float MaxDistance);
@@ -61,6 +63,8 @@ struct Static
 
 	static StaticObjEX GetClosestStaticObjectByName(const char* name, bool useSecondary = false, bool closest = true);
 	static StaticObjEX GetClosestStaticObjectByNameWithOption(const char* name, const char* option, bool closest = true);
+	static StaticObjEX GetClosestStaticObjectByNameWithOptionAtPosition(const char* name, const char* option, Tile2D pos, bool closest = true);
+
 	static StaticObjEX GetClosestStaticHarvestableObjectByNameWithOrigin(const char* name, const char* option, Tile2D origin);
 
 	static StaticObjEX GetClosestAbyssEntrance();

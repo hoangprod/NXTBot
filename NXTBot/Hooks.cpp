@@ -18,13 +18,16 @@
 #include "Common.h"
 #include "Auth.h"
 #include "tiger.h"
+#include "client_ipc.h"
 #include "Antiban.h"
-#include <detours.h>
+//#include <detours.h>
 
 #define _CRTDBG_MAP_ALLOC
 
 Detour64 detours;
 HWND hWnd;
+extern bool to_suicide;
+extern bool break_type;
 extern Addr Patterns;
 extern Archeology* archelogy;
 extern std::vector<mouse_biometric> mouse_data;
@@ -33,9 +36,9 @@ extern std::vector<mouse_biometric> mouse_data;
 bool g_HijackCtrl = false;
 UINT_PTR* g_GameContext = 0;
 UINT_PTR g_Module = 0;
-HANDLE ghMutex;
-HANDLE hMapFile;
-uintptr_t sharedMemory;
+HANDLE gMutex;
+HANDLE hFileMap;
+uintptr_t sharedMem;
 
 static WNDPROC OriginalWndProcHandler = nullptr;
 
@@ -93,7 +96,7 @@ void Mirroring(uint32_t param1 = 0, int32_t param2 = 0, int32_t param3 = 0, uint
 	static uint32_t index = 0;
 
 	DWORD  dwWaitResult = WaitForSingleObject(
-		ghMutex,    // handle to mutex
+		gMutex,    // handle to mutex
 		200);  // no time-out interval
 
 	switch (dwWaitResult)
@@ -102,7 +105,7 @@ void Mirroring(uint32_t param1 = 0, int32_t param2 = 0, int32_t param3 = 0, uint
 	case WAIT_OBJECT_0:
 		try {
 			// MAP the Memory of the mirror action
-			if (sharedMemory)
+			if (sharedMem)
 			{
 				if (bMaster)
 				{
@@ -111,7 +114,7 @@ void Mirroring(uint32_t param1 = 0, int32_t param2 = 0, int32_t param3 = 0, uint
 
 					printf("Master sent %d %d %d %d %p\n", index, param1, param2, param3, function);
 
-					memcpy((void*)sharedMemory, action, sizeof(ActionMirror));
+					memcpy((void*)sharedMem, action, sizeof(ActionMirror));
 
 					delete action;
 				}
@@ -119,7 +122,7 @@ void Mirroring(uint32_t param1 = 0, int32_t param2 = 0, int32_t param3 = 0, uint
 				{
 					static int slaveIndex = 0;
 
-					ActionMirror* action = (ActionMirror*)sharedMemory;
+					ActionMirror* action = (ActionMirror*)sharedMem;
 
 					//printf("Slave received %d %d %d %d %p\n", action->index, action->param1, action->param2, action->param3, action->function);
 
@@ -172,7 +175,7 @@ void Mirroring(uint32_t param1 = 0, int32_t param2 = 0, int32_t param3 = 0, uint
 		}
 
 
-		if (!ReleaseMutex(ghMutex))
+		if (!ReleaseMutex(gMutex))
 		{
 			// Handle error.
 		}
@@ -182,7 +185,9 @@ void Mirroring(uint32_t param1 = 0, int32_t param2 = 0, int32_t param3 = 0, uint
 		// The thread got ownership of an abandoned mutex
 		// The database is in an indeterminate state
 	case WAIT_ABANDONED:
+	default:
 		return;
+		break;
 	}
 }
 
@@ -290,7 +295,14 @@ std::map<int, HGLRC> contexts;
 
 bool h_wglSwapBuffers(HDC hdc)
 {
-	
+	// if all bot are disabled and suicide is set.
+	if (to_suicide && Manager::get_current_bot() == _current_bot::None)
+	{
+		log("Terminating process now.");
+		TerminateProcess(GetCurrentProcess(), 0);
+		return 0;
+	}
+
 	if (bMenu)
 	{
 		int pixelformat = GetPixelFormat(hdc);
@@ -399,6 +411,10 @@ bool h_wglSwapBuffers(HDC hdc)
 
 		}
 
+		//botStatus = botStatus + " break_type: " + std::to_string(break_type);
+
+		font.Print(100.f, 200.0f, botStatus.data());
+
 		if(bMaster)
 			font.Print(100.f, 140.0f, "Master Mode Activated");
 		if (bSlave)
@@ -425,6 +441,7 @@ bool h_wglSwapBuffers(HDC hdc)
 
 	}
 
+
 	if (GetActiveWindow())
 		bIsFocus = true;
 	else
@@ -433,18 +450,6 @@ bool h_wglSwapBuffers(HDC hdc)
 	return o_wglSwapBuffers(hdc);
 }
 
-
-BOOL unhook_function(PVOID& t1, PBYTE t2, const char* s = NULL)
-{
-	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
-	DetourDetach(&t1, t2);
-	if (DetourTransactionCommit() != NO_ERROR) {
-		printf("[Hook] - Failed to unhook %s.\n", s);
-		return false;
-	}
-	return true;
-}
 
 bool unloaded = false;
 
@@ -542,6 +547,7 @@ void UpdateTest()
 }
 
 static std::vector<std::pair<int, int>> varprange = { {5, 5},{5, 5} };
+extern std::vector<std::pair<std::string, int>> ArcheologyCaches;
 
 LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -556,14 +562,12 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		Manager::Keystates(wParam);
 
+		auto ArcheLevel = Exp::GetSkillLevel(Stat::ARCHEOLOGY);
+
 
 		if (wParam == VK_F1)
 		{
-			mouse_replay* bio = (mouse_replay*)biometric_data;
 
-			printf("%d %d %d %d\n", bio->points[0].uMsg, bio->points[0].delay, bio->points[1].uMsg, bio->points[1].delay);
-
-			
 
 		}
 
@@ -617,7 +621,13 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		if (wParam == VK_NUMPAD1)
 		{
-			//Common::Login("heph_yeet@maildu.de", "poching29");
+			try {
+				//Common::Login("heph_yeet9@maildu.de", "poching29");
+			}
+			catch (...)
+			{
+				log("An exception happened.");
+			}
 		}
 
 		if (wParam == VK_OEM_3)
@@ -643,6 +653,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			if (wParam == VK_NUMPAD1)
 			{
+				/*
 				int items = 0;
 
 				auto storage = Inventory::GetContainerObj(95);
@@ -656,7 +667,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 							items++ ;
 					}
 				}
-
+				*/
 
 				//printf("found %d valid items\n", items);
 				/*
@@ -738,10 +749,11 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						varprange = Varpbit::ScanNextVarpValue(varprange, true);
 				}
 			}
-			// Unchanged
+			// VK6 is now used elsewhere!
 			if (wParam == VK_NUMPAD6)
 			{
-				varprange = Varpbit::ScanNextVarpValue(varprange, false);
+				
+				//varprange = Varpbit::ScanNextVarpValue(varprange, false);
 			}
 
 			if (wParam == VK_OEM_3)
@@ -775,7 +787,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 
-	if(bMaster && wParam >= 0x30 && wParam <= 0x5A)
+	if(bMaster && ((wParam >= 0x30 && wParam <= 0x5A ) || wParam == VK_RETURN))
 		Mirroring(uMsg, wParam, lParam, 0x1);
 
 	static bool isFocus = false;
@@ -818,7 +830,19 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return CallWindowProc(OriginalWndProcHandler, hWnd, uMsg, wParam, lParam);
 }
 
+/*
 
+BOOL unhook_function(PVOID& t1, PBYTE t2, const char* s = NULL)
+{
+	DetourTransactionBegin();
+	DetourUpdateThread(GetCurrentThread());
+	DetourDetach(&t1, t2);
+	if (DetourTransactionCommit() != NO_ERROR) {
+		printf("[Hook] - Failed to unhook %s.\n", s);
+		return false;
+	}
+	return true;
+}
 
 BOOL hook_function(PVOID& t1, PBYTE t2, const char* s = NULL)
 {
@@ -837,15 +861,15 @@ BOOL hook_function(PVOID& t1, PBYTE t2, const char* s = NULL)
 #endif
 		return true;
 	}
-}
+}*/
 
-
+extern bool to_suicide;
 
 DWORD WINAPI biometric_thread(LPVOID lpParameter)
 {
 	while (!unloaded)
 	{
-		if (!bIsFocus && biometric_data && Manager::is_botting())
+		if (!bIsFocus && biometric_data && Manager::get_current_bot() != _current_bot::None)
 		{
 			uint32_t width = 0, height = 0;
 
@@ -867,6 +891,27 @@ DWORD WINAPI biometric_thread(LPVOID lpParameter)
 	return 0;
 
 }
+
+
+DWORD WINAPI ipc_thread(LPVOID lpParam)
+{
+	while (!unloaded)
+	{
+		if (ipc::client_shared_mem)
+		{
+			ipc::ipc_mutex_lock();
+		}
+		else
+		{
+			log("[ Critical ] client_share_mem invalid");
+		}
+
+		Sleep(2);
+	}
+
+	return 0;
+}
+
 
 bool hooks()
 {
@@ -919,8 +964,6 @@ bool hooks()
 
 	//o_SetVarpValueFromServer = (fn_SetVarpValueFromServer)detours.Hook(o_SetVarpValueFromServer, h_SetVarValueFromServer, 15);
 
-	//o_GetVarpType = (fn_GetVarpType)detours.Hook(o_GetVarpType, h_GetVarpType, 20);
-
 	//hook_function((PVOID&)o_GetVarpType, (PBYTE)h_GetVarpType, "h_GetVarpType");
 
 	o_ExecuteHookInner = (fn_ExecuteHookInner)Patterns.Func_ExecuteHookInner;
@@ -939,18 +982,18 @@ bool hooks()
 
 	OriginalWndProcHandler = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)hWndProc);
 
-	ghMutex = CreateMutex(
+	gMutex = CreateMutex(
 		NULL,              // default security attributes
 		FALSE,             // initially not owned
 		L"Local\\svchost_srv");             // unnamed mutex
 
-	if (ghMutex == NULL)
+	if (gMutex == NULL)
 	{
 		printf("CreateMutex error: %d %d\n", GetLastError(), sizeof(ActionMirror));
 		return 1;
 	}
 
-	hMapFile = CreateFileMapping(
+	hFileMap = CreateFileMapping(
 		INVALID_HANDLE_VALUE,
 		NULL,
 		PAGE_READWRITE,
@@ -958,19 +1001,22 @@ bool hooks()
 		sizeof(ActionMirror),
 		L"Local\\svchost_srv_mem");
 
-	if (!hMapFile)
+	if (!hFileMap)
 	{
 		printf("CreateFileMapping error: %d\n", GetLastError());
 		return 0;
 	}
 
-	sharedMemory = (uintptr_t)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ActionMirror));
+	sharedMem = (uintptr_t)MapViewOfFile(hFileMap, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(ActionMirror));
 
-	if (!sharedMemory)
+	if (!sharedMem)
 	{
 		printf("MapViewOfFile failed with error: %d\n", GetLastError());
 		return 0;
 	}
+
+	if (!ipc::ipc_init())
+		printf("[!] Failed to initialize IPC.\n");
 
 	std::ifstream mouse_data_file("C:\\ProgramData\\Jagex\\launcher\\mouse_data.bin", std::ios::binary | std::ios::ate);
 
@@ -988,12 +1034,21 @@ bool hooks()
 
 		mouse_data_file.close();
 
+		if(!CreateThread(0, 0, biometric_thread, 0, 0, 0))
+		{
+			log("[ Critical ] Biometric Create thread failed with error %d.", GetLastError());
+		}
 	}
 	else
 	{
-		printf("[!] Biometric file reading failed!\n");
+		log("[ Medium ] Biometric file reading failed");
 	}
-	CreateThread(0, 0, biometric_thread, 0, 0, 0);
+
+
+	if (!CreateThread(0, 0, ipc_thread, 0, 0, 0))
+	{
+		log("[ Critical ] IPC Create thread failed with error %d.", GetLastError());
+	}
 
 #ifdef NDEBUG
 	Beep(523, 200);

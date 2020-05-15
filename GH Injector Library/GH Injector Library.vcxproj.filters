@@ -60,7 +60,10 @@
     <ClInclude Include="Manul Mapping.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="Manager.h">
+    <ClInclude Include="ipc.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="csv.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
@@ -118,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="Start Routine.cpp">
       <Filter>Quelldateien\native</Filter>
+    </ClCompile>
+    <ClCompile Include="ipc.cpp">
+      <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -13,6 +13,8 @@ public:
 	bool isSoilBoxFull();
 	int getSoilBoxAmount();
 
+	static bool is_next_to_archeology_node();
+
 	bool isCache;
 	int ArcheLevel;
 	int ArcheologyExp;

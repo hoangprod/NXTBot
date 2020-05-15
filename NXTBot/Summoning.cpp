@@ -12,7 +12,6 @@
 #include "Summoning.h"
 
 extern int extraDelay;
-
 extern TaverlySummoning *taverlySummon;
 
 void TaverlySummoning::FSM()

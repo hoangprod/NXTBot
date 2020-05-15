@@ -634,7 +634,7 @@ enum class UIType
 	OBELISK_WIDGET
 };
 
-enum class game_state {
+enum class _game_state {
 	LoginScreen = 10,
 	Lobby = 20,
 	Ingame = 30,
@@ -644,20 +644,40 @@ enum class game_state {
 	Unknown = 666
 };
 
+enum class _current_bot
+{
+	None,
+	Penguin_Agility,
+	Anachronia_Agility,
+	Abyss_Crafting,
+	Archeology,
+	Watchtower_Agility,
+	Wilderness_Agility,
+	Divination,
+	Fungal_Mage,
+	Taverly_Summoning,
+	Money_Drop,
+	Wisp_Farming,
+	General_Combat,
+	Rabbit_Farming,
+	Woodcutting,
+	General_Mining
+};
+
 
 class eastlString
 {
 public:
 	eastlString(const char * text)
 	{
-		start = new char[256];
+		start = new char[256]();
 		strcpy((char*)start, text);
 
 		end = start + strlen(text);
 	}
 	eastlString()
 	{
-		start = "";
+		start = new char[1];
 		end = start;
 	}
 	const char* start;
@@ -683,6 +703,8 @@ typedef UINT_PTR*(__fastcall* fn_GetContainerPtr)(UINT_PTR* ContainerManager, ui
 
 typedef char* (__fastcall* fn_CopyString)(UINT_PTR string, int a2, int a3);
 typedef void(__fastcall* fn_StartLogin)(__int64 a1, int a2, UINT_PTR a3, eastlString a4, eastlString a5, eastlString a6, char a7, char a8, char a9, char a10, UINT_PTR a11);
+typedef void(__fastcall* fn_RequestLoginToGameFromLogin)(__int64 ConnectionManager, eastlString username, eastlString password, eastlString empty, char a5);
+
 typedef __int64* (__fastcall* fn_PrepareUUIDPacket)(__int64* uuid_struct, __int64 packet);
 
 typedef __int64* (__fastcall* fn_GetVarpType)(__int64 VarpWrap, __int64 VarpDomain, unsigned int varpid);

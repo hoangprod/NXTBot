@@ -11,7 +11,10 @@
 #include "Wisp.h"
 
 extern std::string botStatus;
+extern Wisp* wisp;
+extern Rabbit* rabbit;
 
+extern bool to_suicide;
 extern int SelectedWood;
 extern int SelectedOre;
 extern std::vector<std::string> OreName;
@@ -88,6 +91,13 @@ void Wisp::FSM()
 
 	EntityObj* EnemyMonsters = RS::GetMonsterWithinRadiusWithName("Spellwisp", origin, 15.0f);
 
+
+	if (to_suicide)
+	{
+		delete this;
+		wisp = 0;
+		return;
+	}
 
 	// If there are a monster 15 tiles away from origin, fight it
 	if (EnemyMonsters)
@@ -231,6 +241,14 @@ void Rabbit::FSM()
 
 	EntityObj* EnemyMonsters = RS::GetMonsterWithinRadiusWithName("Rabbit", origin, 7.0f);
 
+	/*
+	if (to_suicide)
+	{
+		delete this;
+		rabbit = 0;
+		return;
+	}
+	*/
 
 	// If there are a monster 15 tiles away from origin, fight it
 	if (EnemyMonsters)

@@ -71,6 +71,7 @@ bool Inventory::HaveItemName(std::string name)
 	return false;
 }
 
+// Get item's slot by its itemId, return -1 if item is not found
 int Inventory::GetItemById(uint32_t Id)
 {
 	std::vector<FakeItem> Result;

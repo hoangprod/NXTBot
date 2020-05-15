@@ -62,12 +62,16 @@ int Varpbit::GetVarp(int VarpId)
 		VarpClass* varpClass = reinterpret_cast<_GetVarClass>(g_context->VarpVtable->GetVarp)((uint64_t)&g_context->VarpVtable, Varptype);
 
 		if (!varpClass || (UINT_PTR)varpClass < 0x100000 || IsBadReadPtr(varpClass, 0x28))
+		{
 			return -1;
+		}
 
 		return varpClass->Value;
 	}
 	else
+	{
 		return -1;
+	}
 }
 
 UINT_PTR* Varpbit::GetVarpType(VarDomain domain, int VarpId)
@@ -156,6 +160,8 @@ std::vector<std::pair<int, int>> Varpbit::ScanNewVarpValue(std::vector<std::pair
 
 	if (varps.size() > 0)
 	{
+		printf("same scan\n");
+
 		for (auto varp : varps)
 		{
 			auto varpValue = GetVarpBit(varp.first);
@@ -170,11 +176,13 @@ std::vector<std::pair<int, int>> Varpbit::ScanNewVarpValue(std::vector<std::pair
 	}
 	else
 	{
-		for (int varp = 10; varp < 200000; varp++)
+		printf("new scan\n");
+		result.reserve(20000);
+		for (int varp = 1; varp < 200000; varp++)
 		{
-			auto varpValue = GetVarpBit(varp);
+			int varpValue = GetVarpBit(varp);
 
-			if (varpValue == value)
+			if (varpValue != -1 && varpValue == value)
 			{
 				std::pair<int, int> pair = std::make_pair(varp, varpValue);
 				result.push_back(pair);

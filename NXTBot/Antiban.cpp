@@ -2,9 +2,15 @@
 #include "GameClasses.h"
 #include "Antiban.h"
 
+// 0 = not on break
+// 1 = short break
+// 2 = long break
+
+bool break_type = false;
 
 extern HWND hWnd;
 extern bool bIsFocus;
+extern bool to_suicide;
 
 std::vector<mouse_biometric> mouse_data;
 
@@ -46,6 +52,9 @@ void antiban::mouse_playback(mouse_replay* mouse_data, int screen_height, int sc
 
 	for (int i = start_index; i < mouse_data->header.elements; i++)
 	{
+		if (to_suicide)
+			return;
+
 		Sleep(mouse_data->points[i].delay);
 
 		if (bIsFocus)
@@ -60,7 +69,7 @@ void antiban::mouse_playback(mouse_replay* mouse_data, int screen_height, int sc
 
 			UINT new_lParam = MAKELPARAM(new_x, new_y);
 
-			printf("%d %d ->  %d %d\n", GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), GET_X_LPARAM(new_lParam), GET_Y_LPARAM(new_lParam));
+			//printf("%d %d ->  %d %d\n", GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), GET_X_LPARAM(new_lParam), GET_Y_LPARAM(new_lParam));
 
 			SendMessage(hWnd, mouse_data->points[i].uMsg, mouse_data->points[i].wParm, new_lParam);
 
@@ -98,7 +107,8 @@ void antiban::anti_afk()
 
 	SendMessageW(hWnd, WM_KEYDOWN, selected_key.uMsg, selected_key.up_key);
 
-	Sleep(hold_time);
+	// TODO: Make SendMessage not rely on sleep.
+	//Sleep(hold_time);
 
 	SendMessageW(hWnd, WM_KEYUP, selected_key.uMsg, selected_key.down_key);
 }
@@ -121,6 +131,7 @@ float antiban::float_random_range(float min, float max)
 	return dist(mt);
 }
 
+// return true if on break, false if not
 bool antiban::break_manager(float min, float max, float min_break, float max_break, time_t *start, float* antiban_rest_timer, float* break_duration)
 {
 	double minute_since_start = difftime(time(0), *start) / 60.0f;
@@ -167,6 +178,7 @@ bool antiban::break_manager(float min, float max, float min_break, float max_bre
 	return false;
 }
 
+// return true if on break
 bool antiban::long_break_manager(float min, float max, float min_break, float max_break)
 {
 	static time_t start;
@@ -184,9 +196,15 @@ bool antiban::long_break_manager(float min, float max, float min_break, float ma
 
 	printf("long break - Start: %lld %f\n", start, antiban_rest_timer);
 
-	return break_manager(min, max, min_break, max_break, &start, &antiban_rest_timer, &break_duration);
+	bool bm = break_manager(min, max, min_break, max_break, &start, &antiban_rest_timer, &break_duration);
+
+	if (bm)
+		break_type = 2;
+
+	return bm;
 }
 
+// return true if on break
 bool antiban::short_break_manager(float min, float max, float min_break, float max_break)
 {
 	static time_t start;
@@ -204,5 +222,10 @@ bool antiban::short_break_manager(float min, float max, float min_break, float m
 
 	printf("short break - Start: %lld %f dura %f\n", start, antiban_rest_timer, break_duration);
 
-	return break_manager(min, max, min_break, max_break, &start, &antiban_rest_timer, &break_duration);
+	bool bm = break_manager(min, max, min_break, max_break, &start, &antiban_rest_timer, &break_duration);
+
+	if (bm)
+		break_type = 1;
+
+	return bm;
 }

@@ -12,10 +12,13 @@
 #include "Archeology.h"
 
 extern int extraDelay;
+extern bool to_suicide;
+extern std::string botStatus;
+extern Archeology* archelogy;
 
 std::vector<std::pair<std::string, int>> ArcheologyNodes = { std::pair<std::string, int>("Destroyed golem", 98),std::pair<std::string, int>("Gravitron research debris", 91),std::pair<std::string, int>("Big High War God shrine", 89), std::pair<std::string, int>("Goblin dorm debris", 83), std::pair<std::string, int>("Gladiatorial goblin remains", 76), std::pair<std::string, int>("Oikos studio debris", 72),std::pair<std::string, int>("Ikovian memorial", 70), std::pair<std::string, int>("Dominion Games podium", 69), std::pair<std::string, int>("Infernal art", 65), std::pair<std::string, int>("Stadio debris", 61),std::pair<std::string, int>("Ceramics studio debris", 56),std::pair<std::string, int>("Amphitheatre debris", 51), std::pair<std::string, int>("Monoceros remains", 48), std::pair<std::string, int>("Prodromoi remains", 42), std::pair<std::string, int>("Sacrificial altar", 36), std::pair<std::string, int>("Cultist footlocker", 29), std::pair<std::string, int>("Lodge art storage", 24), std::pair<std::string, int>("Lodge bar storage", 20), std::pair<std::string, int>("Castra debris", 17), std::pair<std::string, int>("Venator remains", 1) };
 
-std::vector<std::pair<std::string, int>> ArcheologyCaches = { std::pair<std::string, int>("Material cache (Yu'biusk clay)", 83), std::pair<std::string, int>("Material cache (warforged bronze)", 76), std::pair<std::string, int>("Material cache (malachite green)", 76), std::pair<std::string, int>("Material cache (vulcanised rubber)", 76) };
+std::vector<std::pair<std::string, int>> ArcheologyCaches = { std::pair<std::string, int>("Material cache (Yu'biusk clay)", 83), std::pair<std::string, int>("Material cache (warforged bronze)", 76), std::pair<std::string, int>("Material cache (malachite green)", 76), std::pair<std::string, int>("Material cache (vulcanised rubber)", 76), std::pair<std::string, int>("Material cache (cobalt blue)", 48) };
 
 std::vector<int> ArcheologySoil = { 49517 , 49521, 49519, 49523, 49525 };
 
@@ -33,6 +36,8 @@ void Archeology::FSM()
 
 	if(runOnce)
 	{
+		botStatus = "initializing once";
+
 		ArcheologyExp = Exp::GetCurrentExp(Stat::ARCHEOLOGY);
 		Initializer();
 
@@ -43,6 +48,7 @@ void Archeology::FSM()
 	if (Widgets::IsInDialogWidget() && Widgets::GetDialogType() != RSDialog::ModernDestroy)
 	{
 		printf("clicking out of dialog\n");
+		botStatus = "clicking out of dialog";
 		Common::StaticInteract(Node);
 		extraDelay = 2000;
 		return;
@@ -50,6 +56,7 @@ void Archeology::FSM()
 
 	if (player.isMoving())
 	{
+		botStatus = "player is movng";
 		return;
 	}
 
@@ -58,21 +65,25 @@ void Archeology::FSM()
 
 	if (Widgets::GetWidgetUI(BANKING_WIDGET))
 	{
+		botStatus = "bank widget is up";
 		if (Inventory::GetFreeSlot() < 22)
 		{
-			Common::DepositAllThroughBank();
+			botStatus = "less than 22 free slot, going to deposit to bank";
+;			Common::DepositAllThroughBank();
 			return;
 		}
 	}
 
 	if (isCache)
 	{
+		botStatus = "cache mode";
 		CacheHandler();
 	}
 
 	if (!Node.Definition)
 	{
 		printf("No Node def\n");
+		botStatus = "no node def";
 		return;
 	}
 
@@ -80,6 +91,7 @@ void Archeology::FSM()
 
 	if (!DepositBox.Definition)
 	{
+		botStatus = "no deposit box";
 
 		int soil = -1;
 
@@ -100,11 +112,13 @@ void Archeology::FSM()
 				if (Widgets::GetWidgetUI(CONVERSATION_WIDGET) && Widgets::GetDialogType() == RSDialog::ModernDestroy)
 				{
 					printf("Confirm destroy =)\n");
+					botStatus = "confirm destroy";
 					Common::ConfirmGUI(0x49F0005);
 				}
 				else
 				{
 					printf("Deleting artefacts %d on slot %d\n", artefact, item);
+					botStatus = "deleting artefacts";
 					Inventory::InteractItemOption(item, 8);
 				}
 
@@ -123,6 +137,7 @@ void Archeology::FSM()
 		if (SoilBoxSlot == -1 && soil > -1)
 		{
 			printf("Dropping soil\n");
+			botStatus = "Dropping soil";
 			Common::InteractWithEquipment(8, -1, 0x59600B5);
 			extraDelay = 2000;
 		}
@@ -130,7 +145,7 @@ void Archeology::FSM()
 		else if (CurrentExp > ArcheologyExp && soil > -1 && !isSoilBoxFull())
 		{
 			ArcheologyExp = CurrentExp;
-
+			botStatus = "fill soilbox";
 			printf("Fill Soilbox\n");
 			// Fill Soil on slot right after 0
 			Common::InteractWithEquipment(1, -1, 93716674);
@@ -141,15 +156,20 @@ void Archeology::FSM()
 	if (Inventory::isInventoryFull())
 	{
 		printf("Banking\n");
+		botStatus = "banking inventory is full";
 
 		if (Widgets::GetWidgetUI(DEPOSIT_WIDGET))
 		{
+			botStatus = "deposit widget is up, depositing";
+			printf("widget chek\n");
 			Common::DepositAll();
 			return;
 		}
 
 		if (DepositBox.Definition)
 		{
+			botStatus = "we found deposit box, interacting with deposit box";
+			printf("depoisit boxy\n");
 			Common::StaticInteract(DepositBox);
 			return;
 		}
@@ -158,19 +178,26 @@ void Archeology::FSM()
 
 		if (MaterialCart.Definition)
 		{
+			botStatus = "found material cart!";
 			Common::StaticInteract(MaterialCart);
 			return;
+		}
+		else
+		{
+			botStatus = "did not find material cart!";
 		}
 
 		auto locator = Static::GetClosestStaticObjectByName("Tunnel", true);
 
 		if (locator.Definition)
 		{
+			botStatus = "banking 20 mode";
 			printf("Banking 20\n");
 			Archeology::Banking20();
 		}
 		else
 		{
+			botStatus = "banking 1 mode";
 			printf("Banking 1\n");
 			Archeology::Banking();
 		}
@@ -182,6 +209,8 @@ void Archeology::FSM()
 
 	if (!Temp_Node.Definition)
 	{
+
+		botStatus = "Can't find node";
 		printf("Can't find Node.\n");
 
 		auto Lift = Static::GetClosestStaticObjectByName("Lift");
@@ -190,6 +219,7 @@ void Archeology::FSM()
 		{
 			if (Inventory::GetFreeSlot() == 1)
 			{
+				botStatus = "banking 20 lift";
 				printf("Banking 20\n");
 				Archeology::Banking20();
 				return;
@@ -204,10 +234,21 @@ void Archeology::FSM()
 
 	if (!player.IsInAnimation() && Temp_Node.Definition)
 	{
+		botStatus = "trying to interact with node";
 		printf("Trying to interact with node\n");
 		Common::StaticInteract(Node);
 		extraDelay = 5000;
 		return;
+	}
+
+	if (player.IsInAnimation() && Temp_Node.Definition)
+	{
+		if (to_suicide)
+		{
+			delete this;
+			archelogy = 0;
+			return;
+		}
 	}
 }
 
@@ -256,10 +297,12 @@ void Archeology::Banking()
 	// If not talking NOR banking, then go bank
 	if (!Widgets::GetWidgetUI(BANKING_WIDGET))
 	{
+		botStatus = "bank widget upppy";
 		StaticObjEX chest = Static::GetClosestStaticObjectByName("Bank chest");
 		
 		if (chest.Definition)
 		{
+			botStatus = "clicking on chest";
 			printf("Clicking on chest\n");
 			Common::StaticInteract2(chest);
 			return;
@@ -275,6 +318,7 @@ void Archeology::Banking()
 
 		if (SoilBoxSlot > -1 && getSoilBoxAmount() > 0)
 		{
+			botStatus = "emptiyng soilbox";
 			printf("Emptying soilbox %d!\n", SoilBoxSlot);
 			// 9 is to empty
 			Common::BankInteractItem(SoilBoxSlot, 9);
@@ -320,6 +364,7 @@ void Archeology::Banking20()
 
 		if (chest.Definition)
 		{
+			botStatus = "clickin on that chest";
 			printf("Clicking on chest\n");
 			Common::StaticInteract2(chest);
 			return;
@@ -379,7 +424,7 @@ void Archeology::CacheHandler()
 		{
 			NodeName = item.first;
 
-			//printf("Selected %s with option pointer %p\n", NodeName.data(), Node.Definition);
+			printf("Selected %s with option pointer %p\n", NodeName.data(), Node.Definition);
 
 			break;
 		}
@@ -390,7 +435,7 @@ void Archeology::CacheHandler()
 		if (Common::IsWorldWidgetUp())
 		{
 			Common::HopRandomWorld();
-			extraDelay = 6000;
+			extraDelay = 9000;
 		}
 		else
 		{
@@ -418,4 +463,27 @@ bool Archeology::isSoilBoxFull()
 int Archeology::getSoilBoxAmount()
 {
 	return Varpbit::GetVarp(SOIL_BOX_FIERY) + Varpbit::GetVarp(SOIL_BOX_GRAVEL) + Varpbit::GetVarp(SOIL_BOX_AERATED);
+}
+
+bool Archeology::is_next_to_archeology_node()
+{
+	Player player = RS::GetLocalPlayer();
+
+	auto ArcheLevel = Exp::GetSkillLevel(Stat::ARCHEOLOGY);
+
+	for (auto item : ArcheologyNodes)
+	{
+		if (ArcheLevel < item.second)
+			continue;
+
+		auto Node = Static::GetClosestStaticObjectByName(item.first.data(), true);
+
+		if (Node.Definition && RS::GetDistance(Tile2D(Node.TileX, Node.TileY), RS::GetLocalPlayerTilePos()) < 3.0f)
+		{
+			return true;
+		}
+	}
+
+	return false;
+
 }

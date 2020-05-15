@@ -18,6 +18,7 @@ extern FungalMage* fungalMage;
 
 extern std::vector<std::string> foodlist;
 
+extern bool to_suicide;
 
 void FungalMage::FSM()
 {
@@ -87,6 +88,9 @@ void FungalMage::FSM()
 		return;
 	}
 
+	auto attackingEnemies = RS::GetInCombatNPCwithMe();
+
+
 	if (!HaveFoodInInvent() && !FungalMage::IsInCave())
 	{
 		printf("Need food and not in cave\n");
@@ -133,7 +137,7 @@ void FungalMage::FSM()
 		}
 	}
 	// Have food but not in cave
-	else if (HaveFoodInInvent() && !FungalMage::IsInCave())
+	else if (HaveFoodInInvent() && !FungalMage::IsInCave() && attackingEnemies.size() == 0)
 	{
 		auto obj = Static::GetClosestStaticObjectByName("Bank chest");
 
@@ -233,9 +237,6 @@ void FungalMage::FSM()
 	}
 	else
 	{
-
-		auto attackingEnemies = RS::GetInCombatNPCwithMe();
-
 		if (attackingEnemies.size() > 0)
 		{
 			// Attack the first monster in the list that is attacking us
@@ -247,6 +248,13 @@ void FungalMage::FSM()
 
 		if (Fungal)
 		{
+			if (to_suicide)
+			{
+				delete this;
+				fungalMage = 0;
+				return;
+			}
+
 			player.Attack(Fungal->EntityId);
 			return;
 		}

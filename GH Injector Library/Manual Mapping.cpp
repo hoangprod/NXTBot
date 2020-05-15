@@ -9,6 +9,7 @@ DWORD ManualMapping_Shell_End();
 DWORD MANUAL_MAPPER::AllocateMemory(DWORD & LastWin32Error)
 {
 	pLocalImageBase = (BYTE*)VirtualAlloc(nullptr, ImageSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
 	if (!pLocalImageBase)
 	{
 		LastWin32Error = GetLastError();
@@ -29,6 +30,7 @@ DWORD MANUAL_MAPPER::AllocateMemory(DWORD & LastWin32Error)
 	if(Flags & INJ_SHIFT_MODULE)
 	{
 		pAllocationBase = (BYTE*)VirtualAllocEx(hTargetProcess, nullptr, AllocationSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
 		if (!pAllocationBase)
 		{
 			LastWin32Error = GetLastError();
@@ -41,9 +43,11 @@ DWORD MANUAL_MAPPER::AllocateMemory(DWORD & LastWin32Error)
 	else
 	{
 		pAllocationBase = (BYTE*)VirtualAllocEx(hTargetProcess, (void*)pLocalOptionalHeader->ImageBase, AllocationSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
 		if (!pAllocationBase)
 		{
 			pAllocationBase = (BYTE*)VirtualAllocEx(hTargetProcess, nullptr, AllocationSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
 			if (!pAllocationBase)
 			{
 				LastWin32Error = GetLastError();
@@ -59,8 +63,10 @@ DWORD MANUAL_MAPPER::AllocateMemory(DWORD & LastWin32Error)
 	pManualMappingData	= pTargetImageBase + ImageSize;
 	pShellcode			= pManualMappingData + sizeof(MANUAL_MAPPING_DATA);
 	
+
 	return INJ_ERR_SUCCESS;
 }
+
 
 DWORD MANUAL_MAPPER::CopyData(DWORD & LastWin32Error)
 {
@@ -209,7 +215,7 @@ DWORD _ManualMap(const wchar_t * szDllFile, HANDLE hTargetProc, LAUNCH_METHOD Me
 	Module.ImageSize = Module.pLocalOptionalHeader->SizeOfImage;
 
 	Module.Flags = Flags;
-	
+
 	DWORD ret = Module.AllocateMemory(LastWin32Error);
 	if(ret != INJ_ERR_SUCCESS)
 	{
@@ -237,10 +243,12 @@ DWORD _ManualMap(const wchar_t * szDllFile, HANDLE hTargetProc, LAUNCH_METHOD Me
 
 		return ret;
 	}
-	
+
 	ret = Module.CopyImage(LastWin32Error);
 
-	VirtualFree(Module.pLocalImageBase, 0, MEM_RELEASE);
+	if(Module.pLocalImageBase)
+		VirtualFree(Module.pLocalImageBase, 0, MEM_RELEASE);
+
 	delete[] pRawData;
 
 	if(ret != INJ_ERR_SUCCESS)
@@ -248,7 +256,7 @@ DWORD _ManualMap(const wchar_t * szDllFile, HANDLE hTargetProc, LAUNCH_METHOD Me
 		VirtualFreeEx(Module.hTargetProcess, Module.pAllocationBase, 0, MEM_RELEASE);
 
 		return ret;
-	}
+	}	
 
 	ULONG_PTR remote_ret = 0;
 	ret = StartRoutine(hTargetProc, ReCa<f_Routine*>(Module.pShellcode), Module.pManualMappingData, Method, (Flags & INJ_THREAD_CREATE_CLOAKED) != 0, LastWin32Error, remote_ret);

@@ -10,8 +10,10 @@
 #include "Experience.h"
 #include "AbyssCrafting.h"
 
+extern AbyssCrafting* abyssCrafting;
 extern std::string botStatus;
 extern int extraDelay;
+extern bool to_suicide;
 
 std::vector<std::string> Pouches = { "Small pouch" , "Medium pouch" , "Large pouch", "Giant pouch" };
 
@@ -91,14 +93,14 @@ void AbyssCrafting::FSM()
 	}
 
 
-
+	/*
 	if (player.GetTilePosition().y > 3521 && !IsInAbyss() && RS::GetInCombatNPCwithMe().size() > 0)
 	{
 		botStatus = "Being attacked, teleporting out!";
 		Common::InteractWithEquipment(2, 3);
 		Beep(523, 100);
 		return;
-	}
+	}*/
 
 
 	if (player.isMoving() || player.IsInAnimation())
@@ -108,8 +110,15 @@ void AbyssCrafting::FSM()
 	// If near bank and inventory not full AND have Cosmic rune, go bank
 	auto banker = RS::GetMonsterWithinRadiusWithName("Banker", player.GetTilePosition(), 50.0f);
 
-	if (banker && (!Inventory::isInventoryFull() && Inventory::HaveItemName(SelectedRune.data())) || (Inventory::HaveItemName("Pure essence") && Inventory::GetFreeSlot() == 1))
+	if (banker && (!Inventory::isInventoryFull() && Inventory::HaveItemName(SelectedRune.data())) || (Inventory::GetItemById(7936) != -1 && Inventory::GetFreeSlot() == 1))
 	{
+		if (to_suicide)
+		{
+			delete this;
+			abyssCrafting = 0;
+			return;
+		}
+
 		FillPouches();
 		return;
 	}
@@ -120,6 +129,13 @@ void AbyssCrafting::FSM()
 		// If before wilderness wall
 		if (player.GetTilePosition().y < 3521)
 		{
+			if (to_suicide)
+			{
+				delete this;
+				abyssCrafting = 0;
+				return;
+			}
+
 			botStatus = "Going to wilderness wall";
 
 			int randomIndex = rand() % WallList.size();

@@ -13,6 +13,7 @@
 
 extern int extraDelay;
 
+extern std::string botStatus;
 extern std::vector<std::string> foodlist;
 extern WildernessAgilityCourse* wildernessagi;
 
@@ -20,24 +21,28 @@ std::vector<AgilityCourse> WildernessAgi = { AgilityCourse(65362, Tile2D(3004, 3
 
 void WatchTowerAgi::FSM()
 {
-
 	Player player = RS::GetLocalPlayer();
 
 	if (!player._base)
-		return;
-
-	if (Stair.Definition || !Trellis.Definition)
 	{
-		Stair = Static::GetClosestStaticObjectByNameWithOption("Ladder", "Climb-down", true);
+		botStatus = "Player is not valid";
+		return;
+	}
+
+	if (!Stair.Definition || !Trellis.Definition)
+	{
 		Trellis = Static::GetClosestStaticObjectByNameWithOption("Trellis", "Climb-up", true);
+		Stair = Static::GetClosestStaticObjectByNameWithOption("Ladder", "Climb-down", true);
 
 		if (!Stair.Definition || !Trellis.Definition)
 		{
+			botStatus = "Could not find stair or trellis.";
 			printf("Could not find stair, trellis or player\n");
 			return;
 		}
 		else
 		{
+			botStatus = "Found trellis and ladder";
 			printf("Trellis: %d - %d (%d, %d)\n", Trellis.Definition->Id, Trellis.SecondId, Trellis.TileX, Trellis.TileY);
 			printf("Ladder: %d - %d (%d, %d)\n", Stair.Definition->Id, Stair.SecondId, Stair.TileX, Stair.TileY);
 		}
@@ -45,6 +50,7 @@ void WatchTowerAgi::FSM()
 
 	if (player.isMoving() || player.IsInAnimation())
 	{
+		botStatus = "in animation or moving";
 		//printf("In Animation / Moving\n");
 		return;
 	}
@@ -56,11 +62,15 @@ void WatchTowerAgi::FSM()
 
 		if (player2DPos[1] < 1000.0f)
 		{
+			Trellis =  Static::GetClosestStaticObjectByNameWithOption("Trellis", "Climb-up", true);
+			botStatus = "Interacting with trellis";
 			//printf("Interact Trellis id %d - %d (%d , %d)\n", Trellis.Definition->Id, Trellis.SecondId, Trellis.TileX, Trellis.TileY);
 			Common::StaticInteract(Trellis);
 		}
 		else
 		{
+			Stair = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Ladder", "Climb-down", Tile2D(2544, 3111), false);
+			botStatus = "Interacting with stair";
 			//printf("Interact Stair\n");
 			Common::StaticInteract(Stair);
 		}

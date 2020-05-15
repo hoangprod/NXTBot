@@ -11,18 +11,21 @@
 #include "Common.h"
 #include "GeneralCombat.h"
 
+extern GeneralCombat* genCombat;
 extern std::string botStatus;
-
+extern bool to_suicide;
 std::vector<std::string> foodlist = { "Shark", "Chocolate slice", "2/3 chocolate cake", "Chocolate cake", "Salmon", "Trout", "Catfish", "Beltfish", "Sea turtle", "Sailfish" };
 
 void GeneralCombat::Looting(FakeItemEX loot)
 {
+	Player player = RS::GetLocalPlayer();
+
 	auto areaLoot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::AreaLoot));
 
 	if (areaLoot)
-		player->LootAllConfirm();
+		player.LootAllConfirm();
 	else if (loot.ItemQuantity != 0)
-		player->Loot(loot);
+		player.Loot(loot);
 }
 
 void GeneralCombat::ConsumeFood()
@@ -60,11 +63,12 @@ std::vector<uint32_t> Prayer_Potions = {143, 141, 139, 2434};
 
 void GeneralCombat::FSM()
 {
-	if (!player || !player->_base || !monsterTargetName.data())
+	Player player = RS::GetLocalPlayer();
+
+	if (player._base || !monsterTargetName.data())
 	{
 		monsterTargetName = RS::GetClosestMonster()->Name;
-		player = new Player(RS::GetLocalPlayer());
-		origin = player->GetTilePosition();
+		origin = player.GetTilePosition();
 
 		//printf("[+] Player %s will be targeting %s from tile position (%d, %d)\n", player->GetName().data(), monsterTargetName.data(), origin.x, origin.y);
 	}
@@ -89,18 +93,18 @@ void GeneralCombat::FSM()
 			int RandomX = rand() % 3 + 3059;
 			int RandomY = rand() % 3 + 4848;
 
-			player->Move(Tile2D(RandomX, RandomY));
+			player.Move(Tile2D(RandomX, RandomY));
 			return;
 		}
 
-		if (RS::GetDistance(origin, player->GetTilePosition()) > 6.0f)
+		if (RS::GetDistance(origin, player.GetTilePosition()) > 6.0f)
 		{
 			// move back to origin
 
 			int RandomX = rand() % 3 + origin.x;
 			int RandomY = rand() % 3 + origin.y;
 
-			player->Move(Tile2D(RandomX, RandomY));
+			player.Move(Tile2D(RandomX, RandomY));
 			return;
 		}
 	}
@@ -125,14 +129,14 @@ void GeneralCombat::FSM()
 	}
 
 	// If I am moving around or targeting something, do not fuck with it
-	if (player->isMoving() || (player->bTargeting() || player->CurrentTarget() > 0))
+	if (player.isMoving() || (player.bTargeting() || player.CurrentTarget() > 0))
 	{
 		botStatus = "Current moving or fighting";
 		return;
 	}
 
 
-	if (player->inCombat())
+	if (player.inCombat())
 	{
 		// If already fighting, leave it alone.
 		botStatus = "Current fighting";
@@ -163,13 +167,22 @@ void GeneralCombat::FSM()
 	}
 	else if(!Inventory::isInventoryFull())
 	{
+		/*
+		if (to_suicide)
+		{
+			delete this;
+			genCombat = 0;
+			return;
+		}
+		*/
+
 		auto lootsAvailable = Tile::GetAllLootsNearbyWithinRadius(origin, 12.0f);
 
 		for (auto loot : lootsAvailable)
 		{
 			if (loot.ItemId == 12158 || loot.ItemId == 12159 || loot.ItemId == 12160 || loot.ItemId == 12161 || loot.ItemId == 12163 || loot.ItemId == 30139 || loot.ItemId == 30140 || loot.ItemId == 30141)
 			{
-				player->Loot(loot);
+				player.Loot(loot);
 				return;
 			}
 		}
@@ -203,6 +216,8 @@ void GeneralCombat::FSM()
 
 void GeneralCombat::Combat(EntityObj* Enemy)
 {
-	player->Attack(Enemy->EntityId);
+	Player player = RS::GetLocalPlayer();
+
+	player.Attack(Enemy->EntityId);
 }
 

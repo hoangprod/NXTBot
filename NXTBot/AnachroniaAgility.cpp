@@ -12,6 +12,9 @@
 
 extern std::string botStatus;
 
+extern bool to_suicide;
+extern MoneyAgi* AnachAgi;
+
 std::vector<AgilityCourse> AnachroniaAgi = { AgilityCourse(113687, Tile2D(5414, 2324)), AgilityCourse(113688, Tile2D(5410, 2325)), AgilityCourse(113689, Tile2D(5408, 2323)), AgilityCourse(113690, Tile2D(5393, 2320)), AgilityCourse(113691, Tile2D(5367, 2304)), AgilityCourse(113692, Tile2D(5369, 2282)), AgilityCourse(113693, Tile2D(5376, 2247)), AgilityCourse(113694, Tile2D(5397, 2240)), AgilityCourse(113695, Tile2D(5439, 2217)), AgilityCourse(113696, Tile2D(5456, 2179)), AgilityCourse(113697, Tile2D(5475, 2171)), AgilityCourse(113698, Tile2D(5489, 2171)), AgilityCourse(113699, Tile2D(5502, 2171)), AgilityCourse(113700, Tile2D(5527, 2182)), AgilityCourse(113701, Tile2D(5548, 2220)), AgilityCourse(113702, Tile2D(5548, 2244)), AgilityCourse(113703, Tile2D(5553, 2249)), AgilityCourse(113704, Tile2D(5565, 2272)), AgilityCourse(113705, Tile2D(5578, 2289)), AgilityCourse(113706, Tile2D(5587, 2295)), AgilityCourse(113707, Tile2D(5596, 2295)), AgilityCourse(113708, Tile2D(5629, 2287)), AgilityCourse(113709, Tile2D(5669, 2288)), AgilityCourse(113710, Tile2D(5680, 2290)), AgilityCourse(113711, Tile2D(5684, 2293)), AgilityCourse(113712, Tile2D(5686, 2310)), AgilityCourse(113713, Tile2D(5695, 2317)), AgilityCourse(113714, Tile2D(5696, 2346)), AgilityCourse(113715, Tile2D(5675, 2363)), AgilityCourse(113716, Tile2D(5655, 2377)), AgilityCourse(113717, Tile2D(5653, 2405)), AgilityCourse(113718, Tile2D(5643, 2420)), AgilityCourse(113719, Tile2D(5642, 2431)), AgilityCourse(113720, Tile2D(5626, 2433)), AgilityCourse(113721, Tile2D(5616, 2433)), AgilityCourse(113722, Tile2D(5608, 2433)), AgilityCourse(113723, Tile2D(5601, 2433)), AgilityCourse(113724, Tile2D(5591, 2450)), AgilityCourse(113725, Tile2D(5584, 2452)), AgilityCourse(113726, Tile2D(5574, 2453)), AgilityCourse(113727, Tile2D(5564, 2452)), AgilityCourse(113728, Tile2D(5536, 2492)), AgilityCourse(113729, Tile2D(5528, 2492)), AgilityCourse(113730, Tile2D(5505, 2478)), AgilityCourse(113731, Tile2D(5505, 2468)), AgilityCourse(113732, Tile2D(5505, 2462)), AgilityCourse(113733, Tile2D(5484, 2456)), AgilityCourse(113734, Tile2D(5431, 2417)), AgilityCourse(113735, Tile2D(5431, 2407)), AgilityCourse(113736, Tile2D(5425, 2397)), AgilityCourse(113737, Tile2D(5426, 2387)), AgilityCourse(113738, Tile2D(5428, 2383)) };
 
 void MoneyAgi::FSM()
@@ -109,6 +112,13 @@ AgilityCourse MoneyAgi::GetNextCourse()
 		// If there is a match of end pos and player pos
 		if (obstacle.EndPos.x == playerPos.x && obstacle.EndPos.y == playerPos.y)
 		{
+			if (to_suicide)
+			{
+				delete this;
+				AnachAgi = 0;
+				return 0;
+			}
+
 			auto nextObstacle = AnachroniaAgi[i + 1];;
 
 			//botStatus = "going to Anachronia obstacle id " + std::to_string(nextObstacle.objId);
@@ -147,4 +157,22 @@ AgilityCourse MoneyAgi::GetNextCourse()
 	//botStatus = "Moving inbetween obstacle OR you are not standing where u should be to start.";
 
 	return 0;
+}
+
+bool MoneyAgi::is_on_endpos()
+{
+	auto playerPos = RS::GetLocalPlayerTilePos();
+
+	for (size_t i = 0; i < AnachroniaAgi.size(); i++)
+	{
+		auto obstacle = AnachroniaAgi[i];
+
+		// If there is a match of end pos and player pos
+		if (obstacle.EndPos.x == playerPos.x && obstacle.EndPos.y == playerPos.y)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

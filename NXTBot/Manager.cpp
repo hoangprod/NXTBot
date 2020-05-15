@@ -16,6 +16,7 @@
 #include "Auth.h"
 #include "Common.h"
 #include "Antiban.h"
+#include "Inventory.h"
 #include "Manager.h"
 
 extern HWND hWnd;
@@ -45,6 +46,11 @@ extern int SelectedOre;
 extern std::vector<std::string> TreeNames;
 extern std::vector<std::string> OreNode;
 
+extern bool break_type;
+extern bool auto_start;
+extern std::string auto_username;
+extern std::string auto_password;
+
 int extraDelay = 0;
 bool firstLog = false;
 
@@ -52,23 +58,29 @@ void Manager::Manage()
 {
 	static uint64_t last_tick = 0;
 
-	if (wisp || genCombat || rabbit || WoodCutting)
+	if (wisp || genCombat || rabbit || WoodCutting || auto_start)
 	{
 		static uint32_t randomTick = 0;
 		// If X ticks have not past yet + a random of 30-300~ ticks
-		if ((last_tick + tick + randomTick) < GetTickCount64())
+		if ((last_tick + tick + randomTick + extraDelay) < GetTickCount64())
 		{
+			extraDelay = 0;
+
 			randomTick = (rand() % 1000 + 300);
 
-			if (randomTick % 99 == 0)
+			if (randomTick % 77 == 0)
 			{
 				antiban::anti_afk();
 			}
 
-			if (RS::IsInGame())
+			if (auto_start)
+			{
+				Manager::Auto_Start();
+			}
+
+			else if (RS::IsInGame())
 			{
 				// Will only do 1 or the other
-
 				if (wisp)
 				{
 					wisp->FSM();
@@ -86,7 +98,7 @@ void Manager::Manage()
 					WoodCutting->FSM();
 				}
 			}
-			else if (RS::GetGameState() == game_state::Lobby)
+			else if (RS::GetGameState() == _game_state::Lobby)
 			{
 				if (firstLog)
 				{
@@ -102,6 +114,16 @@ void Manager::Manage()
 				}
 
 			}
+			else if (RS::GetGameState() == _game_state::LoginScreen)
+			{
+				if (auto_username.size() > 5 && auto_password.size() > 5)
+				{
+					log("Attempting to log into %s:%s.", auto_username.data(), auto_password.data());
+					Common::Login(auto_username.data(), auto_password.data());
+					extraDelay = 9000;
+				}
+			}
+
 
 
 			last_tick = GetTickCount64();
@@ -113,9 +135,9 @@ void Manager::Manage()
 		// If X ticks have not past yet + a random of 30-300~ ticks
 		if ((last_tick + tick + randomTick) < GetTickCount64())
 		{
-			randomTick = (rand() % 87);
+			randomTick = (rand() % 101);
 
-			if (randomTick % 97 == 0)
+			if (randomTick % 78 == 0)
 			{
 				antiban::anti_afk();
 			}
@@ -145,7 +167,9 @@ void Manager::Manage()
 			if (!abyssCrafting && !wildernessagi && !money_drop && (antiban::long_break_manager() || antiban::short_break_manager()))
 				return;
 
-			if (randomTick % 96 == 0)
+			break_type = 0;
+
+			if (randomTick % 79 == 0)
 			{
 				antiban::anti_afk();
 			}
@@ -173,7 +197,7 @@ void Manager::Manage()
 				else if (money_drop)
 					money_drop->FSM();
 			}
-			else if (RS::GetGameState() == game_state::Lobby)
+			else if (RS::GetGameState() == _game_state::Lobby)
 			{
 				if (firstLog)
 				{
@@ -189,6 +213,16 @@ void Manager::Manage()
 				}
 
 			}
+			else if (RS::GetGameState() == _game_state::LoginScreen)
+			{
+				if (auto_username.size() > 5 && auto_password.size() > 5)
+				{
+					log("Attempting to log into %s:%s.", auto_username.data(), auto_password.data());
+					Common::Login(auto_username.data(), auto_password.data());
+					extraDelay = 9000;
+				}
+
+			}
 
 			//last_tick = GetTickCount64();
 		}
@@ -197,17 +231,141 @@ void Manager::Manage()
 	{
 		botStatus = "Not botting";
 	}
-
-
 }
 
-bool Manager::is_botting()
+void Manager::Auto_Start()
 {
-	if (peng || AnachAgi || abyssCrafting || archelogy || watchtoweragi || wildernessagi || divination || fungalMage || taverlySummon || money_drop || wisp || genCombat || rabbit || WoodCutting || genMining)
-		return true;
+	if (RS::GetGameState() == _game_state::LoginScreen)
+	{
+		log("Attempting to log into %s:%s.", auto_username.data(), auto_password.data());
+		Common::Login(auto_username.data(), auto_password.data());
+		extraDelay = 9000;
+	}
 
-	return false;
+	else if (RS::GetGameState() == _game_state::Lobby)
+	{
+		Common::SelectFavoriteWorld(); extraDelay = 9000;
+		log("Logging from lobby into game."); return; 
+	}
+
+	else if (RS::GetGameState() == _game_state::Ingame)
+	{
+		Player player = RS::GetLocalPlayer();
+
+		if (!player._base)
+			return;
+
+		// If inventory have pure ess, nature rune, or cosmic rune - start Abyss RC
+		if (Inventory::GetItemById(7936) != -1 || Inventory::GetItemById(561) != -1 || Inventory::GetItemById(564) != -1)
+		{
+			if (!abyssCrafting)
+			{
+				if (AIOAuth("Abyss_RuneCrafting", "Start", player.GetName()) != -1)
+					abyssCrafting = new AbyssCrafting(); auto_start = false; SelectedBot = 7;
+			}
+		}
+
+		else if (MoneyAgi::is_on_endpos())
+		{
+			if (!AnachAgi)
+			{
+				if (AIOAuth("Anachronia_Agility", "Start", player.GetName()) != -1)
+					AnachAgi = new MoneyAgi(); auto_start = false; SelectedBot = 6;
+			}
+		}
+
+		else if (Archeology::is_next_to_archeology_node())
+		{
+			if (!archelogy)
+			{
+				if (AIOAuth("Archeology_Farming", "Start", player.GetName()) != -1)
+					archelogy = new Archeology(); auto_start = false;
+			}
+		}
+
+		else if (RS::GetClosestNonEnrichedWisp())
+		{
+			if (!divination)
+			{
+				if (AIOAuth("Divination_Bot", "Start", player.GetName()) != -1)
+					divination = new Divination(); auto_start = false; SelectedBot = 10;
+			}
+		}
+		
+		else if (RS::GetClosestMonsterNPCByName("Fungal mage"))
+		{
+			if (!fungalMage)
+			{
+				if (AIOAuth("Fungal_Mage", "Start", player.GetName()) != -1)
+					fungalMage = new FungalMage(); auto_start = false; SelectedBot = 11;
+			}
+
+		}
+
+		else if (RS::GetClosestMonsterNPCByName("Spellwisp"))
+		{
+			if (!wisp)
+			{
+				if (AIOAuth("Wisp_Farming", "Start", player.GetName()) != -1)
+					wisp = new Wisp(); auto_start = false; SelectedBot = 0;
+			}
+
+		}
+		else if (Static::GetClosestStaticObjectByNameWithOption("Trellis", "Climb-up", true).Definition)
+		{
+			if (!watchtoweragi)
+			{
+				if (AIOAuth("Watchtower_Agility", "Start", player.GetName()) != -1)
+					watchtoweragi = new WatchTowerAgi(); auto_start = false; SelectedBot = 8;
+			}
+
+		}
+		else
+		{
+			log("[ Critical ] - Cannot auto start bot!"); auto_start = false;
+		}
+
+	}
+
 }
+
+
+_current_bot Manager::get_current_bot()
+{
+	if (peng)
+		return _current_bot::Penguin_Agility;
+	else if(AnachAgi)
+		return _current_bot::Anachronia_Agility;
+	else if (abyssCrafting)
+		return _current_bot::Abyss_Crafting;
+	else if (archelogy)
+		return _current_bot::Archeology;
+	else if (watchtoweragi)
+		return _current_bot::Watchtower_Agility;
+	else if (wildernessagi)
+		return _current_bot::Wilderness_Agility;
+	else if (divination)
+		return _current_bot::Divination;
+	else if (fungalMage)
+		return _current_bot::Fungal_Mage;
+	else if (taverlySummon)
+		return _current_bot::Taverly_Summoning;
+	else if (money_drop)
+		return _current_bot::Money_Drop;
+	else if (wisp)
+		return _current_bot::Wisp_Farming;
+	else if (genCombat)
+		return _current_bot::General_Combat;
+	else if (rabbit)
+		return _current_bot::Rabbit_Farming;
+	else if (WoodCutting)
+		return _current_bot::Woodcutting;
+	else if (genMining)
+		return _current_bot::General_Mining;
+
+	return _current_bot::None;
+}
+
 
 void Manager::Keystates(WPARAM wParam)
 {
@@ -279,6 +437,11 @@ void Manager::Keystates(WPARAM wParam)
 				}
 			}
 		}
+	}
+
+	if (wParam == VK_NUMPAD6)
+	{
+		auto_start = !auto_start;
 	}
 
 	if (wParam == VK_NUMPAD7)

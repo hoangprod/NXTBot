@@ -50,7 +50,7 @@ using f_Routine = ULONG_PTR(__stdcall*)(void* pArg);
 #define SWHEX_EXE_FILENAME SWHEX_EXE_FILENAME86
 #endif
 
-#define SR_REMOTE_TIMEOUT 2000
+#define SR_REMOTE_TIMEOUT 10000
 //Routine timeout in ms
 
 DWORD StartRoutine(HANDLE hTargetProc, f_Routine * pRoutine, void * pArg, LAUNCH_METHOD Method, bool CloakThread, DWORD & LastWin32Error, ULONG_PTR & Out);

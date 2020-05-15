@@ -23,6 +23,8 @@ public:
 	static DialogInfoEx* IsWorldWidgetUp();
 	static int GetCurrentWildernessLevel();
 
+	static bool SelectFavoriteWorld();
+
 	static bool DepositActionNPC(uint32_t Entity);
 	static bool BankUsingNPC(uint32_t targetEntity);
 	static bool BankInteractItem(int slot, int option);

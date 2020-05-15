@@ -17,8 +17,14 @@ void MoneyDrop::FSM()
 	if (!player._base)
 		return;
 
+
+	if (Widgets::GetDialogType() == RSDialog::MultiSelectionDialog)
+	{
+		Common::ConfirmGUI(0x4A40008);
+		return;
+	}
 	// If inventory is empty
-	if (Inventory::GetFreeSlot() == 28)
+	else if (Inventory::GetFreeSlot() == 28)
 	{
 		if (!Inventory::isBankOpened())
 		{
@@ -30,7 +36,7 @@ void MoneyDrop::FSM()
 
 				if (chest.Definition)
 				{
-					Common::StaticInteract2(chest);
+					Common::StaticInteract(chest);
 					return;
 				}
 				else
@@ -49,7 +55,7 @@ void MoneyDrop::FSM()
 		// If Bank interface is up
 		else
 		{
-			Common::BankLoadPreset(2);
+			Common::BankLoadPreset(4);
 			return;
 		}
 	}

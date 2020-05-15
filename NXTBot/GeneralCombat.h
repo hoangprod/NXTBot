@@ -10,7 +10,6 @@ public:
 	bool NeedHeal();
 
 	bool Manual = false;
-	Player* player;
 	std::string monsterTargetName;
 	Tile2D origin;
 };
