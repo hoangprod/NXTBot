@@ -482,6 +482,37 @@ bool Common::StaticInteract2(StaticObjEX obj)
 	return true;
 }
 
+bool Common::StaticInteract3(StaticObjEX obj)
+{
+	uint8_t data[100] = { 0 };
+
+	if (obj.SecondId > 0)
+	{
+		*reinterpret_cast<int*>(&data[0x58]) = obj.SecondId;
+	}
+	else
+	{
+		*reinterpret_cast<int*>(&data[0x58]) = obj.Definition->Id;
+	}
+
+	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
+	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
+
+	uint64_t func_ptr = g_Module + 0x9c0c0;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _Loot)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_Loot>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
 bool Common::DepositAllThroughBank()
 {
 	uint8_t data[100] = { 0 };

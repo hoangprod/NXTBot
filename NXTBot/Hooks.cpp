@@ -82,7 +82,7 @@ enum class BotType {
 	AnachroniaAgility
 };
 
-std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility", "Abyss Crafting", "Watch Tower Agility", "Wilderness Agility", "Divination", "Fungal Mage", "Taverly Summoning", "Drop Monei"};
+std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility", "Abyss Crafting", "Watch Tower Agility", "Wilderness Agility", "Divination", "Fungal Mage", "Taverly Summoning", "Drop Monei", "Slayer Tower"};
 
 std::vector<std::string> OreNode = { "Copper rock", "Tin rock", "Iron rock", "Coal", "Mithril rock", "Adamantite rock", "Runite rock", "Orichalcite rock" };
 std::vector<std::string> OreName = { "Copper ore", "Tin ore", "Iron ore", "Coal", "Mithril ore", "Adamantite ore", "Runite ore", "Orichalcite ore" };
@@ -567,8 +567,10 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		if (wParam == VK_F1)
 		{
+			auto banker = RS::GetClosestEntityNPCByName("Banker");
+			auto Markus = RS::GetClosestEntityNPCByName("Markus");
 
-
+			printf("%p %p\n", banker, Markus);
 		}
 
 		if (wParam == VK_END)
@@ -906,7 +908,7 @@ DWORD WINAPI ipc_thread(LPVOID lpParam)
 			log("[ Critical ] client_share_mem invalid");
 		}
 
-		Sleep(2);
+		Sleep(300);
 	}
 
 	return 0;

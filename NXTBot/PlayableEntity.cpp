@@ -42,6 +42,14 @@ bool Player::Move(Tile2D tile)
 	return true;
 }
 
+bool Player::MoveRandom(Tile2D tile, int x_delta, int y_delta)
+{
+	int RandomX = rand() % x_delta + tile.x;
+	int RandomY = rand() % y_delta + tile.y;
+
+	return this->Move(Tile2D(RandomX, RandomY));
+}
+
 bool Player::Attack(uint32_t Entity)
 {
 	uint8_t data[100] = { 0 };

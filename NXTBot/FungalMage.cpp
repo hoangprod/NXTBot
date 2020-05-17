@@ -29,8 +29,6 @@ void FungalMage::FSM()
 
 	if (!runOnce)
 	{
-		printf("Starting\n");
-
 
 		if(IsInCave())
 			origin = player.GetTilePosition();
@@ -41,7 +39,7 @@ void FungalMage::FSM()
 		runOnce = !runOnce;
 	}
 
-	if (FungalMage::NeedHeal())
+	if (FungalMage::NeedHeal() && FungalMage::IsInCave())
 	{
 		if (!FungalMage::ConsumeFood() && !player.inCombat())
 		{

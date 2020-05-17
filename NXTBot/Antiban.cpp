@@ -108,7 +108,7 @@ void antiban::anti_afk()
 	SendMessageW(hWnd, WM_KEYDOWN, selected_key.uMsg, selected_key.up_key);
 
 	// TODO: Make SendMessage not rely on sleep.
-	//Sleep(hold_time);
+	Sleep(hold_time);
 
 	SendMessageW(hWnd, WM_KEYUP, selected_key.uMsg, selected_key.down_key);
 }

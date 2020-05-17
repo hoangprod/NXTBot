@@ -336,6 +336,9 @@
     <ClInclude Include="client_ipc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SlayerTower.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -438,6 +441,9 @@
       <Filter>Source Files\Bots</Filter>
     </ClCompile>
     <ClCompile Include="client_ipc.cpp">
+      <Filter>Source Files\Bots</Filter>
+    </ClCompile>
+    <ClCompile Include="SlayerTower.cpp">
       <Filter>Source Files\Bots</Filter>
     </ClCompile>
   </ItemGroup>

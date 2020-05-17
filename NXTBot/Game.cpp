@@ -1096,7 +1096,9 @@ StaticObjEX Static::GetClosestStaticObjectByNameWithOptionAtPosition(const char*
 
 
 			float curDistance = RS::GetDistance(player.GetTilePosition(), Pos);
-			if (strcmp(name, staticObj->Definition->Name) == 0 && strcmp(option, staticObj->Definition->Op0) == 0)
+			if (strcmp(name, staticObj->Definition->Name) == 0 && (strcmp(option, staticObj->Definition->Op0) == 0 || strcmp(option, staticObj->Definition->Op1) == 0 || 
+				strcmp(option, staticObj->Definition->Op2) == 0 || strcmp(option, staticObj->Definition->Op3) == 0 || strcmp(option, staticObj->Definition->Op4) == 0 ||
+				strcmp(option, staticObj->Definition->Op5) == 0))
 			{
 				if (curDistance < closestDistance)
 				{

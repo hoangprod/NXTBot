@@ -101,6 +101,9 @@ UIType Widgets::GetUIType()
 	case 0x55a:
 		return UIType::OBELISK_WIDGET;
 		break;
+	case 0x572:
+		return UIType::SLAYER_CONTRACT;
+		break;
 	default:
 		return UIType::UNKNOWN;
 		break;

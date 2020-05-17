@@ -207,6 +207,7 @@
     <ClInclude Include="PlayableEntity.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="Scan.h" />
+    <ClInclude Include="SlayerTower.h" />
     <ClInclude Include="sodium.h" />
     <ClInclude Include="sodium\core.h" />
     <ClInclude Include="sodium\crypto_aead_aes256gcm.h" />
@@ -315,6 +316,7 @@
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="Scan.cpp" />
     <ClCompile Include="Auth.cpp" />
+    <ClCompile Include="SlayerTower.cpp" />
     <ClCompile Include="Summoning.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="Varpbit.cpp" />

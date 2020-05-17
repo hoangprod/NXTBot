@@ -30,9 +30,27 @@ bool isReady(HWND hwnd)
 	return false;
 }
 
+extern HANDLE manager_mutex;
+
+BOOL WINAPI ConsoleHandlerRoutine(DWORD dwCtrlType)
+{
+	if (dwCtrlType == CTRL_CLOSE_EVENT)
+	{
+		if (!ReleaseMutex(manager_mutex))
+		{
+			log("Could not release mutex.");
+		}
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
 
 int WINAPI main()
 {
+
+	BOOL ret = SetConsoleCtrlHandler(ConsoleHandlerRoutine, TRUE);
 
 	while (TRUE)
 	{

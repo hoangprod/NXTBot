@@ -14,6 +14,18 @@
 extern GeneralCombat* genCombat;
 extern std::string botStatus;
 extern bool to_suicide;
+
+// Shark 385
+// Choco slide 1901
+// 2/3 Choco cake 1899
+// Choco cake 1897
+// Salmon 329
+// Trout 333
+// Catfish 40295
+// Beltfish 40297
+// Sea Turtle 397
+// Sailfish 42251
+
 std::vector<std::string> foodlist = { "Shark", "Chocolate slice", "2/3 chocolate cake", "Chocolate cake", "Salmon", "Trout", "Catfish", "Beltfish", "Sea turtle", "Sailfish" };
 
 void GeneralCombat::Looting(FakeItemEX loot)

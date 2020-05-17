@@ -631,7 +631,8 @@ enum class UIType
 	DEPOSIT_BOX,
 	TELEPORT_OPTIONS,
 	SHOP_STORE,
-	OBELISK_WIDGET
+	OBELISK_WIDGET,
+	SLAYER_CONTRACT
 };
 
 enum class _game_state {
@@ -661,7 +662,8 @@ enum class _current_bot
 	General_Combat,
 	Rabbit_Farming,
 	Woodcutting,
-	General_Mining
+	General_Mining,
+	Slayer_Contract
 };
 
 
@@ -720,6 +722,7 @@ typedef __int64 (__fastcall* fn_SetVarpValueFromServer)(__int64 player, __int64 
 #define SELECT_AN_OPTION_TELEPORT_WIDGET 0x5C502A7
 #define SHOP_WIDGET 0x5c502a7 //Secondary ID 0x4F1
 #define SUMMONING_WIDGET 0x5C502A7 // Secondary ID 0x55a 
+#define SLAYER_CONTRACT_WIDGET 0x5C502A7 // Secondary ID 0x572 
 
 // Varps
 #define SOIL_BOX_GRAVEL 9370

@@ -246,7 +246,13 @@ bool ipc::ipc_cmd_manager()
 			{
 			case _server_cmd::SUICIDE:
 				log("[c] Received command to commit seppuku.");
+				s2c_cmd->is_acknowledged = true;
+				if (!ReleaseMutex(client_mutex))
+				{
+					log("Could not release mutex.");
+				}
 				to_suicide = true;
+				return true;
 				break;
 			case _server_cmd::AUTO_START:
 				auto_username = s2c_cmd->acc_info.email;
@@ -301,10 +307,22 @@ void ipc::ipc_loop()
 
 void ipc::ipc_mutex_lock()
 {
+	if (to_suicide)
+	{
+		if (!ReleaseMutex(client_mutex))
+		{
+			log("Could not release mutex.");
+		}
+
+		return;
+	}
+
 	DWORD  dwWaitResult = WaitForSingleObject(client_mutex, 100);
 
 	switch (dwWaitResult)
 	{
+	case WAIT_ABANDONED:
+		log("[ High ] Wait abandoned. Memory might be in a corrupted state.");
 	case WAIT_OBJECT_0:
 		try {
 			ipc::ipc_loop();
@@ -319,9 +337,6 @@ void ipc::ipc_mutex_lock()
 			log("Could not release mutex.");
 		}
 
-		break;
-	case WAIT_ABANDONED:
-		log("Wait abandoned.");
 		break;
 	case WAIT_TIMEOUT:
 		//log("Wait timeout.");

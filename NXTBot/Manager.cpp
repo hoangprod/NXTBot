@@ -12,6 +12,7 @@
 #include "FungalMage.h"
 #include "Summoning.h"
 #include "MoneyDrop.h"
+#include "SlayerTower.h"
 #include "Game.h"
 #include "Auth.h"
 #include "Common.h"
@@ -37,6 +38,8 @@ Divination* divination = 0;
 FungalMage* fungalMage = 0;
 TaverlySummoning* taverlySummon = 0;
 MoneyDrop* money_drop = 0;
+SlayerTower* slayer_tower = 0;
+
 
 extern std::vector<const char*> botList;
 extern std::string botStatus;
@@ -58,7 +61,7 @@ void Manager::Manage()
 {
 	static uint64_t last_tick = 0;
 
-	if (wisp || genCombat || rabbit || WoodCutting || auto_start)
+	if (wisp || genCombat || rabbit || WoodCutting || auto_start || slayer_tower)
 	{
 		static uint32_t randomTick = 0;
 		// If X ticks have not past yet + a random of 30-300~ ticks
@@ -68,7 +71,7 @@ void Manager::Manage()
 
 			randomTick = (rand() % 1000 + 300);
 
-			if (randomTick % 77 == 0)
+			if (randomTick % 89 == 0)
 			{
 				antiban::anti_afk();
 			}
@@ -96,6 +99,10 @@ void Manager::Manage()
 				else if (WoodCutting)
 				{
 					WoodCutting->FSM();
+				}
+				else if (slayer_tower)
+				{
+					slayer_tower->FSM();
 				}
 			}
 			else if (RS::GetGameState() == _game_state::Lobby)
@@ -137,7 +144,7 @@ void Manager::Manage()
 		{
 			randomTick = (rand() % 101);
 
-			if (randomTick % 78 == 0)
+			if (randomTick % 88 == 0)
 			{
 				antiban::anti_afk();
 			}
@@ -362,6 +369,8 @@ _current_bot Manager::get_current_bot()
 		return _current_bot::Woodcutting;
 	else if (genMining)
 		return _current_bot::General_Mining;
+	else if (slayer_tower)
+		return _current_bot::Slayer_Contract;
 
 	return _current_bot::None;
 }
@@ -657,6 +666,19 @@ void Manager::Keystates(WPARAM wParam)
 				AIOAuth("Money_Drop", "Stop", player.GetName());
 
 				delete money_drop; money_drop = 0;
+			}
+			break;
+		case 14:
+			if (!slayer_tower)
+			{
+				if (AIOAuth("Slayer_Tower", "Start", player.GetName()) != -1)
+					slayer_tower = new SlayerTower();
+			}
+			else if (slayer_tower)
+			{
+				AIOAuth("Slayer_Tower", "Stop", player.GetName());
+
+				delete slayer_tower; slayer_tower = 0;
 			}
 			break;
 		default:

@@ -36,6 +36,8 @@ public:
 	Player(EntityObj* player) { _base = (UINT_PTR*)player; };
 
 	bool Move(Tile2D tile);
+	bool MoveRandom(Tile2D tile, int x_delta, int y_delta);
+
 	bool Attack(uint32_t Entity);
 	bool Talk(uint32_t Entity);
 	bool Loot(FakeItemEX lootItem);

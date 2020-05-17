@@ -31,6 +31,7 @@ public:
 	static bool BankLoadPreset(int preset);
 	static bool TeleportToAbyssThroughMage();
 	static bool StaticInteract2(StaticObjEX obj);
+	static bool StaticInteract3(StaticObjEX obj);
 	static bool DepositAllThroughBank();
 	static bool StaticInteract(StaticObjEX obj);
 	static bool DepositAll();

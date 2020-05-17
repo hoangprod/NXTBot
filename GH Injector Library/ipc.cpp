@@ -544,7 +544,7 @@ bool is_lowest_playtime(const char* email)
 
 	_internal_bot_list cur_acc = get_account_from_internal_list(email);
 
-	for (auto acc : account_list)
+	for (auto &acc : account_list)
 	{
 		// Ignore accs that are still playing
 		if (is_account_playing(acc.acc_info.email))
@@ -859,8 +859,12 @@ void clean_up_crashed_processes()
 
 }
 
+
+
 void ipc_loop()
 {
+	static HWND hwnd = GetConsoleWindow();
+
 	while (max_clients <= 0 || max_clients > 16)
 	{
 		std::cout << "How many clients to run? = ";
@@ -873,8 +877,7 @@ void ipc_loop()
 		return;
 	}
 
-
-	if (GetAsyncKeyState(VK_END))
+	if (GetAsyncKeyState(VK_END) & 1 && hwnd == GetForegroundWindow())
 	{
 		kill_all = !kill_all;
 		log("Status of kill all toggle: %d", kill_all);
@@ -886,10 +889,12 @@ void ipc_loop()
 		return;
 	}
 
-	DWORD  dwWaitResult = WaitForSingleObject(manager_mutex, INFINITE);
+	DWORD  dwWaitResult = WaitForSingleObject(manager_mutex, 1000);
 
 	switch (dwWaitResult)
 	{
+	case WAIT_ABANDONED:
+		log("[ High ] Wait abandoned. This is not good and let's hope the memory is not corrupted.");
 	case WAIT_OBJECT_0:
 		try{
 			print_list();
@@ -921,11 +926,8 @@ void ipc_loop()
 			log("Could not release mutex.");
 		}
 		break;
-	case WAIT_ABANDONED:
-		log("Wait abandoned.");
-		break;
 	case WAIT_TIMEOUT:
-		log("Wait timeout.");
+		log("Wait timeout. This is not good. Manually close all clients (make sure they are auto-startable) and restart Manager.");
 		break;
 	default:
 		log("Wait result: %d", dwWaitResult);
