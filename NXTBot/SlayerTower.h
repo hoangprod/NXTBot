@@ -35,6 +35,8 @@ public:
 
 	void navigate_bank(Player player);
 
+	void manage_extra_gear();
+
 	SlayerContract get_contract();
 
 	int get_current_floor();

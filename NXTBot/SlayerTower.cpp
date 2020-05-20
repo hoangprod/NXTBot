@@ -12,12 +12,14 @@
 #include "SlayerTower.h"
 
 extern int extraDelay;
-extern std::vector<std::string> foodlist;
+extern bool to_suicide;
+extern SlayerTower* slayer_tower;
 
 std::vector<int> food_id = { 385, 1901, 1899, 1897, 329 , 333, 40295, 40297, 397, 42251 };
 
 std::vector<SlayerContract> contracts ={ SlayerContract("Crawling hand", 1, 5, Tile2D(3404, 3561)), SlayerContract("Banshee", 1, 15, Tile2D(3444, 3557)), SlayerContract("Infernal Mage", 2, 45, Tile2D(3410, 3565)),
-SlayerContract("Bloodveld", 2, 50, Tile2D(3409, 3545)), SlayerContract("Aberrant spectre", 2, 60, Tile2D(344, 3574)), SlayerContract("Gargoyle", 3, 75, Tile2D(3441, 3550)), SlayerContract("Nechryael", 3, 80, Tile2D(3405, 3571)) };
+	SlayerContract("Bloodveld", 2, 50, Tile2D(3409, 3545)), SlayerContract("Aberrant spectre", 2, 60, Tile2D(3443, 3572)), SlayerContract("Gargoyle", 3, 75, Tile2D(3441, 3550)), SlayerContract("Nechryael", 3, 80, Tile2D(3405, 3571)),
+	SlayerContract("Heph", 3, 9999, Tile2D(3405, 3571)) };
 
 
 /*
@@ -38,11 +40,20 @@ void SlayerTower::FSM()
 	if (!player._base)
 		return;
 
+	if (Varpbit::GetPlayerHealth() <= 0)
+	{
+		// Dead
+		Beep(500, 500);
+		delete this; slayer_tower = 0;
+		return;
+	}
+
 	task_manager();
 
 	// heal food logic
 	if (this->need_heal())
 	{
+		log("need heal.");
 		if (this->have_food())
 		{
 			this->recover_hp();
@@ -54,18 +65,55 @@ void SlayerTower::FSM()
 		}
 	}
 
-	if (player.isMoving() || player.inCombat())
+	auto monster_targeting_me = RS::GetInCombatNPCwithMe();
+
+	for (auto monster : monster_targeting_me)
+	{
+		auto ent = Entity(monster);
+
+		if (strcmp(monster->Name, "*Gargoyle") == 0 && ent.NPCCurHealth() < 1005)
+		{
+			Common::DepositActionNPC(monster->EntityId);
+			return;
+		}
+	}
+
+
+	if (player.isMoving() || player.inCombat() || player.CurrentUsefulAni() != -1)
+	{
+		log("moving or incombat or not afk");
 		return;
+	}
+
+	if (to_suicide)
+	{
+		delete this; slayer_tower = 0;
+		return;
+	}
 
 	if (Exp::GetSkillLevel(Stat::SLAYER) < 5)
+	{
+		log("Slayer lvl is less than 5");
 		return;
+	}
 
 	// manage all food / bank related
-	navigate_bank(player);
+	if(!this->have_food() || (this->have_food() && !is_in_tower_area(player)))
+		return navigate_bank(player);
+
+	// Confirm deletion of contract
+	if (Widgets::GetDialogType() == RSDialog::ModernDestroy)
+	{
+		log("In Contract deletion confirm window.");
+		Common::ConfirmGUI(0x49F0005);
+		return;
+	}
 
 	// If we don't have contract, contract_manager will get us the contract
-	if (contract_finished || !SlayerTower::have_contract())
+	if (contract_finished || !this->have_contract())
 	{
+		log("Finished contract or don't have one.");
+		extraDelay = 1000;
 		return contract_manager(player);
 	}
 	
@@ -74,23 +122,69 @@ void SlayerTower::FSM()
 	{
 		SlayerContract contract = get_contract();
 
+		log("Contract info is: %d %d %s", contract.required_level, contract.floor_int, contract.Monster_Name.data());
+
 		// Impossible but still, just check if we somehow are no longer able to do even a lvl 5 contract
 		if (!contract.required_level > Exp::GetSkillLevel(Stat::SLAYER))
+		{
+			log("something went wrong");
 			return;
+		}
 
 		if (is_on_floor(contract.floor_int))
 		{
-			//log("Is on the right floor, fighting monster.");
+			log("we are on the right floor");
+
+			auto player_pos = player.GetTilePosition();
+
+			// Abberant Spectre
+			if (contract.required_level == 60)
+			{
+				// an exception for abberant spectre because we can't get there from within the same floor alone, must use stair
+				// is not in Spectre's room
+				if (player_pos.x > 3431 && player_pos.y > 3546)
+				{
+				}
+				else
+				{
+					log("is not in spectre's room");
+
+					auto middle_stair_sw = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Staircase", "Climb", Tile2D(3395, 3573), false);
+
+					if (middle_stair_sw.Definition)
+					{
+						log("clicking stair");
+						Common::StaticInteract3(middle_stair_sw);
+					}
+					return;
+				}
+			}
+
+			// Gargoyle
+			else if (contract.required_level == 75)
+			{
+				// is not in Gargoyle room, then go down stair so that we can go back up in the correct corner
+				if (player_pos.x <= 3431)
+				{
+					auto top_stair_nw = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Staircase", "Climb bottom floor", Tile2D(3395, 3573), false);
+
+					if (top_stair_nw.Definition)
+						Common::StaticInteract(top_stair_nw);
+				}
+			}
+			log("Is on the right floor, fighting monster.");
 
 			this->combat_monster(player, contract);
 			return;
 		}
 
-		else
+		else if(this->is_in_tower_area(player) && SlayerTower::have_contract())
 		{
-			//log("Not on the right contract floor, navitgating there.");
+			log("Not on the right contract floor, navitgating there.");
 			return navigate_contract(player, contract);
 		}
+
+		log("how did we get here?");
 	}
 
 }
@@ -119,9 +213,15 @@ void SlayerTower::contract_manager(Player player)
 		return;
 	}
 
-
+	// if NPC DIALOG is up, it means we have no finished task for whatever reason so delete
 	else if (Widgets::GetDialogType() == RSDialog::NPCDialog)
 	{
+		int contract_slot = Inventory::GetItemById(27360);
+
+		// delete contract
+		if(contract_slot != -1)
+			Inventory::InteractItemOption(contract_slot, 8);
+
 		contract_finished = false;
 		return;
 	}
@@ -146,6 +246,7 @@ void SlayerTower::contract_manager(Player player)
 		if (!Markus)
 		{
 			log("contract_manager can't find manager.");
+			player.MoveRandom(Tile2D(3423, 3524), 2, 2);
 			return;
 		}
 
@@ -186,6 +287,8 @@ void SlayerTower::task_manager()
 		// update these
 		previous_hitpoint_xp = Exp::GetCurrentExp(Stat::HITPOINTS);
 		previous_slayer_xp = Exp::GetCurrentExp(Stat::SLAYER);
+
+		log("Current XP %d %d\n", previous_hitpoint_xp, previous_slayer_xp);
 	}
 }
 
@@ -193,13 +296,14 @@ void SlayerTower::combat_monster(Player player, SlayerContract contract)
 {
 	if (!is_on_floor(contract.floor_int))
 	{
-		// log("Not on the right floor for %s. %d : %d", contract.Monster_Name.data(), get_current_floor(), contract.floor_int);
+		//log("Not on the right floor for %s. %d : %d", contract.Monster_Name.data(), get_current_floor(), contract.floor_int);
 		return;
 	}
 
 	// we are not too far from the origin point
 	if (RS::GetDistance(player.GetTilePosition(), contract.Origin) > 7.0f)
 	{
+		//log("Going to origin point of contract");
 		player.MoveRandom(contract.Origin, 2, 2);
 		return;
 	}
@@ -211,6 +315,7 @@ void SlayerTower::combat_monster(Player player, SlayerContract contract)
 		// if we are being attacked, focus the attacker first
 		if (attackingEnemies.size() > 0)
 		{
+			//log("Being attacked");
 			player.Attack(attackingEnemies[0]->EntityId);
 			return;
 		}
@@ -223,6 +328,7 @@ void SlayerTower::combat_monster(Player player, SlayerContract contract)
 			// if monster is valid, attack it
 			if (target)
 			{
+				//log("monster is valid.");
 				player.Attack(target->EntityId);
 			}
 
@@ -290,13 +396,28 @@ void SlayerTower::navigate_floor_1(Player player)
 				return;
 			}
 
-			Common::StaticInteract2(top_stair);
+			Common::StaticInteract3(top_stair);
 			return;
 		}
 
 		// West side stair down
 		else
 		{
+			// if we are fighting bloodveld, use a closer staircase
+			if (this->get_contract().required_level == 50)
+			{
+				auto middle_stair_sw = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Staircase", "Climb down", Tile2D(3395, 3536), false);
+
+				if (!middle_stair_sw.Definition)
+				{
+					log("[ bot ] Cannot find middle sw stair.");
+					return;
+				}
+
+				Common::StaticInteract(middle_stair_sw);
+				return;
+			}
+
 			auto top_stair = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Staircase", "Climb", Tile2D(3395, 3573), false);
 
 			if (!top_stair.Definition)
@@ -305,7 +426,7 @@ void SlayerTower::navigate_floor_1(Player player)
 				return;
 			}
 
-			Common::StaticInteract2(top_stair);
+			Common::StaticInteract3(top_stair);
 			return;
 
 		}
@@ -325,6 +446,8 @@ void SlayerTower::navigate_contract(Player player, SlayerContract contract)
 
 	if (cur_floor == 0)
 	{
+		log("navigating contract.");
+
 		// Crawling hand
 		if (contract.required_level == 5)
 		{
@@ -360,32 +483,50 @@ void SlayerTower::navigate_contract(Player player, SlayerContract contract)
 		// Aberrant spectre
 		else if (contract.required_level == 60)
 		{
+			// cannot reach stair from all the way outside
+			player.MoveRandom(Tile2D(3429, 3558), 2, 2);
+			return;
+			/*
 			auto bottom_stair_ne = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Staircase", "Climb top floor", Tile2D(3445, 3573), false);
 
 			if (bottom_stair_ne.Definition)
 				Common::StaticInteract(bottom_stair_ne);
 
 			return;
+			*/
 		}
 		// Gargoyle
 		else if (contract.required_level == 75)
 		{
+			// cannot reach stair from all the way outside
+
+			player.MoveRandom(Tile2D(3429, 3558), 2, 2);
+			return;
+			/*
 			auto bottom_stair_se = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Staircase", "Climb top floor", Tile2D(3445, 3536), false);
 
 			if (bottom_stair_se.Definition)
 				Common::StaticInteract2(bottom_stair_se);
 
 			return;
+			*/
 		}
 		// Nechryael
 		else if (contract.required_level == 80)
 		{
+			// cannot reach stair from all the way outside
+
+			player.MoveRandom(Tile2D(3418, 3559), 2, 2);
+			return;
+
+			/*
 			auto bottom_stair_nw = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Staircase", "Climb top floor", Tile2D(3395, 3573), false);
 
 			if (bottom_stair_nw.Definition)
 				Common::StaticInteract2(bottom_stair_nw);
 
 			return;
+			*/
 		}
 		else
 		{
@@ -395,6 +536,8 @@ void SlayerTower::navigate_contract(Player player, SlayerContract contract)
 	}
 	else if (cur_floor == 1)
 	{
+		log("navigating contract 1.");
+
 		// Crawling hand
 		if (contract.required_level == 5)
 		{
@@ -465,6 +608,8 @@ void SlayerTower::navigate_contract(Player player, SlayerContract contract)
 	}
 	else if (cur_floor == 2)
 	{
+		log("navigating contract 22.");
+
 		// Crawling hand
 		if (contract.required_level == 5)
 		{
@@ -530,8 +675,14 @@ void SlayerTower::navigate_contract(Player player, SlayerContract contract)
 		// Aberrant spectre
 		else if (contract.required_level == 60)
 		{
+			// is in Spectre's room
+			if (player_pos.x > 3431 && player_pos.y > 3546)
+			{
+				player.MoveRandom(contract.Origin, 2, 2);
+				return;
+			}
 			// is not in Spectre's room
-			if (player_pos.x <= 3431 && player_pos.y <= 3546)
+			else
 			{
 				auto closest_middle_stair = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Staircase", "Climb", Tile2D(3445, 3573), true);
 
@@ -540,34 +691,28 @@ void SlayerTower::navigate_contract(Player player, SlayerContract contract)
 
 				return;
 			}
-
-			else
-			{
-				player.MoveRandom(contract.Origin, 2, 2);
-				return;
-			}
 		}
 		// Gargoyle
 		else if (contract.required_level == 75)
 		{
-			// is not in Spectre's room
-			if (player_pos.x <= 3431 && player_pos.y <= 3546)
-			{
-				auto middle_stair_se = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Staircase", "Climb", Tile2D(3445, 3536), false);
-
-				if (middle_stair_se.Definition)
-					Common::StaticInteract2(middle_stair_se);
-
-				return;
-			}
-
-			// is in spectre's room
-			else
+			// is in Spectre's room, then use the only stair in the room to go up to Gargoyle
+			if (player_pos.x > 3431 && player_pos.y > 3546)
 			{
 				auto middle_stair_ne = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Staircase", "Climb", Tile2D(3445, 3573), false);
 
 				if (middle_stair_ne.Definition)
 					Common::StaticInteract2(middle_stair_ne);
+
+				return;
+			}
+
+			// is not in spectre's room, then go to the right stair
+			else
+			{
+				auto middle_stair_se = Static::GetClosestStaticObjectByNameWithOptionAtPosition("Staircase", "Climb", Tile2D(3445, 3536), false);
+
+				if (middle_stair_se.Definition)
+					Common::StaticInteract2(middle_stair_se);
 
 				return;
 			}
@@ -793,7 +938,7 @@ void SlayerTower::navigate_bank(Player player)
 			// we can see banker, meaning we JUST got it from the banker
 			if (banker)
 			{
-				log("going to markus closest spot.");
+				//log("going to markus closest spot.");
 				// Go to Markus' near spot
 				player.MoveRandom(Tile2D(3457, 3500), 3, 3);
 				return;
@@ -802,7 +947,7 @@ void SlayerTower::navigate_bank(Player player)
 			// if we can see Markus, it means we have food, and finally got back to tower. Go to the beginning of tower stair to start
 			else if (Markus)
 			{
-				log("going to stair");
+				//log("going to stair");
 				// Go to stair of tower
 				player.MoveRandom(Tile2D(3423, 3524), 2, 2);
 				return;
@@ -811,7 +956,7 @@ void SlayerTower::navigate_bank(Player player)
 			// if we have food and we can't see neither banker nor Markus, it mean we got stopped midway. Meaning let's go to markus
 			else
 			{
-				log("going to markus spot. outside tower");
+				//log("going to markus spot. outside tower");
 				// Go to Markus' near spot
 				player.MoveRandom(Tile2D(3445, 3503), 3, 3);
 				return;
@@ -823,6 +968,7 @@ void SlayerTower::navigate_bank(Player player)
 	// if we don't have food
 	else
 	{
+		//log("don't have fuud");
 		// Use bankload preset 4 for food / weapon
 		if (Inventory::isBankOpened())
 		{
@@ -833,24 +979,30 @@ void SlayerTower::navigate_bank(Player player)
 		// we are still in the tower
 		if (this->is_in_tower_area(player))
 		{
+			//log("is in tower fuud");
+
 			int cur_floor = SlayerTower::get_current_floor();
 
 			// make sure we are on the bottom floor
 			if (cur_floor > 1)
+			{
+				//log("go to floor 1 fuud");
+
 				return navigate_floor_1(player);
+			}
 
 			// we are currently on the first floor
 			if (cur_floor == 1)
 			{
 				// this should put us to right outside tower aka floor 0
-				log("1. put us right outside.");
+				//log("1. put us right outside.");
 				player.MoveRandom(Tile2D(3445, 3503), 3, 3);
 				return;
 			}
 
 			else if (cur_floor == 0)
 			{
-				log("2. put us near bank.");
+				//log("2. put us near bank.");
 
 				// this should put us near bank and outside of tower area
 				player.MoveRandom(Tile2D(3491, 3484), 3, 3);
@@ -900,6 +1052,11 @@ void SlayerTower::navigate_bank(Player player)
 
 }
 
+void SlayerTower::manage_extra_gear()
+{
+
+}
+
 SlayerContract SlayerTower::get_contract()
 {
 	int slayer_level = Exp::GetSkillLevel(Stat::SLAYER);
@@ -908,31 +1065,40 @@ SlayerContract SlayerTower::get_contract()
 	{
 		SlayerContract contract = contracts[i];
 
+		// Minor bug here, basically we have to artificially add a fake monster at the end of contract list or we won't get accurate result and break out of this loop instead of going into the else
 		if (slayer_level >= contract.required_level)
 			continue;
 		else
 		{
-			// Impossible
+			// Impossible because even if we are level 5, 5 would be greater or equal to the lowest contract which would hit the "continue" above and increase it to 2
+			// This function, we return the previous result hence why this is a check for if we are lvl 4 or lower on slayer.
 			if (i == 0)
+			{
+				log("Impossible.");
 				return SlayerContract();
+			}
 
 			int cur_contract_index = i - 1;
+
 
 			// banshee
 			if (cur_contract_index == 1)
 			{
 				int helmet_slot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Equipment))->ContainerContent[0].ItemId;
 
+				// if not wearing earsmuff
 				if (helmet_slot != 4166)
 				{
 					int earsmuff = Inventory::GetItemById(4166);
 
 					if (earsmuff != -1)
 					{
+						// go wear earsmuff
 						Inventory::InteractItemOption(earsmuff, 2);
 						cur_contract_index = 1;
 					}
 					else
+						//if we can't find earsmuff in inventory neither, then do crawling hands instead
 						cur_contract_index = 0;
 				}
 			}
@@ -942,25 +1108,32 @@ SlayerContract SlayerTower::get_contract()
 			{
 				int helmet_slot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Equipment))->ContainerContent[0].ItemId;
 
+				// if not wearing nose peg
 				if (helmet_slot != 4168)
 				{
 					int nose_peg = Inventory::GetItemById(4168);
 
 					if (nose_peg != -1)
 					{
+						// find and wear nose peg
 						Inventory::InteractItemOption(nose_peg, 2);
 						cur_contract_index = 4;
 					}
 					else
+						// if we not wearing nose peg and doesnt have it in inventory, go do the bloodveld? instead. 
 						cur_contract_index = 3;
 				}
 
 
 			}
 
+			log("returning contract index %d", cur_contract_index);
+			
 			return contracts[cur_contract_index];
 		}
 	}
+
+	log("something reallllyy went wrong");
 }
 
 int SlayerTower::get_current_floor()
@@ -1001,25 +1174,19 @@ int SlayerTower::get_slayer_contract_index()
 	if (slayer_level >= 80)
 		return 13;
 	else if (slayer_level >= 75)
-		return 11;
-	else if (slayer_level >= 60)
 	{
-		// Abberant Spectre
-		int helmet_slot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Equipment))->ContainerContent[0].ItemId;
-
-		// Nose peg
-		if (helmet_slot == 4168)
-			return 9;
-
+		return 11;
+	}
+	else if (slayer_level >= 60 && (Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Equipment))->ContainerContent[0].ItemId == 4168 || Inventory::GetItemById(4168) != -1))
+	{
 		int nose_peg = Inventory::GetItemById(4168);
 
+		// if have nose peg in inventory, go wear it and select Spectre
 		if (nose_peg != -1)
 		{
 			Inventory::InteractItemOption(nose_peg, 2);
 			return 9;
 		}
-
-		return 7;
 	}
 	else if (slayer_level >= 50)
 		return 7;
@@ -1030,18 +1197,20 @@ int SlayerTower::get_slayer_contract_index()
 		// Banshee
 		int helmet_slot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Equipment))->ContainerContent[0].ItemId;
 
-		// Earsmuff
+		// if we are wearing earsmuff, then good, select 160x banshee
 		if(helmet_slot == 4166)
 			return 3;
 
 		int earsmuff = Inventory::GetItemById(4166);
 
+		// if not wearing earsmuff, do we at least have it in inventory to wear?
 		if (earsmuff != -1)
 		{
 			Inventory::InteractItemOption(earsmuff, 2);
 			return 3;
 		}
 
+		// if we are not wearing earsmuff and does not have it in inventory, then i guess we will just do 200x crawling hhands
 		return 1;
 	}
 	else if (slayer_level >= 5)
@@ -1079,7 +1248,7 @@ bool SlayerTower::is_in_tower_area(Player player)
 
 bool SlayerTower::have_contract()
 {
-	if (Inventory::GetItemById(27360) == -1)
+	if (Inventory::GetItemById(27360) == -1 && Inventory::GetItemById(27361) == -1)
 	{
 		contract_finished = false;
 		return false;

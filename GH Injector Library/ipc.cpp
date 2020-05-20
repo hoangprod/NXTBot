@@ -308,6 +308,34 @@ double get_process_runtime(DWORD pid, uint64_t creation_time = 0)
 }
 
 
+DWORD get_client_ppid(DWORD pid)
+{
+	HANDLE hSnapshot;
+	PROCESSENTRY32 pe32;
+	DWORD ppid = 0;
+
+	hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	__try {
+		if (hSnapshot == INVALID_HANDLE_VALUE) __leave;
+
+		ZeroMemory(&pe32, sizeof(pe32));
+		pe32.dwSize = sizeof(pe32);
+		if (!Process32First(hSnapshot, &pe32)) __leave;
+
+		do {
+			if (pe32.th32ProcessID == pid) {
+				ppid = pe32.th32ParentProcessID;
+				break;
+			}
+		} while (Process32Next(hSnapshot, &pe32));
+
+	}
+	__finally {
+		if (hSnapshot != INVALID_HANDLE_VALUE) CloseHandle(hSnapshot);
+	}
+	return ppid;
+}
+
 void inject_to_rs2clients()
 {
 	auto rs2clients = GetPIDs(L"rs2client.exe");
@@ -318,9 +346,28 @@ void inject_to_rs2clients()
 		if (existed_in_sharedmemory(rs2client))
 			continue;
 
+		double runtime = get_process_runtime(rs2client);
+
 		// if client have not ran for at least 30 seconds
-		if (get_process_runtime(rs2client) < 5.0f)
+		if (runtime < 5.0f)
 			continue;
+
+		// if client have ran for over 2 mins and not injected, kill it
+		if (runtime > 60.0f)
+		{
+			DWORD ppid = get_client_ppid(rs2client);
+
+			if (ppid && TerminateProcess(OpenProcess(PROCESS_TERMINATE, NULL, ppid), 0))
+			{
+				log("[ Info ] Closing potential stuck parent.");
+
+				//if(TerminateProcess(OpenProcess(PROCESS_TERMINATE, NULL, rs2client), 0))
+				//	log("[ Info ] Closing potential stuck client.");
+
+				continue;
+			}
+		}
+
 
 		int result = inject(rs2client);
 
@@ -395,7 +442,7 @@ bool is_client_exhausted(DWORD pid)
 	double runtime = get_process_runtime(pid);
 
 	// TODO: Change this back to 5-8
-	uint64_t max_run_time = int_random_range(7 * HOUR_, 12 * HOUR_, creation_time);
+	uint64_t max_run_time = int_random_range(5 * HOUR_, 8 * HOUR_, creation_time);
 
 	if (static_cast <uint64_t>(std::floor(runtime)) >= max_run_time)
 		return true;
@@ -443,7 +490,7 @@ void suicide_ack_handler(_server_msg srv_msg)
 	{
 		uint64_t play_time = static_cast <uint64_t>(std::floor(get_process_runtime(srv_msg.client_pid, client->process_create_time)));
 
-		for (auto acc : account_list)
+		for (auto &acc : account_list)
 		{
 			// if the acknowledging account is already part of our internal list
 			if (strcmp(client->client_msg.acc_info.email, acc.acc_info.email) == 0)
@@ -669,6 +716,9 @@ bool is_resume_supported_bot(_current_bot current_bot)
 	case _current_bot::General_Mining:
 		return false;
 		break;
+	case _current_bot::Slayer_Contract:
+		return true;
+		break;
 	default:
 		return false;
 		break;
@@ -732,8 +782,17 @@ void command_clients()
 					log("3 - Command PID %d to commit suicide.", client->pid);
 					return send_server_cmd(botipc, client->pid, _server_cmd::SUICIDE);
 				}
-				// If you are in lobby + not botting + last heartbeat was over a minute ago
-				else if (client->client_msg.gamestate == _game_state::Lobby && client->client_msg.status == _bot_status::OFF && (GetTickCount64() - client->last_heart_beat) > 60000)
+				// If you are in lobby + not botting + last heartbeat was over 5 minute ago
+				else if (client->client_msg.gamestate == _game_state::Lobby && client->client_msg.status == _bot_status::OFF && (GetTickCount64() - client->last_heart_beat) > 30000)
+				{
+					if (TerminateProcess(OpenProcess(PROCESS_TERMINATE, NULL, client->pid), 0))
+						log("4 - Forced PID %d to commit suicide.", client->pid);
+					else
+						log("4 - Failed to force close pid %d.", client->pid);
+					return;
+				}
+				// If you are in "botting" is last heartbeat was over 5 mins ago, rip you
+				else if (client->client_msg.status == _bot_status::ON && ((GetTickCount64() - client->last_heart_beat) > 30000 || client->last_action_time > 300))
 				{
 					if (TerminateProcess(OpenProcess(PROCESS_TERMINATE, NULL, client->pid), 0))
 						log("4 - Forced PID %d to commit suicide.", client->pid);
@@ -801,20 +860,20 @@ void print_list()
 
 		clear_console();
 
-		printf("--------------------- [ BOT STATS ] ---------------------\n");
+		printf("------------------------------- [ BOT STATS ] ------------------------------\n");
 
-		printf("%-30s %10s %10s %10s %10s %13s\n", "EMAIL", "PID", "PPID", "GAMESTATE", "BOTSTATUS", "LAST_HEART_BEAT");
-		printf("----------------------------------------------------------------------------\n");
+		printf("%-30s %10s %10s %10s %10s %15s %20s\n", "EMAIL", "PID", "PPID", "GAMESTATE", "BOTSTATUS", "LAST_HEART_BEAT", "LAST_IN_GAME_ACTION");
+		printf("------------------------------------------------------------------------------------------------------------------------\n");
 
 		for (int i = 0; i < 16; i++)
 		{
 			_Client *client = &botipc->clients[i];
 
-			printf("%-30s %10d %10d %10d %10d %10.2fs ago\n", (*client->client_msg.acc_info.email) ? client->client_msg.acc_info.email : "None", 
-				client->pid, client->ppid, client->client_msg.gamestate, client->client_msg.status, (client->last_heart_beat) ? ((GetTickCount64() - client->last_heart_beat) / (float)1000) : 0);
+			printf("%-30s %10d %10d %10d %8d %10.2fs ago %11ds ago\n", (*client->client_msg.acc_info.email) ? client->client_msg.acc_info.email : "None", 
+				client->pid, client->ppid, client->client_msg.gamestate, client->client_msg.status, (client->last_heart_beat) ? ((GetTickCount64() - client->last_heart_beat) / (float)1000) : 0, client->last_action_time);
 		}
 
-		printf("--------------------- [ PLAY TIME ] ---------------------\n");
+		printf("------------------------------- [ PLAY TIME ] -------------------------------\n");
 
 		printf("%-30s %10s %10s %10s\n", "EMAIL", "PLAY_TIME (sec)", "PLAY_TIME (mins)", "PLAY_TIME (hrs)");
 		printf("----------------------------------------------------------------------------\n");
@@ -826,7 +885,7 @@ void print_list()
 
 
 
-		printf("------------------------ [ LOGS ] ------------------------\n");
+		printf("------------------------------- [ LOGS ] -------------------------------\n");
 
 	}
 

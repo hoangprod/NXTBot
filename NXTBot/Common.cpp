@@ -205,16 +205,7 @@ int Common::ConfirmGUI(int GUI_Id)
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
 	*reinterpret_cast<int*>(&data[0x60]) = GUI_Id;
 
-	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
-	if (!handler)
-		return false;
-
-	uint64_t* handler_vtable = *handler;
-
-	if (!handler_vtable)
-		return false;
-
-	uint64_t func_ptr = handler_vtable[2] - 0x10;
+	uint64_t func_ptr = g_Module + 0xcf750; // HARDCODED
 
 	if (!func_ptr)
 		return false;
@@ -291,7 +282,7 @@ bool Common::DepositActionNPC(uint32_t Entity)
 
 	*reinterpret_cast<int*>(&data[0x58]) = Entity;
 
-	uint64_t func_ptr = g_Module + 0x9c1a0; // HARDCODED
+	uint64_t func_ptr = g_Module + 0xcf9f0; // HARDCODED
 
 	if (!func_ptr)
 		return false;
@@ -320,7 +311,7 @@ bool Common::BankUsingNPC(uint32_t targetEntity)
 	*reinterpret_cast<int*>(&data[0x5c]) = 0;
 	*reinterpret_cast<int*>(&data[0x60]) = 0;
 
-	uint64_t func_ptr = g_Module + 0x9c160; // HARDCODED
+	uint64_t func_ptr = g_Module + 0xcf9f0 - 0x40; // HARDCODED
 
 	if (!func_ptr)
 		return false;
@@ -401,11 +392,11 @@ bool Common::TeleportToAbyssThroughMage()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x58]) = 18596; // UPDATE PLEASE MageOfZamorak
+	*reinterpret_cast<int*>(&data[0x58]) = 18588; // UPDATE PLEASE MageOfZamorak
 	*reinterpret_cast<int*>(&data[0x5c]) = 0;
 	*reinterpret_cast<int*>(&data[0x60]) = 0;// Hardcoded
 
-	uint64_t func_ptr = g_Module + 0x9c1c0;
+	uint64_t func_ptr = g_Module + 0xcfa10;
 
 	if (!func_ptr)
 		return false;
@@ -451,6 +442,34 @@ bool Common::InteractWithEquipment(int slot, int option, int64_t param3)
 	return true;
 }
 
+bool Common::StaticInteract(StaticObjEX obj)
+{
+	uint8_t data[100] = { 0 };
+
+	if (obj.SecondId > 0)
+		*reinterpret_cast<int*>(&data[0x58]) = obj.SecondId;
+	else
+		*reinterpret_cast<int*>(&data[0x58]) = obj.Definition->Id;
+
+	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
+	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
+
+	uint64_t func_ptr = g_Module + 0xcf8d0;
+
+	if (!func_ptr)
+		return false;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _Loot)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_Loot>(func_ptr)(g_GameContext, &dt);
+
+	return true;
+}
+
+
 bool Common::StaticInteract2(StaticObjEX obj)
 {
 	uint8_t data[100] = { 0 };
@@ -467,7 +486,7 @@ bool Common::StaticInteract2(StaticObjEX obj)
 	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
 	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
 
-	uint64_t func_ptr = g_Module + 0x9c0a0;
+	uint64_t func_ptr = g_Module + 0xcf8d0 + 0x20;
 
 	if (!func_ptr)
 		return false;
@@ -498,7 +517,7 @@ bool Common::StaticInteract3(StaticObjEX obj)
 	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
 	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
 
-	uint64_t func_ptr = g_Module + 0x9c0c0;
+	uint64_t func_ptr = g_Module + 0xcf8d0 + 0x40;
 
 	if (!func_ptr)
 		return false;
@@ -541,33 +560,6 @@ bool Common::DepositAllThroughBank()
 
 	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
 	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
-
-	return true;
-}
-
-bool Common::StaticInteract(StaticObjEX obj)
-{
-	uint8_t data[100] = { 0 };
-
-	if (obj.SecondId > 0)
-		*reinterpret_cast<int*>(&data[0x58]) = obj.SecondId;
-	else
-		*reinterpret_cast<int*>(&data[0x58]) = obj.Definition->Id;
-
-	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
-	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
-
-	uint64_t func_ptr = g_Module + 0x9c080;
-
-	if (!func_ptr)
-		return false;
-
-
-	dataStruct dt;
-	dt.dataPtr = data;
-
-	typedef void(__cdecl* _Loot)(uint64_t* _this, void* dataPtr);
-	reinterpret_cast<_Loot>(func_ptr)(g_GameContext, &dt);
 
 	return true;
 }

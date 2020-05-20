@@ -103,7 +103,7 @@ void antiban::anti_afk()
 
 	fake_key selected_key = fakekeys[randomIndex];
 
-	int hold_time = antiban::int_random_range(100, 1500);
+	int hold_time = antiban::int_random_range(100, 800);
 
 	SendMessageW(hWnd, WM_KEYDOWN, selected_key.uMsg, selected_key.up_key);
 

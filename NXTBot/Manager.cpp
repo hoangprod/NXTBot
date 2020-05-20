@@ -71,10 +71,12 @@ void Manager::Manage()
 
 			randomTick = (rand() % 1000 + 300);
 
+			/*
 			if (randomTick % 89 == 0)
 			{
 				antiban::anti_afk();
 			}
+			*/
 
 			if (auto_start)
 			{
@@ -144,10 +146,12 @@ void Manager::Manage()
 		{
 			randomTick = (rand() % 101);
 
+			/*
 			if (randomTick % 88 == 0)
 			{
 				antiban::anti_afk();
 			}
+			*/
 
 			if (RS::IsInGame())
 			{
@@ -176,10 +180,12 @@ void Manager::Manage()
 
 			break_type = 0;
 
-			if (randomTick % 79 == 0)
+			/*
+			if (randomTick % 88 == 0)
 			{
 				antiban::anti_afk();
 			}
+			*/
 
 			if (RS::IsInGame())
 			{
@@ -289,6 +295,23 @@ void Manager::Auto_Start()
 					archelogy = new Archeology(); auto_start = false;
 			}
 		}
+		else if (Inventory::GetItemById(4168) != -1 || Inventory::GetItemById(4166) != -1 || Inventory::GetItemById(27360) != -1 || Inventory::GetItemById(4162) != -1)
+		{
+			if (!slayer_tower)
+			{
+				if (AIOAuth("Slayer_Tower", "Start", player.GetName()) != -1)
+					slayer_tower = new SlayerTower(); auto_start = false; SelectedBot = 14;
+			}
+		}
+
+		else if (RS::GetClosestMonsterNPCByName("Spellwisp"))
+		{
+			if (!wisp)
+			{
+				if (AIOAuth("Wisp_Farming", "Start", player.GetName()) != -1)
+					wisp = new Wisp(); auto_start = false; SelectedBot = 0;
+			}
+		}
 
 		else if (RS::GetClosestNonEnrichedWisp())
 		{
@@ -316,7 +339,6 @@ void Manager::Auto_Start()
 				if (AIOAuth("Wisp_Farming", "Start", player.GetName()) != -1)
 					wisp = new Wisp(); auto_start = false; SelectedBot = 0;
 			}
-
 		}
 		else if (Static::GetClosestStaticObjectByNameWithOption("Trellis", "Climb-up", true).Definition)
 		{

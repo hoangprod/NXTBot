@@ -77,12 +77,22 @@ void GeneralCombat::FSM()
 {
 	Player player = RS::GetLocalPlayer();
 
-	if (player._base || !monsterTargetName.data())
+	if (!player._base)
+		return;
+
+	if (monsterTargetName.length() == 0)
 	{
 		monsterTargetName = RS::GetClosestMonster()->Name;
 		origin = player.GetTilePosition();
 
-		//printf("[+] Player %s will be targeting %s from tile position (%d, %d)\n", player->GetName().data(), monsterTargetName.data(), origin.x, origin.y);
+		if (monsterTargetName.data()[0] == '*')
+		{
+			monsterTargetName = (monsterTargetName.data() + 1);
+		}
+
+		botStatus = "Targeting " + monsterTargetName + " as primary target.";
+		//printf("[+] Player %s will be targeting %s from tile position (%d, %d)\n", player.GetName().data(), monsterTargetName.data(), origin.x, origin.y);
+		return;
 	}
 
 	if (GeneralCombat::NeedHeal())
@@ -141,20 +151,12 @@ void GeneralCombat::FSM()
 	}
 
 	// If I am moving around or targeting something, do not fuck with it
-	if (player.isMoving() || (player.bTargeting() || player.CurrentTarget() > 0))
+	if (player.isMoving() || player.inCombat())
 	{
 		botStatus = "Current moving or fighting";
 		return;
 	}
 
-
-	if (player.inCombat())
-	{
-		// If already fighting, leave it alone.
-		botStatus = "Current fighting";
-
-		return;
-	}
 
 	if (Varpbit::GetPlayerPrayerToggle())
 	{
@@ -205,12 +207,13 @@ void GeneralCombat::FSM()
 		botStatus = "Attacking Monster";
 
 		// Attack the first monster in the list that is attacking us
-		return Combat(attackingEnemies[0]);
+		player.Attack(attackingEnemies[0]->EntityId);
+		return;
+		//return Combat(attackingEnemies[0]);
 	}
 
 
-	//EntityObj* EnemyMonsters = RS::GetMonsterWithinRadiusWithName(monsterTargetName.data(), origin, 15.0f);
-	EntityObj* EnemyMonsters = RS::GetClosestMonsterNPCByNameFromOrigin(monsterTargetName.data(), origin, 8.0f);
+	EntityObj* EnemyMonsters = RS::GetClosestMonsterNPCByNameFromOrigin(monsterTargetName.data(), origin, 15.0f);
 
 	// If there are a monster 15 tiles away from origin, fight it
 	if (EnemyMonsters)
@@ -219,7 +222,9 @@ void GeneralCombat::FSM()
 		//auto ent = Entity(EnemyMonsters);
 
 		//printf("Trying to fight %p %d %s %d %d\n", EnemyMonsters, EnemyMonsters->EntityId, EnemyMonsters->Name, ent.NPCCurHealth(), ent.CurrentTarget());
-		return Combat(EnemyMonsters);
+		player.Attack(EnemyMonsters->EntityId);
+		return;
+		//return Combat(EnemyMonsters);
 	}
 
 	// If not in combat, not being attacked, not full inventory and not have anything to loot

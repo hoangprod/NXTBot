@@ -58,7 +58,7 @@ bool Player::Attack(uint32_t Entity)
 	*reinterpret_cast<int*>(&data[0x5c]) = 0;
 	*reinterpret_cast<int*>(&data[0x60]) = 0;
 
-	uint64_t func_ptr = g_Module + 0x9c180;
+	uint64_t func_ptr = g_Module + 0xcf9d0;
 
 	if (!func_ptr)
 		return false;
@@ -87,7 +87,7 @@ bool Player::Loot(FakeItemEX ObjectId)
 	*reinterpret_cast<int*>(&data[0x5c]) = ObjectId.Pos.x;
 	*reinterpret_cast<int*>(&data[0x60]) = ObjectId.Pos.y;
 
-	uint64_t func_ptr = g_Module + 0x9c280;
+	uint64_t func_ptr = g_Module + 0xcfad0;
 
 	if (!func_ptr)
 		return false;
@@ -112,7 +112,7 @@ bool Player::StaticInteractManual(uint32_t id, uint32_t x, uint32_t y)
 	*reinterpret_cast<int*>(&data[0x5c]) = x;
 	*reinterpret_cast<int*>(&data[0x60]) = y;
 
-	uint64_t func_ptr = g_Module + 0x9c080;
+	uint64_t func_ptr = g_Module + 0xcf8d0;
 
 	if (!func_ptr)
 		return false;

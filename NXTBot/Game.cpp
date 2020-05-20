@@ -262,6 +262,10 @@ float RS::GetDistanceFromEntity(uint32_t EntityId)
 
 	if(!Entity)
 		return -1.0f;
+
+	auto EntityPos = Entity->GetPos();
+
+	return RS::GetDistance(Tile2D(EntityPos[0], EntityPos[2]), RS::GetLocalPlayerTilePos());
 }
 
 std::vector<EntityObj*> RS::GetInCombatNPCwithMe()

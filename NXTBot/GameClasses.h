@@ -72,33 +72,32 @@ public:
 	virtual float* GetPos();
 }; //Size: 0x0F78
 
-
 class GameContext
 {
 public:
-	char pad_0000[1168]; //0x0000
-	class VarpWrap* VarpWrap; //0x0490
-	char pad_0498[3184]; //0x0498
-	class DestinationFlag* DestinationFlag; //0x1108
-	char pad_1110[112]; //0x1110
-	class WidgetUI* WidgetUI; //0x1180
-	char pad_1188[16]; //0x1188
-	class LoginManager* LoginManager; //0x1198
-	char pad_11A0[8]; //0x11A0
-	class CharacterInfo* CharacterInfo; //0x11A8
-	char pad_11B0[8]; //0x11B0
-	class EntityPtr* EntityPtr; //0x11B8
-	class TileList* N00001FBE; //0x11C0
-	char pad_11C8[16]; //0x11C8
-	class PlayerListWrapper* PlayerListWrapper; //0x11D8
-	char pad_11E0[32]; //0x11E0
-	class GameContextPtr* GContext; //0x1200
-	char pad_1208[24]; //0x1208
-	class WorldClass* WorldClass; //0x1220
-	char pad_1228[1384]; //0x1228
-	class VarpInstance* VarpVtable; //0x1790
-	char pad_1798[2672]; //0x1798
-}; //Size: 0x2208
+	char pad_0000[1176]; //0x0000
+	class VarpWrap* VarpWrap; //0x0498
+	char pad_04A0[3184]; //0x04A0
+	class DestinationFlag* DestinationFlag; //0x1110
+	char pad_1118[112]; //0x1118
+	class WidgetUI* WidgetUI; //0x1188
+	char pad_1190[16]; //0x1190
+	class LoginManager* LoginManager; //0x11A0
+	char pad_11A8[8]; //0x11A8
+	class CharacterInfo* CharacterInfo; //0x11B0
+	char pad_11B8[8]; //0x11B8
+	class EntityPtr* EntityPtr; //0x11C0
+	class TileList* N00001FBE; //0x11C8
+	char pad_11D0[16]; //0x11D0
+	class PlayerListWrapper* PlayerListWrapper; //0x11E0
+	char pad_11E8[32]; //0x11E8
+	class GameContextPtr* GContext; //0x1208
+	char pad_1210[24]; //0x1210
+	class WorldClass* WorldClass; //0x1228
+	char pad_1230[1384]; //0x1230
+	class VarpInstance* VarpVtable; //0x1798
+	char pad_17A0[2672]; //0x17A0
+}; //Size: 0x2210
 
 
 
@@ -522,9 +521,9 @@ public:
 class Subconnection
 {
 public:
-	char pad_0000[4400]; //0x0000
-	class ConnectionTime* Time; //0x1130
-	char pad_1138[720]; //0x1138
+	char pad_0000[4408]; //0x0000
+	class ConnectionTime* Time; //0x1138 manual edit might be wrong lol
+	char pad_1138[720]; //0x1140
 }; //Size: 0x1408
 
 class ConnectionTime
@@ -715,14 +714,14 @@ typedef __int64 (__fastcall* fn_SetVarpValueFromServer)(__int64 player, __int64 
 #define ReadPtrOffset(address, x) ((uint64_t)address == 0 || ((uint64_t)address % sizeof(uint64_t)) != 0) ? (0) : *(uint64_t*)((uint64_t)address + x)
 
 #define BANK_GROUP 0x5c5
-#define CONVERSATION_WIDGET 0x5C502B4
-#define DEPOSIT_WIDGET 0x5C502A7
-#define BANKING_WIDGET 0x5C5027D
-#define CHANGE_WORLD_WIDGET 0x5C5029E
-#define SELECT_AN_OPTION_TELEPORT_WIDGET 0x5C502A7
-#define SHOP_WIDGET 0x5c502a7 //Secondary ID 0x4F1
-#define SUMMONING_WIDGET 0x5C502A7 // Secondary ID 0x55a 
-#define SLAYER_CONTRACT_WIDGET 0x5C502A7 // Secondary ID 0x572 
+#define CONVERSATION_WIDGET 0x5C502B5
+#define DEPOSIT_WIDGET 0x5C502A8
+#define BANKING_WIDGET 0x5C5027E
+#define CHANGE_WORLD_WIDGET 0x5C5029F
+#define SELECT_AN_OPTION_TELEPORT_WIDGET 0x5C502A8
+#define SHOP_WIDGET 0x5C502A8 //Secondary ID 0x4F1
+#define SUMMONING_WIDGET 0x5C502A8 // Secondary ID 0x55a 
+#define SLAYER_CONTRACT_WIDGET 0x5C502A8 // Secondary ID 0x572 
 
 // Varps
 #define SOIL_BOX_GRAVEL 9370

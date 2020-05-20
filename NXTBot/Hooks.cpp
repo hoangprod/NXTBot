@@ -523,6 +523,7 @@ void UpdateTest()
 	printf("EntityCount: %d\n", RS::GetEntityCount());
 	printf("PlayerName: %s -- Current Target is: %d\n", RS::GetLocalPlayer()->Name, RS::GetLocalPlayer()->CurrentTarget);
 	printf("LocalPlayer is currently on tile (%d, %d) with z being %f\n", localplayerPos.x, localplayerPos.y, RS::GetLocalPlayerPos()[1]);
+	printf("LocalPlayer Animations: %d %d %d\n", cplayer->AnimationId, cplayer->CurrentAni, cplayer->UsefulAni);
 	printf("Inventory Free Slot: %d  -- ", Inventory::GetFreeSlot());
 	printf("Current first id is %d  -- ", Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack))->ContainerContent[0].ItemId);
 	printf("Inventory Container: %p\n", Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack)));
@@ -534,8 +535,12 @@ void UpdateTest()
 
 	auto cmonster = RS::GetClosestMonster();
 
-	if(cmonster)
-		printf("Closest Monster Info. Name: %s  X: %f  Y: %f Level: %d (%p)\n", cmonster->Name, cmonster->GetPos()[0], cmonster->GetPos()[2], cmonster->Level, cmonster);
+	if (cmonster)
+	{
+		auto ent = Entity(cmonster);
+
+		printf("Closest Monster Info. Name: %s  X: %f  Y: %f Level: %d (%p) with [%d / %d] health.\n", cmonster->Name, cmonster->GetPos()[0], cmonster->GetPos()[2], cmonster->Level, cmonster, ent.NPCCurHealth(), ent.NPCMaxHealth());
+	}
 
 	printf("Varp check: Health [%d] Prayer [%d]\n", Varpbit::GetVarpBit(1668), Varpbit::GetVarp(3274));
 
@@ -562,15 +567,9 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		Manager::Keystates(wParam);
 
-		auto ArcheLevel = Exp::GetSkillLevel(Stat::ARCHEOLOGY);
-
-
 		if (wParam == VK_F1)
 		{
-			auto banker = RS::GetClosestEntityNPCByName("Banker");
-			auto Markus = RS::GetClosestEntityNPCByName("Markus");
 
-			printf("%p %p\n", banker, Markus);
 		}
 
 		if (wParam == VK_END)
@@ -803,8 +802,6 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		}
 
-		printf("Set focus\n");
-
 		isFocus = true;
 	}
 
@@ -816,8 +813,6 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			return 0;
 		}
-
-		printf("lost focus\n");
 
 		isFocus = false;
 	}
@@ -899,6 +894,22 @@ DWORD WINAPI ipc_thread(LPVOID lpParam)
 {
 	while (!unloaded)
 	{
+
+		// 1/101 chance
+		if (break_type == 0 && Manager::get_current_bot() != _current_bot::None)
+		{
+			int random = antiban::int_random_range(0, 90);
+
+			log("random %d\n", random);
+
+			if (random == 30)
+			{
+				log("hit.");
+
+				antiban::anti_afk();
+			}
+		}
+
 		if (ipc::client_shared_mem)
 		{
 			ipc::ipc_mutex_lock();
@@ -908,7 +919,7 @@ DWORD WINAPI ipc_thread(LPVOID lpParam)
 			log("[ Critical ] client_share_mem invalid");
 		}
 
-		Sleep(300);
+		Sleep(500);
 	}
 
 	return 0;
@@ -962,7 +973,7 @@ bool hooks()
 
 	o_CursorWorldConextMenu = (fn_CursorWorldContextMenu)Patterns.Func_OnCursorWorldContextMenu;
 
-	o_CursorWorldConextMenu = (fn_CursorWorldContextMenu)detours.Hook(o_CursorWorldConextMenu, h_CursorWorldContextMenu, 15);
+	o_CursorWorldConextMenu = (fn_CursorWorldContextMenu)detours.Hook(o_CursorWorldConextMenu, h_CursorWorldContextMenu, 21);
 
 	//o_SetVarpValueFromServer = (fn_SetVarpValueFromServer)detours.Hook(o_SetVarpValueFromServer, h_SetVarValueFromServer, 15);
 
