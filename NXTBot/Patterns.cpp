@@ -11,10 +11,6 @@ bool __stdcall findPatterns()
 
 	printf("------------------ [ START PATTERN SCAN ] ------------------\n\n");
 
-
-
-
-
 	printf("------------------ [ STATIC ADDRESSES ] ------------------\n\n");
 
 	Patterns.Addr_MouseIntersectWorld = (UINT_PTR)ptr_offset_Scanner2(Rs2Client, 0x300000, "\xCC\xCC\xCC\xCC\xCC\xCC\x00\xCC\xCC\xCC\xCC\xCC\xCC\x00\xCC\xCC\xCC\x08\xCC\xCC\xCC\xCC\xCC\x00\x00\xCC\xCC\xCC\xCC\xCC\x00\x00", 0, 7, 3, "??????x??????x???x?????xx?????xx");

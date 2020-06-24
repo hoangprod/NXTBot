@@ -12,10 +12,11 @@
 #include "WatchTowerAgi.h"
 
 extern int extraDelay;
-
+extern bool to_suicide;
 extern std::string botStatus;
 extern std::vector<std::string> foodlist;
 extern WildernessAgilityCourse* wildernessagi;
+extern WatchTowerAgi* watchtoweragi;
 
 std::vector<AgilityCourse> WildernessAgi = { AgilityCourse(65362, Tile2D(3004, 3950)), AgilityCourse(64696, Tile2D(3005, 3958)), AgilityCourse(64699, Tile2D(2996, 3960)), AgilityCourse(64698, Tile2D(2994, 3945)), AgilityCourse(65734, Tile2D(2993, 3935))};
 
@@ -53,6 +54,11 @@ void WatchTowerAgi::FSM()
 		botStatus = "in animation or moving";
 		//printf("In Animation / Moving\n");
 		return;
+	}
+
+	if (to_suicide)
+	{
+		delete this; watchtoweragi = 0; return;
 	}
 
 	auto player2DPos = player.GetPosition();

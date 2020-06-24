@@ -34,6 +34,76 @@ std::vector<FakeItem> Inventory::GetInventoryItems()
 	return Result;
 }
 
+std::vector<FakeItem> Inventory::GetEquipmentItems()
+{
+	std::vector<FakeItem> Result;
+
+	auto inventory = GetContainerObj(static_cast<uint32_t>(ContainerType::Equipment));
+
+	if (!inventory || inventory->ContainerContent == 0)
+	{
+		return Result;
+	}
+
+	for (int i = 0; i < 13; i++)
+	{
+		FakeItem item = inventory->ContainerContent[i];
+
+		if (item.ItemId != -1)
+			Result.push_back(item);
+	}
+
+	return Result;
+}
+
+std::vector<FakeItem> Inventory::LootWindowItems()
+{
+	std::vector<FakeItem> Result;
+
+	auto lootBag = GetContainerObj(static_cast<uint32_t>(ContainerType::AreaLoot));
+
+	if (!lootBag || lootBag->ContainerContent == 0)
+	{
+		return Result;
+	}
+
+	for (int i = 0; i < 28; i++)
+	{
+		FakeItem item = lootBag->ContainerContent[i];
+
+		if (item.ItemId != -1)
+			Result.push_back(item);
+		else
+			Result.push_back(FakeItem());
+	}
+
+	return Result;
+}
+
+std::vector<FakeItem> Inventory::GetInventoryItemsEx()
+{
+	std::vector<FakeItem> Result;
+
+	auto inventory = GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack));
+
+	if (!inventory || inventory->ContainerContent == 0)
+	{
+		return Result;
+	}
+
+	for (int i = 0; i < 28; i++)
+	{
+		FakeItem item = inventory->ContainerContent[i];
+
+		if (item.ItemId != -1)
+			Result.push_back(item);
+		else
+			Result.push_back(FakeItem());
+	}
+
+	return Result;
+}
+
 bool Inventory::isBankOpened()
 {
 	return GetContainerObj(static_cast<uint32_t>(ContainerType::Bank));
@@ -92,6 +162,28 @@ int Inventory::GetItemById(uint32_t Id)
 	}
 
 	return -1;
+}
+
+FakeItem Inventory::GetItemByIdEx(uint32_t Id)
+{
+	std::vector<FakeItem> Result;
+
+	auto inventory = GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack));
+
+	if (!inventory || inventory->ContainerContent == 0)
+	{
+		return FakeItem();
+	}
+
+	for (int i = 0; i < 28; i++)
+	{
+		FakeItem item = inventory->ContainerContent[i];
+
+		if (item.ItemId == Id)
+			return item;
+	}
+
+	return FakeItem();
 }
 
 int Inventory::GetItemNameSlot(std::string name)

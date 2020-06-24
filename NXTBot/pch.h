@@ -19,9 +19,10 @@
 #include <iostream>
 #include <iomanip>
 #include <stdio.h>
-#include <detours.h>
+#include <sstream>
 #include <string>
 #include <mutex>
+#include <stdexcept>
 #include <fstream>
 #include <set>
 #include <random>>
@@ -30,7 +31,6 @@
 #include <windowsx.h>
 
 #include "glew/GL/glew.h"
-#include <gl\glut.h>
 
 #include "json.hpp"
 #include "Exception.h"

@@ -499,7 +499,7 @@ EntityObj* RS::GetClosestMonsterNPCByName(const char* name)
 	{
 		auto entity = GetEntityObjByIndex(i);
 
-
+		// TODO add health check
 		if (!entity || *(UINT_PTR*)entity == 0 || entity->EntityType != 1)
 			continue;
 
@@ -563,6 +563,11 @@ EntityObj* RS::GetClosestMonsterNPCByNameFromOrigin(const char* name, Tile2D fro
 		return ret;
 
 	return 0;
+}
+
+EntityObj* RS::GetBestMonsterNPCByNameFromOrigin(const char* name, Tile2D from, float maxDistance)
+{
+	return nullptr;
 }
 
 EntityObj* RS::GetValidWildernessPlayerEnemy()

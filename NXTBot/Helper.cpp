@@ -80,7 +80,6 @@ void* HdnGetModuleBase(const char* moduleName)
 }
 
 
-typedef HMODULE(WINAPI* pLoadLibA)(IN LPCSTR);
 
 
 HMODULE cLoadLibA(LPCSTR lpLibName)
@@ -157,6 +156,7 @@ HINSTANCE GetModuleHandleExA(HANDLE hProc, const char* szDll)
 
 	return ME32.hModule;
 }
+
 
 BYTE* GetProcAddressA(HINSTANCE hDll, const char* szFunc)
 {

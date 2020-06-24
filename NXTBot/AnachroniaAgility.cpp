@@ -35,12 +35,14 @@ void MoneyAgi::FSM()
 	}
 
 	// Start of the course
-	if (RS::GetDistance(player.GetTilePosition(), Tile2D(5418, 2348)) < 7.0f)
+	if (RS::GetDistance(player.GetTilePosition(), Tile2D(5418, 2348)) < 7.0f || player.GetPosition()[1] == 8709.0f)
 	{
 		//botStatus = "Going to start of course with id" + std::to_string(AnachroniaAgi[0].objId);
 		auto obstacle = Static::GetCStaticObjectById(AnachroniaAgi[0].objId);
 		printf("Starting the course\n");
-		Common::StaticInteract(obstacle);
+
+		if(obstacle.Definition)
+			Common::StaticInteract(obstacle);
 
 		return;
 	}

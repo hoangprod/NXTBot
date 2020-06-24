@@ -11,9 +11,13 @@ void Initialize()
 	freopen_s(&fp, "CONOUT$", "w", stdout);
 #endif
 
-
-	hooks();
-
+    try {
+        hooks();
+    }
+    catch (int e)
+    {
+        std::cout << "An exception occurred. Exception Nr. " << e << '\n';
+    }
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,

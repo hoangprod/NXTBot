@@ -26,7 +26,7 @@ extern bool to_suicide;
 // Sea Turtle 397
 // Sailfish 42251
 
-std::vector<std::string> foodlist = { "Shark", "Chocolate slice", "2/3 chocolate cake", "Chocolate cake", "Salmon", "Trout", "Catfish", "Beltfish", "Sea turtle", "Sailfish" };
+std::vector<std::string> foodlist = { "Cake", "2/3 cake", "Slice of cake","Shark", "Chocolate slice", "2/3 chocolate cake", "Chocolate cake", "Salmon", "Trout", "Catfish", "Beltfish", "Sea turtle", "Sailfish" };
 
 void GeneralCombat::Looting(FakeItemEX loot)
 {

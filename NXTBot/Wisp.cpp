@@ -165,7 +165,7 @@ void Wisp::Looting(FakeItemEX loot)
 	auto areaLoot = Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::AreaLoot));
 
 	if (areaLoot)
-		player->LootAllConfirm();
+		return player->LootAllConfirm();
 	else if (loot.ItemQuantity != 0)
 		player->Loot(loot);
 }

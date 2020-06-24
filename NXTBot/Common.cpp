@@ -171,7 +171,7 @@ int Common::LoginFromLobby()
 
 	*reinterpret_cast<int*>(&data[0x58]) = 1;
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
-	*reinterpret_cast<int*>(&data[0x60]) = 0x38A0082;
+	*reinterpret_cast<int*>(&data[0x60]) = 0x38A0083;
 
 	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
 	if (!handler)
@@ -250,7 +250,7 @@ bool Common::SelectFavoriteWorld()
 
 	*reinterpret_cast<int*>(&data[0x58]) = 1;
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
-	*reinterpret_cast<int*>(&data[0x60]) = 0x38A008D;// Hardcoded
+	*reinterpret_cast<int*>(&data[0x60]) = 0x38A008E;// Hardcoded
 
 	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
 	if (!handler)
@@ -363,7 +363,7 @@ bool Common::BankLoadPreset(int preset)
 
 	*reinterpret_cast<int*>(&data[0x58]) = 1;
 	*reinterpret_cast<int*>(&data[0x5c]) = preset;
-	*reinterpret_cast<int*>(&data[0x60]) = 0x2050070;// Hardcoded
+	*reinterpret_cast<int*>(&data[0x60]) = 0x2050072;// Hardcoded
 
 	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
 	if (!handler)
@@ -392,7 +392,7 @@ bool Common::TeleportToAbyssThroughMage()
 {
 	uint8_t data[100] = { 0 };
 
-	*reinterpret_cast<int*>(&data[0x58]) = 18588; // UPDATE PLEASE MageOfZamorak
+	*reinterpret_cast<int*>(&data[0x58]) = 18587; // UPDATE PLEASE MageOfZamorak
 	*reinterpret_cast<int*>(&data[0x5c]) = 0;
 	*reinterpret_cast<int*>(&data[0x60]) = 0;// Hardcoded
 
@@ -440,6 +440,78 @@ bool Common::InteractWithEquipment(int slot, int option, int64_t param3)
 	reinterpret_cast<_InteractWithEquipment>(func_ptr)(g_GameContext, &dt);
 
 	return true;
+}
+
+void Common::cast_high_alchemy()
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x58]) = 0;
+	*reinterpret_cast<int*>(&data[0x5c]) = -1;
+	*reinterpret_cast<int*>(&data[0x60]) = 93716713;
+
+	uint64_t func_ptr = g_Module + 0xcf740;
+
+	if (!func_ptr)
+		return;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+}
+
+void Common::select_high_alc_item(int slot)
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x58]) = 0;
+	*reinterpret_cast<int*>(&data[0x5c]) = slot;
+	*reinterpret_cast<int*>(&data[0x60]) = 96534535;
+
+	uint64_t func_ptr = g_Module + 0xcf890;
+
+	if (!func_ptr)
+		return;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
+	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
+}
+
+void Common::select_loot_from_lootbag(int slot)
+{
+	uint8_t data[100] = { 0 };
+
+	*reinterpret_cast<int*>(&data[0x58]) = 1;
+	*reinterpret_cast<int*>(&data[0x5c]) = slot;
+	*reinterpret_cast<int*>(&data[0x60]) = 106299402;
+
+	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
+	if (!handler)
+		return;
+
+	uint64_t* handler_vtable = *handler;
+
+	if (!handler_vtable)
+		return;
+
+	uint64_t func_ptr = handler_vtable[2];
+
+	if (!func_ptr)
+		return;
+
+
+	dataStruct dt;
+	dt.dataPtr = data;
+
+	typedef void(__cdecl* _lootbagloot)(uint64_t* _this, void* dataPtr);
+	return reinterpret_cast<_lootbagloot>(func_ptr)(g_GameContext, &dt);
 }
 
 bool Common::StaticInteract(StaticObjEX obj)
@@ -538,7 +610,7 @@ bool Common::DepositAllThroughBank()
 
 	*reinterpret_cast<int*>(&data[0x58]) = 1;
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
-	*reinterpret_cast<int*>(&data[0x60]) = 0x2050025;
+	*reinterpret_cast<int*>(&data[0x60]) = 0x2050027;
 
 	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
 	if (!handler)

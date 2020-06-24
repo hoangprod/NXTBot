@@ -96,7 +96,7 @@ unsigned char* PerformNonceExchange()
 
 	// Send server our Nonce
 	if (ClientSocket.Send((char*)nonce, crypto_box_NONCEBYTES, nLen, TIMEOUT) != E_XSOCKET_SUCCESS)
-		return false;
+		return 0;
 
 	//print_bytes("\n====== [Client Nonce] ======", nonce, crypto_box_NONCEBYTES);
 
@@ -261,7 +261,7 @@ char* DownloadCore(DWORD& Size)
 	{
 		int nError = CoreServerSocket.GetLastError();
 		printf("[-] Failed to connect to server with error %d (%p).\n", nError, nError);
-		return false;
+		return 0;
 	}
 
 	unsigned char* Corebuffer = new unsigned char[2 * 1024 * 1024]();
@@ -316,7 +316,7 @@ char* DownloadCore(DWORD& Size)
 
 
 	if (expectedFileSize != receivedSize)
-		return false;
+		return 0;
 
 	Size = receivedSize - 4;
 

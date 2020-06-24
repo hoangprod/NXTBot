@@ -57,11 +57,9 @@ void TaverlySummoning::FSM()
 	if (Inventory::GetItemById(tertiary_product - 1) != -1)
 	{
 
-		printf("a\n");
 		// If we haven't click on Obelisk yet
 		if (Widgets::GetUIType() != UIType::OBELISK_WIDGET)
 		{
-			printf("b\n");
 
 			Common::StaticInteract(Obelisk);
 			return;
@@ -70,7 +68,6 @@ void TaverlySummoning::FSM()
 		// If Obelisk is up
 		else if (Widgets::GetUIType() == UIType::OBELISK_WIDGET)
 		{
-			printf("c\n");
 
 			Common::ConfirmGUI(0x55A001E);
 			return;
@@ -80,16 +77,12 @@ void TaverlySummoning::FSM()
 	// Does not have any unnoted tertiary item
 	else
 	{
-		printf("d\n");
 		// If have Pouches, convert to scroll
 		if (HasSummoningPouches())
 		{
-			printf("e\n");
-
 			// If we haven't click on Obelisk yet
 			if (!Widgets::GetWidgetUI(SUMMONING_WIDGET) || Widgets::GetUIType() != UIType::OBELISK_WIDGET)
 			{
-				printf("f\n");
 				Common::StaticInteract(Obelisk);
 				return;
 			}
@@ -97,7 +90,6 @@ void TaverlySummoning::FSM()
 			// If Obelisk is up
 			else if (Widgets::GetUIType() == UIType::OBELISK_WIDGET)
 			{
-				printf("g\n");
 				Common::ConfirmGUI(0x55A001E);
 				return;
 			}
@@ -106,33 +98,27 @@ void TaverlySummoning::FSM()
 		// Does not have Pouch or Tertiary item, therefore must unnote from NPC
 		else
 		{
-			printf("h\n");
 			// If shop UI is not up, talk to NPC
 			if (!IsShopUIOn())
 			{
-				printf("i\n");
 				Common::BankUsingNPC(Magestrix->EntityId);
 				return;
 			}
 			else
 			{
-				printf("j\n");
 				int tertarySlot = TaverlySummoning::GetShopTertiary();
 
 				// If shop does have our item
 				if (tertarySlot != -1 && tertarySlot > 7 && !Inventory::isInventoryFull())
 				{
-					printf("k\n");
 					// If TAB is not on 0 (aka on 1, aka on sell)
 					if (Varpbit::GetVarp(SHOP_TAB) != 0)
 					{
-						printf("l\n");
 						// Click on BUY Tab
 						Common::InteractWithEquipment(1, -1, 0x4F10029);
 						return;
 					}
 
-					printf("m\n");
 					// Buy all
 					Common::InteractWithEquipment(7, tertarySlot, 0x4F10014);
 					extraDelay = 700;
@@ -142,22 +128,18 @@ void TaverlySummoning::FSM()
 				// If shop does NOT have our item
 				else
 				{
-					printf("n\n");
 					// If TAB is not on 1 (aka currently on 0, aka on buy)
 					if (Varpbit::GetVarp(SHOP_TAB) != 1)
 					{
-						printf("o\n");
 						// Click on SELL Tab
 						Common::InteractWithEquipment(1, -1, 0x4F10020);
 						return;
 					}
 
 					int tertarySlot = Inventory::GetItemById(tertiary_product);
-					printf("p\n");
 					// If we have item still in our inventory
 					if (tertarySlot != -1)
 					{
-						printf("q %d\n", tertarySlot);
 						// Sell 500
 						Common::InteractWithEquipment(6, tertarySlot, 0x4F10014);
 						extraDelay = 400;
@@ -166,7 +148,6 @@ void TaverlySummoning::FSM()
 					// If we ran out, beep and shut down
 					else
 					{
-						printf("z\n");
 						Beep(500, 500);
 						delete taverlySummon;
 						taverlySummon = 0;

@@ -13,6 +13,7 @@
 #include "Summoning.h"
 #include "MoneyDrop.h"
 #include "SlayerTower.h"
+#include "SpiritualMage.h"
 #include "Game.h"
 #include "Auth.h"
 #include "Common.h"
@@ -39,7 +40,7 @@ FungalMage* fungalMage = 0;
 TaverlySummoning* taverlySummon = 0;
 MoneyDrop* money_drop = 0;
 SlayerTower* slayer_tower = 0;
-
+spiritual_mage* spiritualmage;
 
 extern std::vector<const char*> botList;
 extern std::string botStatus;
@@ -69,7 +70,7 @@ void Manager::Manage()
 		{
 			extraDelay = 0;
 
-			randomTick = (rand() % 1000 + 300);
+			randomTick = (rand() % 1500 + 100);
 
 			/*
 			if (randomTick % 89 == 0)
@@ -144,7 +145,7 @@ void Manager::Manage()
 		// If X ticks have not past yet + a random of 30-300~ ticks
 		if ((last_tick + tick + randomTick) < GetTickCount64())
 		{
-			randomTick = (rand() % 101);
+			randomTick = (rand() % 331);
 
 			/*
 			if (randomTick % 88 == 0)
@@ -162,7 +163,7 @@ void Manager::Manage()
 			last_tick = GetTickCount64();
 		}
 	}
-	else if (peng || AnachAgi || abyssCrafting || archelogy || watchtoweragi || wildernessagi || divination || fungalMage || taverlySummon || money_drop)
+	else if (peng || AnachAgi || abyssCrafting || archelogy || watchtoweragi || wildernessagi || divination || fungalMage || taverlySummon || money_drop || spiritualmage)
 	{
 		static uint32_t randomTick = 0;
 
@@ -171,11 +172,11 @@ void Manager::Manage()
 		{
 			extraDelay = 0;
 
-			randomTick = (rand() % 200 + 200);
+			randomTick = (rand() % 400 + 150);
 
 			last_tick = GetTickCount64();
 
-			if (!abyssCrafting && !wildernessagi && !money_drop && (antiban::long_break_manager() || antiban::short_break_manager()))
+			if (!spiritualmage && !abyssCrafting && !wildernessagi && !money_drop && (antiban::long_break_manager() || antiban::short_break_manager()))
 				return;
 
 			break_type = 0;
@@ -209,6 +210,8 @@ void Manager::Manage()
 					taverlySummon->FSM();
 				else if (money_drop)
 					money_drop->FSM();
+				else if (spiritualmage)
+					spiritualmage->FSM();
 			}
 			else if (RS::GetGameState() == _game_state::Lobby)
 			{
@@ -268,8 +271,16 @@ void Manager::Auto_Start()
 		if (!player._base)
 			return;
 
+		if (RS::GetClosestMonsterNPCByName("Spiritual mage"))
+		{
+			if (!spiritualmage)
+			{
+				if (AIOAuth("Spiritual_Mage", "Start", player.GetName()) != -1)
+					spiritualmage = new spiritual_mage(); auto_start = false; SelectedBot = 15;
+			}
+		}
 		// If inventory have pure ess, nature rune, or cosmic rune - start Abyss RC
-		if (Inventory::GetItemById(7936) != -1 || Inventory::GetItemById(561) != -1 || Inventory::GetItemById(564) != -1)
+		else if ((Inventory::GetItemById(7936) != -1 || Inventory::GetItemById(561) != -1 || Inventory::GetItemById(564) != -1) && !RS::GetClosestMonsterNPCByName("Spellwisp"))
 		{
 			if (!abyssCrafting)
 			{
@@ -278,7 +289,7 @@ void Manager::Auto_Start()
 			}
 		}
 
-		else if (MoneyAgi::is_on_endpos())
+		else if (MoneyAgi::is_on_endpos() || player.GetPosition()[1] == 8709.0f)
 		{
 			if (!AnachAgi)
 			{
@@ -393,6 +404,8 @@ _current_bot Manager::get_current_bot()
 		return _current_bot::General_Mining;
 	else if (slayer_tower)
 		return _current_bot::Slayer_Contract;
+	else if (spiritualmage)
+		return _current_bot::Spiritual_Mage;
 
 	return _current_bot::None;
 }
@@ -701,6 +714,19 @@ void Manager::Keystates(WPARAM wParam)
 				AIOAuth("Slayer_Tower", "Stop", player.GetName());
 
 				delete slayer_tower; slayer_tower = 0;
+			}
+			break;
+		case 15:
+			if (!spiritualmage)
+			{
+				if (AIOAuth("Spiritual_Mage", "Start", player.GetName()) != -1)
+					spiritualmage = new spiritual_mage();
+			}
+			else if (spiritualmage)
+			{
+				AIOAuth("Spiritual_Mage", "Stop", player.GetName());
+
+				delete spiritualmage; spiritualmage = 0;
 			}
 			break;
 		default:

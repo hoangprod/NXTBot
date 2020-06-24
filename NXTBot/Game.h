@@ -35,6 +35,7 @@ struct RS {
 	static EntityObj* GetEntityNPCByName(const char* name);
 	static EntityObj* GetClosestMonsterNPCByName(const char* name);
 	static EntityObj* GetClosestMonsterNPCByNameFromOrigin(const char* name, Tile2D from, float maxDistance = 999.0f);
+	static EntityObj* GetBestMonsterNPCByNameFromOrigin(const char* name, Tile2D from, float maxDistance = 999.0f);
 
 	static EntityObj* GetValidWildernessPlayerEnemy();
 

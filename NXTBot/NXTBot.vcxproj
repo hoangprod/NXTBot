@@ -23,7 +23,7 @@
     <ProjectGuid>{71978FE1-D19D-4DB8-A196-8AD0E40DEF1C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>NXTBot</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -271,6 +271,7 @@
     <ClInclude Include="sodium\runtime.h" />
     <ClInclude Include="sodium\utils.h" />
     <ClInclude Include="sodium\version.h" />
+    <ClInclude Include="SpiritualMage.h" />
     <ClInclude Include="Summoning.h" />
     <ClInclude Include="tiger.h" />
     <ClInclude Include="Tile.h" />
@@ -317,6 +318,7 @@
     <ClCompile Include="Scan.cpp" />
     <ClCompile Include="Auth.cpp" />
     <ClCompile Include="SlayerTower.cpp" />
+    <ClCompile Include="SpiritualMage.cpp" />
     <ClCompile Include="Summoning.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="Varpbit.cpp" />

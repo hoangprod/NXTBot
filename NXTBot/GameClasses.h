@@ -269,6 +269,7 @@ public:
 class FakeItem
 {
 public:
+	FakeItem() { ItemId = -1; ItemQuantity = 0; };
 	int ItemId; //0x0000
 	uint32_t ItemQuantity; //0x0004
 }; //Size: 0x0008
@@ -662,7 +663,8 @@ enum class _current_bot
 	Rabbit_Farming,
 	Woodcutting,
 	General_Mining,
-	Slayer_Contract
+	Slayer_Contract,
+	Spiritual_Mage
 };
 
 
@@ -714,14 +716,14 @@ typedef __int64 (__fastcall* fn_SetVarpValueFromServer)(__int64 player, __int64 
 #define ReadPtrOffset(address, x) ((uint64_t)address == 0 || ((uint64_t)address % sizeof(uint64_t)) != 0) ? (0) : *(uint64_t*)((uint64_t)address + x)
 
 #define BANK_GROUP 0x5c5
-#define CONVERSATION_WIDGET 0x5C502B5
-#define DEPOSIT_WIDGET 0x5C502A8
-#define BANKING_WIDGET 0x5C5027E
-#define CHANGE_WORLD_WIDGET 0x5C5029F
-#define SELECT_AN_OPTION_TELEPORT_WIDGET 0x5C502A8
-#define SHOP_WIDGET 0x5C502A8 //Secondary ID 0x4F1
-#define SUMMONING_WIDGET 0x5C502A8 // Secondary ID 0x55a 
-#define SLAYER_CONTRACT_WIDGET 0x5C502A8 // Secondary ID 0x572 
+#define CONVERSATION_WIDGET 0x5C502B6
+#define DEPOSIT_WIDGET 0x5C502A9
+#define BANKING_WIDGET 0x5C5027F
+#define CHANGE_WORLD_WIDGET 0x5C502A0
+#define SELECT_AN_OPTION_TELEPORT_WIDGET 0x5C502A9
+#define SHOP_WIDGET 0x5C502A9 //Secondary ID 0x4F1
+#define SUMMONING_WIDGET 0x5C502A9 // Secondary ID 0x55a 
+#define SLAYER_CONTRACT_WIDGET 0x5C502A9 // Secondary ID 0x572 
 
 // Varps
 #define SOIL_BOX_GRAVEL 9370

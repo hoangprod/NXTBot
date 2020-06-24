@@ -36,4 +36,9 @@ public:
 	static bool StaticInteract(StaticObjEX obj);
 	static bool DepositAll();
 	static bool InteractWithEquipment(int slot, int option, int64_t param3 = 0x5B8000F);
+
+
+	static void cast_high_alchemy();
+	static void select_high_alc_item(int slot);
+	static void select_loot_from_lootbag(int slot);
 };

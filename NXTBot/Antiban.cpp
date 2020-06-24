@@ -101,7 +101,7 @@ void antiban::anti_afk()
 {
 	int randomIndex = rand() % fakekeys.size();
 
-	fake_key selected_key = fakekeys[randomIndex];
+	fake_key selected_key = fake_key(VK_INSERT, 0x1520001, 0xc1520001);//fakekeys[randomIndex];
 
 	int hold_time = antiban::int_random_range(100, 800);
 
@@ -194,7 +194,7 @@ bool antiban::long_break_manager(float min, float max, float min_break, float ma
 	if(!break_duration)
 		break_duration = antiban::float_random_range(min_break, max_break);
 
-	printf("long break - Start: %lld %f\n", start, antiban_rest_timer);
+	//printf("long break - Start: %lld %f\n", start, antiban_rest_timer);
 
 	bool bm = break_manager(min, max, min_break, max_break, &start, &antiban_rest_timer, &break_duration);
 
@@ -220,7 +220,7 @@ bool antiban::short_break_manager(float min, float max, float min_break, float m
 	if (!break_duration)
 		break_duration = antiban::float_random_range(min_break, max_break);
 
-	printf("short break - Start: %lld %f dura %f\n", start, antiban_rest_timer, break_duration);
+	//printf("short break - Start: %lld %f dura %f\n", start, antiban_rest_timer, break_duration);
 
 	bool bm = break_manager(min, max, min_break, max_break, &start, &antiban_rest_timer, &break_duration);
 

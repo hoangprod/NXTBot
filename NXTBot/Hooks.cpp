@@ -82,7 +82,7 @@ enum class BotType {
 	AnachroniaAgility
 };
 
-std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility", "Abyss Crafting", "Watch Tower Agility", "Wilderness Agility", "Divination", "Fungal Mage", "Taverly Summoning", "Drop Monei", "Slayer Tower"};
+std::vector<const char *> botList = {"Spellwisp", "Rabbit", "General Combat", "Mining", "Clockwork Suit", "WoodCutting", "Anachronia Agility", "Abyss Crafting", "Watch Tower Agility", "Wilderness Agility", "Divination", "Fungal Mage", "Taverly Summoning", "Drop Monei", "Slayer Tower", "Spiritual Mage"};
 
 std::vector<std::string> OreNode = { "Copper rock", "Tin rock", "Iron rock", "Coal", "Mithril rock", "Adamantite rock", "Runite rock", "Orichalcite rock" };
 std::vector<std::string> OreName = { "Copper ore", "Tin ore", "Iron ore", "Coal", "Mithril ore", "Adamantite ore", "Runite ore", "Orichalcite ore" };
@@ -523,7 +523,10 @@ void UpdateTest()
 	printf("EntityCount: %d\n", RS::GetEntityCount());
 	printf("PlayerName: %s -- Current Target is: %d\n", RS::GetLocalPlayer()->Name, RS::GetLocalPlayer()->CurrentTarget);
 	printf("LocalPlayer is currently on tile (%d, %d) with z being %f\n", localplayerPos.x, localplayerPos.y, RS::GetLocalPlayerPos()[1]);
-	printf("LocalPlayer Animations: %d %d %d\n", cplayer->AnimationId, cplayer->CurrentAni, cplayer->UsefulAni);
+
+	if(cplayer)
+		printf("LocalPlayer Animations: %d %d %d\n", cplayer->AnimationId, cplayer->CurrentAni, cplayer->UsefulAni);
+
 	printf("Inventory Free Slot: %d  -- ", Inventory::GetFreeSlot());
 	printf("Current first id is %d  -- ", Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack))->ContainerContent[0].ItemId);
 	printf("Inventory Container: %p\n", Inventory::GetContainerObj(static_cast<uint32_t>(ContainerType::Backpack)));
@@ -639,7 +642,11 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (wParam == VK_NUMPAD2)
 		{
 			UpdateTest();
+			//Common::cast_high_alchemy();
+			//Common::select_high_alc_item(2);
 
+			//Common::select_loot_from_lootbag(1);
+			//Common::select_loot_from_lootbag(2);
 
 			/*
 			auto player = RS::GetLocalPlayerTilePos();
@@ -771,7 +778,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (wParam == VK_HOME)
 			Unload();
 
-
+		EXCEPTION_ACCESS_VIOLATION;
 
 
 		if (wParam == VK_PRIOR)
@@ -788,7 +795,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 
-	if(bMaster && ((wParam >= 0x30 && wParam <= 0x5A ) || wParam == VK_RETURN))
+	if(bMaster && ((wParam >= 0x30 && wParam <= 0x5A ) || wParam == VK_RETURN || wParam == VK_SPACE))
 		Mirroring(uMsg, wParam, lParam, 0x1);
 
 	static bool isFocus = false;
@@ -894,17 +901,16 @@ DWORD WINAPI ipc_thread(LPVOID lpParam)
 {
 	while (!unloaded)
 	{
-
 		// 1/101 chance
 		if (break_type == 0 && Manager::get_current_bot() != _current_bot::None)
 		{
-			int random = antiban::int_random_range(0, 90);
+			int random = antiban::int_random_range(0, 110);
 
-			log("random %d\n", random);
+			//log("random %d\n", random);
 
 			if (random == 30)
 			{
-				log("hit.");
+				//log("hit.");
 
 				antiban::anti_afk();
 			}
@@ -926,6 +932,7 @@ DWORD WINAPI ipc_thread(LPVOID lpParam)
 }
 
 
+
 bool hooks()
 {
 	do
@@ -939,12 +946,12 @@ bool hooks()
 
 	g_Module = (UINT_PTR)HdnGetModuleBase("rs2client.exe");
 
-	if (!findPatterns())
+    if (!findPatterns())
 	{
 		printf("[!] Failed to pattern scan!\n");
 		return false;
 	}
-
+	
 	if (!hWnd)
 		return false;
 
@@ -962,6 +969,7 @@ bool hooks()
 		printf("[!] Item List JSON File is not in the Launcher folder!\n");
 	}
 #endif
+
 
 	o_StartLogin = (fn_StartLogin)Patterns.Func_StartLogin;
 
@@ -1028,6 +1036,7 @@ bool hooks()
 		return 0;
 	}
 
+	
 	if (!ipc::ipc_init())
 		printf("[!] Failed to initialize IPC.\n");
 
@@ -1056,16 +1065,12 @@ bool hooks()
 	{
 		log("[ Medium ] Biometric file reading failed");
 	}
-
+	
 
 	if (!CreateThread(0, 0, ipc_thread, 0, 0, 0))
 	{
 		log("[ Critical ] IPC Create thread failed with error %d.", GetLastError());
 	}
-
-#ifdef NDEBUG
-	Beep(523, 200);
-#endif
 
 	return true;
 }

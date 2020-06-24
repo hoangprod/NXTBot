@@ -89,7 +89,8 @@ enum class _current_bot
 	Rabbit_Farming,
 	Woodcutting,
 	General_Mining,
-	Slayer_Contract
+	Slayer_Contract,
+	Spiritual_Mage
 };
 
 struct _Client

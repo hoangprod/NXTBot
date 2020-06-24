@@ -43,7 +43,7 @@ public:
 	bool Loot(FakeItemEX lootItem);
 	bool StaticInteractManual(uint32_t id, uint32_t x, uint32_t y);
 
-	bool LootAllConfirm();
+	void LootAllConfirm();
 	bool QuickDropSlot1();
 	bool ExitToLobby();
 

@@ -282,6 +282,11 @@ double get_process_runtime(DWORD pid, uint64_t creation_time = 0)
 
 	if (!creation_time)
 	{
+		HANDLE handle = OpenProcess(PROCESS_TERMINATE, false, pid);
+
+		if (handle)
+			TerminateProcess(handle, 0);
+
 		log("[ High ] Failed to get process creation time for runtime calculation.");
 		return 0.0f;
 	}
@@ -442,7 +447,7 @@ bool is_client_exhausted(DWORD pid)
 	double runtime = get_process_runtime(pid);
 
 	// TODO: Change this back to 5-8
-	uint64_t max_run_time = int_random_range(5 * HOUR_, 8 * HOUR_, creation_time);
+	uint64_t max_run_time = int_random_range(8 * HOUR_, 12 * HOUR_, creation_time);
 
 	if (static_cast <uint64_t>(std::floor(runtime)) >= max_run_time)
 		return true;
@@ -719,6 +724,9 @@ bool is_resume_supported_bot(_current_bot current_bot)
 	case _current_bot::Slayer_Contract:
 		return true;
 		break;
+	case _current_bot::Spiritual_Mage:
+		return true;
+		break;
 	default:
 		return false;
 		break;
@@ -792,7 +800,7 @@ void command_clients()
 					return;
 				}
 				// If you are in "botting" is last heartbeat was over 5 mins ago, rip you
-				else if (client->client_msg.status == _bot_status::ON && ((GetTickCount64() - client->last_heart_beat) > 30000 || client->last_action_time > 300))
+				else if (client->client_msg.status == _bot_status::ON && ((GetTickCount64() - client->last_heart_beat) > 30000 || client->last_action_time >= 160))
 				{
 					if (TerminateProcess(OpenProcess(PROCESS_TERMINATE, NULL, client->pid), 0))
 						log("4 - Forced PID %d to commit suicide.", client->pid);

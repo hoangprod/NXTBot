@@ -127,7 +127,7 @@ bool Player::StaticInteractManual(uint32_t id, uint32_t x, uint32_t y)
 	return true;
 }
 
-bool Player::LootAllConfirm()
+void Player::LootAllConfirm()
 {
 	uint8_t data[100] = { 0 };
 
@@ -137,26 +137,24 @@ bool Player::LootAllConfirm()
 
 	uint64_t** handler = (uint64_t**)Patterns.Addr_InventoryActionHandler;
 	if (!handler)
-		return false;
+		return;
 
 	uint64_t* handler_vtable = *handler;
 
 	if (!handler_vtable)
-		return false;
+		return;
 
 	uint64_t func_ptr = handler_vtable[2];
 
 	if (!func_ptr)
-		return false;
+		return;
 
 
 	dataStruct dt;
 	dt.dataPtr = data;
 
 	typedef void(__cdecl* _WidgetLootAll)(uint64_t* _this, void* dataPtr);
-	reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
-
-	return true;
+	return reinterpret_cast<_WidgetLootAll>(func_ptr)(g_GameContext, &dt);
 }
 
 

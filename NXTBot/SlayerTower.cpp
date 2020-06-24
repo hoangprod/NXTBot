@@ -1185,8 +1185,8 @@ int SlayerTower::get_slayer_contract_index()
 		if (nose_peg != -1)
 		{
 			Inventory::InteractItemOption(nose_peg, 2);
-			return 9;
 		}
+		return 9;
 	}
 	else if (slayer_level >= 50)
 		return 7;
