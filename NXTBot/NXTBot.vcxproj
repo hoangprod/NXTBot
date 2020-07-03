@@ -194,6 +194,7 @@
     <ClInclude Include="GeneralCombat.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Hooks.h" />
+    <ClInclude Include="Humanizer.h" />
     <ClInclude Include="Inventory.h" />
     <ClInclude Include="client_ipc.h" />
     <ClInclude Include="ItemDef.h" />
@@ -300,6 +301,7 @@
     <ClCompile Include="GeneralCombat.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Hooks.cpp" />
+    <ClCompile Include="Humanizer.cpp" />
     <ClCompile Include="Inventory.cpp" />
     <ClCompile Include="client_ipc.cpp" />
     <ClCompile Include="ItemDef.cpp" />

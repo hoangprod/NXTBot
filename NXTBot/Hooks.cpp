@@ -260,7 +260,7 @@ __int64* h_PrepareUUIDPacket(__int64* uuid_struct, __int64 packet)
 
 		if (contextPtr)
 		{
-			const char* email =contextPtr->gContext->LoginManager->Email;
+			const char* email = contextPtr->gContext->LoginManager->Email;
 			//printf("Email: %s\n", contextPtr->gContext->LoginManager->Email);
 			//print_bytes("=== Original UUID ===", uuid, 24, true);
 
@@ -514,6 +514,9 @@ static BOOL CALLBACK enumWindowCallback(HWND hWndv, LPARAM lparam) {
 
 void UpdateTest()
 {
+	printf("Varp check: Health [%d] Prayer [%d]\n", Varpbit::GetVarpBit(1668), Varpbit::GetVarp(3274));
+
+
 	auto cplayer = RS::GetClosestPlayer();
 	Tile2D localplayerPos = RS::GetLocalPlayerTilePos();
 	printf("============================================\n");
@@ -545,9 +548,8 @@ void UpdateTest()
 		printf("Closest Monster Info. Name: %s  X: %f  Y: %f Level: %d (%p) with [%d / %d] health.\n", cmonster->Name, cmonster->GetPos()[0], cmonster->GetPos()[2], cmonster->Level, cmonster, ent.NPCCurHealth(), ent.NPCMaxHealth());
 	}
 
-	printf("Varp check: Health [%d] Prayer [%d]\n", Varpbit::GetVarpBit(1668), Varpbit::GetVarp(3274));
 
-	printf("Exp for Health: [%d] HealthLvl [%d] Exp for Summoning: [%d]  Summoning level [%d]\n", Exp::GetCurrentExp(Stat::HITPOINTS), Exp::GetSkillLevel(Stat::HITPOINTS), Exp::GetCurrentExp(Stat::SUMMONING), Exp::GetSkillLevel(Stat::SUMMONING));
+	printf("Exp for Health: [%d] Cur HP [%d] / MAX Hp [%d] Exp for Summoning: [%d]  Summoning level [%d]\n", Exp::GetCurrentExp(Stat::HITPOINTS), Varpbit::GetPlayerHealth(), Exp::GetSkillLevel(Stat::HITPOINTS), Exp::GetCurrentExp(Stat::SUMMONING), Exp::GetSkillLevel(Stat::SUMMONING));
 
 	printf("Current World [%d]  [%s]\n", Common::GetCurrentWorld(), Common::GetCurrentWorldString());
 	printf("============================================\n");
@@ -578,6 +580,8 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (wParam == VK_END)
 		{
 			recording = !recording;
+
+			Beep(500, 500);
 
 			// if we just disabled recording
 			if (!recording)
@@ -612,6 +616,8 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				f.write(pointer, bytes);
 
 				f.close();
+
+				mouse_data.clear();
 			}
 		}
 
@@ -626,7 +632,7 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (wParam == VK_NUMPAD1)
 		{
 			try {
-				//Common::Login("heph_yeet9@maildu.de", "poching29");
+				Common::Login("heph_yeet9@maildu.de", "poching29");
 			}
 			catch (...)
 			{
@@ -825,11 +831,12 @@ LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 
 	
-	if (recording && (uMsg == WM_MOUSEMOVE || uMsg == WM_KILLFOCUS || uMsg == WM_SETFOCUS || wParam == VK_UP || wParam == VK_DOWN || wParam == VK_LEFT || wParam == VK_RIGHT))
+	if (recording && (wParam == VK_LBUTTON || uMsg == WM_MOUSEMOVE || uMsg == WM_KILLFOCUS || uMsg == WM_SETFOCUS || wParam == VK_UP || wParam == VK_DOWN || wParam == VK_LEFT || wParam == VK_RIGHT))
 	{
 		antiban::mouse_record(uMsg, wParam, lParam);
 	}
 	
+
 
 	return CallWindowProc(OriginalWndProcHandler, hWnd, uMsg, wParam, lParam);
 }

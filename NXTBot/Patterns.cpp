@@ -93,7 +93,7 @@ bool __stdcall findPatterns()
 	else { printf("[Pattern Scan]  Patterns.Offset_Container is at %llx\n", Patterns.Offset_Container); };
 
 
-	// 1780 -> 1788
+	// 1780 -> 1788 -> 1798?
 	Patterns.Offset_PlayerContext = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x48\x8b\x88\xCC\x17\x00\x00\x48\x85\xc9\x74", "xxx?xxxxxxx", 3, 4);
 
 	if (!Patterns.Offset_PlayerContext)
@@ -198,7 +198,7 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_AnimationSpotId is at %llx\n", Patterns.Offset_AnimationSpotId); };
 
-	// 177c->1784
+	// 177c->1784 -> 1794?
 	Patterns.Offset_GameState = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x48\x8b\xf9\x3b\x91\xCC\xCC\x00\x00\x74", "xxxxx??xxx", 5, 4);
 
 	if (!Patterns.Offset_GameState)
@@ -240,7 +240,7 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_TargetedEntity is at %llx\n", Patterns.Offset_TargetedEntity); };
 
-	// 11a8 -> 11b0
+	// 11a8 -> 11b0 -> 11a8 ?
 	Patterns.Offset_CharacterInfo = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\x48\xCC\xCC\xCC\x11\x00\x00\x48\xCC\xCC\xCC\xCC\xCC\x00\x4b", "x???xxxx?????xx", 3, 4);
 
 	if (!Patterns.Offset_CharacterInfo)
@@ -260,7 +260,7 @@ bool __stdcall findPatterns()
 	}
 	else { printf("[Pattern Scan]  Patterns.Offset_SkillExperience is at %llx\n", Patterns.Offset_SkillExperience); };
 
-	// 11c0 -> 11c8
+	// 11c0 -> 11c8 -> 11c0
 	Patterns.Offset_TileList = (UINT_PTR)Scan_Offsets(Rs2Client, 0x300000, "\xCC\xCC\xCC\xCC\x11\x00\x00\xCC\xCC\xCC\x38\xCC\xCC\xCC\x30\xCC\xCC\xCC\x0f", "????xxx???x???x???x", 3, 4);
 
 	if (!Patterns.Offset_TileList)
@@ -422,7 +422,7 @@ bool __stdcall findPatterns()
 	else { printf("[Pattern Scan]  Patterns.Func_ExecuteHookInner is at %llx\n", Patterns.Func_ExecuteHookInner); };
 
 
-	Patterns.Func_StartLogin = (UINT_PTR)PatternScan(Rs2Client, 0x300000, "\x48\x89\x5c\x24\x18\x48\x89\x6c\x24\x20\x56\x57", "xxxxxxxxxxxx");
+	Patterns.Func_StartLogin = (UINT_PTR)PatternScan(Rs2Client, 0x300000, "\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x56\x57\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x20", "xxxxxxxxxxxxxxxxxxxxxx");
 
 	if (!Patterns.Func_StartLogin)
 	{

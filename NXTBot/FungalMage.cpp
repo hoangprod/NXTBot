@@ -20,6 +20,8 @@ extern std::vector<std::string> foodlist;
 
 extern bool to_suicide;
 
+extern std::vector<int> food_id;
+
 void FungalMage::FSM()
 {
 	Player player = RS::GetLocalPlayer();
@@ -41,6 +43,7 @@ void FungalMage::FSM()
 
 	if (FungalMage::NeedHeal() && FungalMage::IsInCave())
 	{
+		printf("In cave and need heal.\n");
 		if (!FungalMage::ConsumeFood() && !player.inCombat())
 		{
 			// We are out of food
@@ -172,6 +175,7 @@ void FungalMage::FSM()
 	}
 	else if(!HaveFoodInInvent() && FungalMage::IsInCave())
 	{
+		printf("In cave w/o food.\n");
 		if (Widgets::GetWidgetUI(SELECT_AN_OPTION_TELEPORT_WIDGET))
 		{
 			printf("Teleport option open\n");
@@ -224,6 +228,8 @@ void FungalMage::FSM()
 
 	if (FungalMage::IsFarFromOrigin(player.GetTilePosition()))
 	{
+		printf("Far from origin.\n");
+
 		int RandomX = rand() % 2 + origin.x;
 		int RandomY = rand() % 2 + origin.y;
 
@@ -235,6 +241,7 @@ void FungalMage::FSM()
 	}
 	else
 	{
+		printf("Looking for monster to attack.\n");
 		if (attackingEnemies.size() > 0)
 		{
 			// Attack the first monster in the list that is attacking us
@@ -262,17 +269,16 @@ void FungalMage::FSM()
 
 bool FungalMage::ConsumeFood()
 {
-	for (auto food : foodlist)
+	for (auto food : food_id)
 	{
-		auto eat = Inventory::GetItemNameSlot(food);
+		auto slot = Inventory::GetItemById(food);
 
-		if (eat >= 0)
+		if (slot != -1)
 		{
-			Common::InteractWithEquipment(1, eat, 0x5C10007);
+			Common::InteractWithEquipment(1, slot, 0x5C10007);
 			return true;
 		}
 	}
-
 	return false;
 }
 
@@ -288,18 +294,19 @@ bool FungalMage::NeedHeal()
 	return false;
 }
 
+
+
 bool FungalMage::HaveFoodInInvent()
 {
-	for (auto food : foodlist)
+	for (auto food : food_id)
 	{
-		auto eat = Inventory::GetItemNameSlot(food);
+		auto slot = Inventory::GetItemById(food);
 
-		if (eat >= 0)
+		if (slot != -1)
 		{
 			return true;
 		}
 	}
-
 	return false;
 }
 

@@ -205,7 +205,7 @@ int Common::ConfirmGUI(int GUI_Id)
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
 	*reinterpret_cast<int*>(&data[0x60]) = GUI_Id;
 
-	uint64_t func_ptr = g_Module + 0xcf750; // HARDCODED
+	uint64_t func_ptr = g_Module + 0xff810; // HARDCODED
 
 	if (!func_ptr)
 		return false;
@@ -282,7 +282,7 @@ bool Common::DepositActionNPC(uint32_t Entity)
 
 	*reinterpret_cast<int*>(&data[0x58]) = Entity;
 
-	uint64_t func_ptr = g_Module + 0xcf9f0; // HARDCODED
+	uint64_t func_ptr = g_Module + 0xffab0; // HARDCODED
 
 	if (!func_ptr)
 		return false;
@@ -311,7 +311,7 @@ bool Common::BankUsingNPC(uint32_t targetEntity)
 	*reinterpret_cast<int*>(&data[0x5c]) = 0;
 	*reinterpret_cast<int*>(&data[0x60]) = 0;
 
-	uint64_t func_ptr = g_Module + 0xcf9f0 - 0x40; // HARDCODED
+	uint64_t func_ptr = g_Module + 0xffab0 - 0x40; // HARDCODED 0xffa70
 
 	if (!func_ptr)
 		return false;
@@ -396,7 +396,7 @@ bool Common::TeleportToAbyssThroughMage()
 	*reinterpret_cast<int*>(&data[0x5c]) = 0;
 	*reinterpret_cast<int*>(&data[0x60]) = 0;// Hardcoded
 
-	uint64_t func_ptr = g_Module + 0xcfa10;
+	uint64_t func_ptr = g_Module + 0xffad0;
 
 	if (!func_ptr)
 		return false;
@@ -450,7 +450,7 @@ void Common::cast_high_alchemy()
 	*reinterpret_cast<int*>(&data[0x5c]) = -1;
 	*reinterpret_cast<int*>(&data[0x60]) = 93716713;
 
-	uint64_t func_ptr = g_Module + 0xcf740;
+	uint64_t func_ptr = g_Module + 0xff800;
 
 	if (!func_ptr)
 		return;
@@ -471,7 +471,7 @@ void Common::select_high_alc_item(int slot)
 	*reinterpret_cast<int*>(&data[0x5c]) = slot;
 	*reinterpret_cast<int*>(&data[0x60]) = 96534535;
 
-	uint64_t func_ptr = g_Module + 0xcf890;
+	uint64_t func_ptr = g_Module + 0xff950;
 
 	if (!func_ptr)
 		return;
@@ -526,7 +526,7 @@ bool Common::StaticInteract(StaticObjEX obj)
 	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
 	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
 
-	uint64_t func_ptr = g_Module + 0xcf8d0;
+	uint64_t func_ptr = g_Module + 0xff990;
 
 	if (!func_ptr)
 		return false;
@@ -558,7 +558,7 @@ bool Common::StaticInteract2(StaticObjEX obj)
 	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
 	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
 
-	uint64_t func_ptr = g_Module + 0xcf8d0 + 0x20;
+	uint64_t func_ptr = g_Module + 0xff990 + 0x20;
 
 	if (!func_ptr)
 		return false;
@@ -589,7 +589,7 @@ bool Common::StaticInteract3(StaticObjEX obj)
 	*reinterpret_cast<int*>(&data[0x5c]) = obj.TileX;
 	*reinterpret_cast<int*>(&data[0x60]) = obj.TileY;
 
-	uint64_t func_ptr = g_Module + 0xcf8d0 + 0x40;
+	uint64_t func_ptr = g_Module + 0xff990 + 0x40;
 
 	if (!func_ptr)
 		return false;

@@ -18,6 +18,7 @@
 #include "Auth.h"
 #include "Common.h"
 #include "Antiban.h"
+#include "Humanizer.h"
 #include "Inventory.h"
 #include "Manager.h"
 
@@ -42,6 +43,8 @@ MoneyDrop* money_drop = 0;
 SlayerTower* slayer_tower = 0;
 spiritual_mage* spiritualmage;
 
+humanizer * human = 0;
+
 extern std::vector<const char*> botList;
 extern std::string botStatus;
 extern int SelectedBot;
@@ -58,11 +61,39 @@ extern std::string auto_password;
 int extraDelay = 0;
 bool firstLog = false;
 
+bool run_Once = false;
+
 void Manager::Manage()
 {
 	static uint64_t last_tick = 0;
 
-	if (wisp || genCombat || rabbit || WoodCutting || auto_start || slayer_tower)
+	if (!run_Once)
+	{
+		human = new humanizer("fab.bin");
+
+		run_Once = true;
+	}
+
+	if (slayer_tower && human)
+	{
+		static uint32_t delay = 0;
+
+		// if current tick past the delay + last tick, time to do something
+		if (last_tick + delay < GetTickCount64())
+		{
+			// get the amount of next delay
+			delay = human->get_next_reaction_delay();
+
+			log("tick (%d)", delay);
+
+			// do bot
+			slayer_tower->FSM();
+
+			// set last tick to now
+			last_tick = GetTickCount64();
+		}
+	}
+	else if (wisp || genCombat || rabbit || WoodCutting || auto_start || slayer_tower)
 	{
 		static uint32_t randomTick = 0;
 		// If X ticks have not past yet + a random of 30-300~ ticks
@@ -72,12 +103,12 @@ void Manager::Manage()
 
 			randomTick = (rand() % 1500 + 100);
 
-			/*
+			
 			if (randomTick % 89 == 0)
 			{
 				antiban::anti_afk();
 			}
-			*/
+			
 
 			if (auto_start)
 			{
@@ -176,17 +207,11 @@ void Manager::Manage()
 
 			last_tick = GetTickCount64();
 
+			// no break manager for spiritual / abyss crafting / wilderness agi / money drop cus those does not benefit from breaks or too risky
 			if (!spiritualmage && !abyssCrafting && !wildernessagi && !money_drop && (antiban::long_break_manager() || antiban::short_break_manager()))
 				return;
 
 			break_type = 0;
-
-			/*
-			if (randomTick % 88 == 0)
-			{
-				antiban::anti_afk();
-			}
-			*/
 
 			if (RS::IsInGame())
 			{

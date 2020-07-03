@@ -21,13 +21,26 @@ void antiban::Keyboard()
 
 void antiban::mouse_record(UINT uMsg, UINT wParam, UINT lParam)
 {
-	static int64_t current_tick = GetTickCount64();
+	if (uMsg == WM_LBUTTONDOWN && wParam == VK_LBUTTON)
+	{
+		static int64_t current_tick2 = GetTickCount64();
 
-	int64_t elapsed_time = GetTickCount64() - current_tick;
+		int64_t elapsed_time2 = GetTickCount64() - current_tick2;
 
-	mouse_data.push_back(mouse_biometric(uMsg, wParam, lParam, (UINT)elapsed_time));
+		mouse_data.push_back(mouse_biometric(uMsg, wParam, lParam, (UINT)elapsed_time2));
 
-	current_tick = GetTickCount64();
+		current_tick2 = GetTickCount64();
+	}
+	else
+	{
+		static int64_t current_tick = GetTickCount64();
+
+		int64_t elapsed_time = GetTickCount64() - current_tick;
+
+		mouse_data.push_back(mouse_biometric(uMsg, wParam, lParam, (UINT)elapsed_time));
+
+		current_tick = GetTickCount64();
+	}
 }
 
 
@@ -95,11 +108,11 @@ void antiban::mouse_playback(mouse_replay* mouse_data, int screen_height, int sc
 }
 
 
-std::vector<fake_key> fakekeys = { fake_key(VK_UP, 0x1480001, 0xc1480001), fake_key(VK_DOWN, 0x1500001, 0xc1500001), fake_key(VK_RIGHT, 0x14d0001, 0xc14d0001), fake_key(VK_LEFT, 0x14b0001, 0xc14b0001), fake_key(VK_INSERT, 0x1520001, 0xc1520001) };
+//std::vector<fake_key> fakekeys = { fake_key(VK_UP, 0x1480001, 0xc1480001), fake_key(VK_DOWN, 0x1500001, 0xc1500001), fake_key(VK_RIGHT, 0x14d0001, 0xc14d0001), fake_key(VK_LEFT, 0x14b0001, 0xc14b0001), fake_key(VK_INSERT, 0x1520001, 0xc1520001) };
 
 void antiban::anti_afk()
 {
-	int randomIndex = rand() % fakekeys.size();
+	//int randomIndex = rand() % fakekeys.size();
 
 	fake_key selected_key = fake_key(VK_INSERT, 0x1520001, 0xc1520001);//fakekeys[randomIndex];
 

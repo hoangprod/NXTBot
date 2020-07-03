@@ -22,6 +22,7 @@ int Varpbit::GetVarpBit(int VarpId)
 		return -1;
 
 
+
 	if (wrap_1->isReady == 4)
 	{
 		typedef UINT_PTR*(__fastcall* _GetVarp)(uint64_t* a1, unsigned int a2, uint64_t a3);

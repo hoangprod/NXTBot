@@ -72,6 +72,8 @@ public:
 	virtual float* GetPos();
 }; //Size: 0x0F78
 
+
+
 class GameContext
 {
 public:
@@ -81,23 +83,22 @@ public:
 	class DestinationFlag* DestinationFlag; //0x1110
 	char pad_1118[112]; //0x1118
 	class WidgetUI* WidgetUI; //0x1188
-	char pad_1190[16]; //0x1190
-	class LoginManager* LoginManager; //0x11A0
-	char pad_11A8[8]; //0x11A8
-	class CharacterInfo* CharacterInfo; //0x11B0
-	char pad_11B8[8]; //0x11B8
-	class EntityPtr* EntityPtr; //0x11C0
-	class TileList* N00001FBE; //0x11C8
-	char pad_11D0[16]; //0x11D0
-	class PlayerListWrapper* PlayerListWrapper; //0x11E0
-	char pad_11E8[32]; //0x11E8
+	char pad_1190[8]; //0x1190
+	class LoginManager* LoginManager; //0x1198
+	char pad_11A0[8]; //0x11A0
+	class CharacterInfo* CharacterInfo; //0x11A8
+	char pad_11B0[8]; //0x11B0
+	class EntityPtr* EntityPtr; //0x11B8
+	class TileList* N00001FBE; //0x11C0
+	char pad_11C8[16]; //0x11C8
+	class PlayerListWrapper* PlayerListWrapper; //0x11D8
+	char pad_11E0[40]; //0x11E0
 	class GameContextPtr* GContext; //0x1208
 	char pad_1210[24]; //0x1210
 	class WorldClass* WorldClass; //0x1228
-	char pad_1230[1384]; //0x1230
-	class VarpInstance* VarpVtable; //0x1798
-	char pad_17A0[2672]; //0x17A0
-}; //Size: 0x2210
+	char pad_1230[1400]; //0x1230
+	class VarpInstance* VarpVtable; //0x17A8
+}; //Size: 0x17B0
 
 
 
@@ -509,23 +510,22 @@ public:
 class LoginManager
 {
 public:
-	char pad_0000[88]; //0x0000
-	class Subconnection* Subconnection; //0x0058
-	char pad_0060[80]; //0x0060
-	char* Email; //0x00B0
-	char pad_00B8[24]; //0x00B8
-	char* Password; //0x00D0
-	char pad_00D8[48]; //0x00D8
-}; //Size: 0x0108
-
+	char pad_0000[24]; //0x0000
+	class Subconnection* Subconnection; //0x0018
+	char pad_0020[80]; //0x0020
+	char* Email; //0x0070
+	char pad_0078[24]; //0x0078
+	char* Password; //0x0090
+	char pad_0098[48]; //0x0098
+}; //Size: 0x00C8
 
 class Subconnection
 {
 public:
 	char pad_0000[4408]; //0x0000
-	class ConnectionTime* Time; //0x1138 manual edit might be wrong lol
-	char pad_1138[720]; //0x1140
-}; //Size: 0x1408
+	class ConnectionTime* Time; //0x1138
+	char pad_1140[720]; //0x1140
+}; //Size: 0x1410
 
 class ConnectionTime
 {

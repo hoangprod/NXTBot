@@ -44,7 +44,7 @@
 #endif
 #endif //PCH_H
 
-
+#define LARGEST_DELAY 819200
 
 #ifdef NDEBUG
 #define printf(fmt, ...) (0)
